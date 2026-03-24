@@ -1,11 +1,11 @@
-Leia `synapos/core/versioning.md` e execute o protocolo de bump abaixo.
+Leia `.synapos/core/versioning.md` e execute o protocolo de bump abaixo.
 
 ## PROTOCOLO DE BUMP
 
 ### 1 — Ler estado atual
-- Leia `synapos/VERSION` → versão atual do framework
-- Leia `synapos/.manifest.json` → inventário completo
-- Leia `synapos/CHANGELOG.md` → histórico de mudanças
+- Leia `.synapos/VERSION` → versão atual do framework
+- Leia `.synapos/.manifest.json` → inventário completo
+- Leia `.synapos/CHANGELOG.md` → histórico de mudanças
 
 ### 2 — Identificar o que mudou
 Pergunte ao usuário (se não informado nos argumentos):
@@ -33,13 +33,13 @@ Execute em ordem:
 
 **4a.** Atualizar `version:` no frontmatter do(s) arquivo(s) modificado(s)
 
-**4b.** Atualizar `synapos/.manifest.json`:
+**4b.** Atualizar `.synapos/.manifest.json`:
 - Versão do componente alterado
 - Versão do framework (`framework.version` e `framework.released_at`)
 
-**4c.** Atualizar `synapos/VERSION` com a nova versão do framework
+**4c.** Atualizar `.synapos/VERSION` com a nova versão do framework
 
-**4d.** Adicionar entrada no `synapos/CHANGELOG.md`:
+**4d.** Adicionar entrada no `.synapos/CHANGELOG.md`:
 ```markdown
 ## [{nova_versão}] — {YYYY-MM-DD}
 
@@ -54,8 +54,8 @@ Bump concluído!
 
 Versão: {anterior} → {nova}
 Arquivos atualizados:
-  ✅ synapos/VERSION
-  ✅ synapos/.manifest.json
-  ✅ synapos/CHANGELOG.md
+  ✅ .synapos/VERSION
+  ✅ .synapos/.manifest.json
+  ✅ .synapos/CHANGELOG.md
   ✅ {arquivo do componente alterado}
 ```
