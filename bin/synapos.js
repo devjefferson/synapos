@@ -62,7 +62,7 @@ const IDES = [
     files: [
       {
         dest: '.claude/commands/init.md',
-        content: `Leia e execute exatamente o protocolo em: synapos/core/orchestrator.md\n`,
+        content: `Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n`,
       },
     ],
   },
@@ -80,10 +80,10 @@ alwaysApply: true
 
 Este projeto usa o **Synapos Framework** para orquestração de agents.
 
-**Framework location:** \`synapos/\`
-**Protocolo de inicialização:** \`synapos/core/orchestrator.md\`
+**Framework location:** \`.synapos/\`
+**Protocolo de inicialização:** \`.synapos/core/orchestrator.md\`
 
-Quando o usuário quiser trabalhar com agents ou iniciar uma sessão de desenvolvimento/automação, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
+Quando o usuário quiser trabalhar com agents ou iniciar uma sessão de desenvolvimento/automação, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
 `,
       },
     ],
@@ -99,10 +99,10 @@ Quando o usuário quiser trabalhar com agents ou iniciar uma sessão de desenvol
 
 Este projeto usa o **Synapos Framework** para orquestração de agents.
 
-**Framework:** \`synapos/\`
-**Init:** \`synapos/core/orchestrator.md\`
+**Framework:** \`.synapos/\`
+**Init:** \`.synapos/core/orchestrator.md\`
 
-Para iniciar, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
+Para iniciar, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
 `,
       },
     ],
@@ -118,10 +118,10 @@ Para iniciar, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
 
 Este projeto usa o **Synapos Framework** para orquestração de agents.
 
-**Framework:** \`synapos/\`
-**Init:** \`synapos/core/orchestrator.md\`
+**Framework:** \`.synapos/\`
+**Init:** \`.synapos/core/orchestrator.md\`
 
-Para iniciar, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
+Para iniciar, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
 `,
       },
     ],
@@ -137,10 +137,10 @@ Para iniciar, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
 
 Este projeto usa o **Synapos Framework** para orquestração de agents multi-especialidade.
 
-**Framework:** \`synapos/\`
-**Init:** \`synapos/core/orchestrator.md\`
+**Framework:** \`.synapos/\`
+**Init:** \`.synapos/core/orchestrator.md\`
 
-Para iniciar, leia e execute o protocolo em \`synapos/core/orchestrator.md\`.
+Para iniciar, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
 `,
       },
     ],
@@ -248,7 +248,7 @@ ${bold('EXEMPLOS')}
   header();
 
   const targetDir = process.cwd();
-  const synaposSource = path.join(PACKAGE_DIR, 'synapos');
+  const synaposSource = path.join(PACKAGE_DIR, '.synapos');
 
   if (!fs.existsSync(synaposSource)) {
     err('Arquivos do framework não encontrados no pacote.');
@@ -300,13 +300,13 @@ ${bold('EXEMPLOS')}
   info(`Squads: ${selectedSquads.map(s => bold(s.title.trim())).join(', ')}`);
   console.log('');
 
-  // ── 3. Verificar se synapos/ já existe ──────────────────────────────────────
-  const synaposTarget = path.join(targetDir, 'synapos');
+  // ── 3. Verificar se .synapos/ já existe ─────────────────────────────────────
+  const synaposTarget = path.join(targetDir, '.synapos');
   if (fs.existsSync(synaposTarget)) {
     const { overwrite } = await prompts({
       type:    'confirm',
       name:    'overwrite',
-      message: 'A pasta synapos/ já existe. Deseja atualizar?',
+      message: 'A pasta .synapos/ já existe. Deseja atualizar?',
       initial: true,
     }, { onCancel: () => { console.log(''); process.exit(0); } });
 
@@ -346,7 +346,7 @@ ${bold('EXEMPLOS')}
 
   try {
     installCore(synaposSource, synaposTarget);
-    ok(`synapos/core copiado ${gray('(core, skills, _memory)')}`);
+    ok(`.synapos/core copiado ${gray('(core, skills, _memory)')}`);
   } catch (e) {
     err(`Erro ao copiar core: ${e.message}`);
     process.exit(1);
@@ -358,7 +358,7 @@ ${bold('EXEMPLOS')}
     const squadDest = path.join(synaposTarget, 'squad-templates', squadId);
     try {
       copyDirRecursive(squadSrc, squadDest);
-      ok(`${squad.title.trim()} copiado ${gray(`(squad-templates/${squadId}/)`)}`);
+      ok(`${squad.title.trim()} copiado ${gray(`(.synapos/squad-templates/${squadId}/)`)}`);
     } catch (e) {
       err(`Erro ao copiar squad ${squadId}: ${e.message}`);
     }

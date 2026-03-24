@@ -14,7 +14,7 @@
   },
   "files": [
     "bin/",
-    "synapos/"
+    ".synapos/"
   ],
   "dependencies": {
     "prompts": "^2.4.2"
