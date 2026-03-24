@@ -1,0 +1,88 @@
+name: produto
+displayName: "Squad de Produto"
+icon: "📋"
+version: "1.0.0"
+description: "Especialistas em product management com documentação mais completa que qualquer framework tradicional"
+
+agents:
+  base:
+    - id: priscila-produto
+      file: agents/priscila-produto.agent.md
+      displayName: "Priscila Produto"
+      icon: "📋"
+      role: "Product Manager"
+    - id: paulo-pesquisa
+      file: agents/paulo-pesquisa.agent.md
+      displayName: "Paulo Pesquisa"
+      icon: "🔍"
+      role: "Pesquisador"
+    - id: ana-analise
+      file: agents/ana-analise.agent.md
+      displayName: "Ana Análise"
+      icon: "📊"
+      role: "Analista de Negócio"
+  optional:
+    - id: tania-tecnica
+      file: agents/tania-tecnica.agent.md
+      displayName: "Tânia Técnica"
+      icon: "✍️"
+      role: "Tech Writer"
+    - id: eduardo-estrategia
+      file: agents/eduardo-estrategia.agent.md
+      displayName: "Eduardo Estratégia"
+      icon: "🎯"
+      role: "Estrategista"
+    - id: ursula-ux
+      file: agents/ursula-ux.agent.md
+      displayName: "Úrsula UX"
+      icon: "🎨"
+      role: "UX Researcher"
+
+pipelines:
+  default: discovery-spec-handoff
+  available:
+    - id: discovery-spec-handoff
+      name: "Descoberta → Spec → Decisões → Handoff"
+      description: "Fluxo completo de produto — 15+ documentos"
+      file: pipelines/discovery-spec-handoff.yaml
+    - id: quick-spec
+      name: "Spec Rápida"
+      description: "Contexto + Spec + Handoff — ideal para features bem definidas"
+      file: pipelines/quick-spec.yaml
+
+performance_modes:
+  alta:
+    description: "Pesquisa aprofundada, 15+ documentos, 2 ciclos de revisão"
+    agents: all
+    docs:
+      - docs/research/market-analysis.md
+      - docs/research/user-research.md
+      - docs/research/benchmarks.md
+      - docs/personas/user-personas.md
+      - docs/product-vision.md
+      - docs/business-context.md
+      - docs/requirements.md
+      - docs/spec.md
+      - docs/architecture.md
+      - docs/adrs/
+      - docs/roadmap.md
+      - docs/success-metrics.md
+      - docs/risks.md
+      - docs/decisions-log.md
+      - docs/open-questions.md
+      - docs/handoff-checklist.md
+  economico:
+    description: "Spec essencial, 8 documentos core, 1 ciclo de revisão"
+    agents:
+      - priscila-produto
+      - paulo-pesquisa
+      - ana-analise
+    docs:
+      - docs/product-vision.md
+      - docs/business-context.md
+      - docs/requirements.md
+      - docs/spec.md
+      - docs/architecture.md
+      - docs/roadmap.md
+      - docs/decisions-log.md
+      - docs/handoff-checklist.md

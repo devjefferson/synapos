@@ -1,0 +1,71 @@
+name: "Desenvolvimento de Feature Mobile"
+description: "Arquitetura → Design UI → Checkpoint → Implementação → Review → Testes."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: 02-arquitetura
+    name: "Arquitetura Mobile"
+    agent: marina-mobile
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/02-arquitetura.md
+    depends_on: [01-gate-integridade]
+    output_files:
+      - docs/mobile-architecture.md
+    veto_conditions:
+      - "Estrutura de navegação não documentada"
+      - "Decisão de estado sem justificativa"
+      - "Integrações nativas não mapeadas"
+
+  - id: 03-design-ux
+    name: "Design UX Mobile"
+    agent: viviane-visual
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/03-design-ux.md
+    depends_on: [02-arquitetura]
+    output_files:
+      - docs/ux-notes.md
+    veto_conditions:
+      - "Áreas de toque sem verificação de tamanho mínimo (44pt/48dp)"
+      - "Padrões de plataforma ignorados sem justificativa"
+
+  - id: 04-checkpoint
+    name: "Aprovação do Approach"
+    execution: checkpoint
+    file: pipeline/steps/04-checkpoint.md
+    depends_on: [03-design-ux]
+
+  - id: 05-implementacao
+    name: "Implementação Mobile"
+    agent: felipe-feature
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/05-implementacao.md
+    depends_on: [04-checkpoint]
+    veto_conditions:
+      - "Tela sem tratamento de loading/error/empty"
+      - "FlatList sem keyExtractor"
+      - "Tipo 'any' sem justificativa"
+    on_reject: 05-implementacao
+
+  - id: 06-review
+    name: "Code Review Mobile"
+    agent: renata-revisao-fe
+    execution: inline
+    model_tier: powerful
+    file: pipeline/steps/06-review.md
+    depends_on: [05-implementacao]
+    output_files:
+      - docs/review-notes.md
+    gate: GATE-5
+    veto_conditions:
+      - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"
+      - "BLOCKER sem fix sugerido"
+    on_reject: 05-implementacao

@@ -1,0 +1,47 @@
+name: "Correção de Bug Mobile"
+description: "Diagnóstico → Fix → Testes em device → Review."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: bf-02-diagnostico
+    name: "Diagnóstico"
+    agent: marina-mobile
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/bf-02-diagnostico.md
+    depends_on: [01-gate-integridade]
+    output_files:
+      - docs/bug-diagnosis.md
+    veto_conditions:
+      - "Plataforma afetada (iOS/Android/ambas) não identificada"
+      - "Root cause não definido"
+
+  - id: bf-03-fix
+    name: "Correção"
+    agent: felipe-feature
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/bf-03-fix.md
+    depends_on: [bf-02-diagnostico]
+    veto_conditions:
+      - "Fix sem teste cobrindo o caso que causou o bug"
+      - "Não testado em device real (Android ou iOS)"
+    on_reject: bf-03-fix
+
+  - id: bf-04-review
+    name: "Review"
+    agent: renata-revisao-fe
+    execution: inline
+    model_tier: fast
+    file: pipeline/steps/bf-04-review.md
+    depends_on: [bf-03-fix]
+    gate: GATE-5
+    veto_conditions:
+      - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"
+    on_reject: bf-03-fix

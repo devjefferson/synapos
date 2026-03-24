@@ -1,0 +1,56 @@
+name: devops
+displayName: "Squad DevOps / Infra"
+icon: "🚀"
+version: "1.0.0"
+description: "CI/CD, containers, cloud, IaC e observabilidade — do código ao deploy confiável"
+
+agents:
+  base:
+    - id: igor-infra
+      file: agents/igor-infra.agent.md
+      displayName: "Igor Infra"
+      icon: "☁️"
+      role: "Arquiteto de Infra"
+    - id: patricia-pipeline
+      file: agents/patricia-pipeline.agent.md
+      displayName: "Patrícia Pipeline"
+      icon: "🔄"
+      role: "Engenheira de CI/CD"
+  optional:
+    - id: claudio-containers
+      file: agents/claudio-containers.agent.md
+      displayName: "Cláudio Containers"
+      icon: "🐳"
+      role: "Especialista Docker/Kubernetes"
+    - id: osvaldo-observabilidade
+      file: agents/osvaldo-observabilidade.agent.md
+      displayName: "Osvaldo Observabilidade"
+      icon: "📊"
+      role: "Engenheiro de Observabilidade"
+    - id: sergio-seguranca
+      file: ../backend/agents/sergio-seguranca.agent.md
+      displayName: "Sérgio Segurança"
+      icon: "🔒"
+      role: "Engenheiro de Segurança"
+
+pipelines:
+  default: ci-cd-setup
+  available:
+    - id: ci-cd-setup
+      name: "Setup de CI/CD"
+      description: "Infra → Containers → Pipeline → Observabilidade → Review"
+      file: pipelines/ci-cd-setup.yaml
+    - id: infra-provision
+      name: "Provisionamento de Infra"
+      description: "Design → IaC → Validação → Aprovação → Apply"
+      file: pipelines/infra-provision.yaml
+
+performance_modes:
+  alta:
+    description: "Infra completa, containers, pipeline com todos os stages, observabilidade e segurança"
+    agents: all
+  economico:
+    description: "Arquiteto de infra + CI/CD — para configurações focadas"
+    agents:
+      - igor-infra
+      - patricia-pipeline

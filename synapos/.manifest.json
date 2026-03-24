@@ -1,0 +1,120 @@
+{
+  "framework": {
+    "name": "synapos",
+    "version": "1.4.0",
+    "released_at": "2026-03-23"
+  },
+  "best_practices": {
+    "catalog": "1.1.0",
+    "dev": {
+      "code-review": "1.0.0",
+      "testing-strategy": "1.0.0",
+      "api-design": "1.0.0",
+      "git-workflow": "1.0.0"
+    },
+    "product": {
+      "product-spec": "1.0.0",
+      "user-research": "1.0.0",
+      "technical-writing": "1.0.0"
+    }
+  },
+  "core": {
+    "orchestrator": "1.0.0",
+    "pipeline_runner": "1.0.0",
+    "gate_system": "1.0.0",
+    "skills_engine": "1.0.0",
+    "versioning": "1.0.0"
+  },
+  "templates": {
+    "frontend": "1.1.0",
+    "backend": "1.1.0",
+    "produto": "1.1.0",
+    "fullstack": "1.0.0",
+    "mobile": "1.0.0",
+    "devops": "1.0.0",
+    "ia-dados": "1.0.0"
+  },
+  "pipelines": {
+    "frontend": {
+      "feature-development": "1.0.0",
+      "bug-fix": "1.0.0",
+      "component-development": "1.0.0"
+    },
+    "backend": {
+      "api-development": "1.0.0",
+      "database-migration": "1.0.0",
+      "bug-fix": "1.0.0"
+    },
+    "produto": {
+      "discovery-spec-handoff": "1.0.0",
+      "quick-spec": "1.0.0"
+    },
+    "fullstack": {
+      "integration-feature": "1.0.0",
+      "bug-fix": "1.0.0"
+    },
+    "mobile": {
+      "feature-development": "1.0.0",
+      "bug-fix": "1.0.0"
+    },
+    "devops": {
+      "ci-cd-setup": "1.0.0",
+      "infra-provision": "1.0.0"
+    },
+    "ia-dados": {
+      "ml-feature": "1.0.0",
+      "data-pipeline": "1.0.0"
+    }
+  },
+  "agents": {
+    "frontend": {
+      "ana-arquitetura-fe": "1.0.0",
+      "rodrigo-react": "1.0.0",
+      "ursula-ui": "1.0.0",
+      "renata-revisao-fe": "1.0.0",
+      "tiago-testes-fe": "1.0.0",
+      "paulo-performance": "1.0.0"
+    },
+    "backend": {
+      "bruno-base": "1.0.0",
+      "alexandre-api": "1.0.0",
+      "daniela-dados": "1.0.0",
+      "sergio-seguranca": "1.0.0",
+      "roberto-revisao-be": "1.0.0"
+    },
+    "produto": {
+      "priscila-produto": "1.0.0",
+      "paulo-pesquisa": "1.0.0",
+      "ana-analise": "1.0.0",
+      "tania-tecnica": "1.0.0",
+      "eduardo-estrategia": "1.0.0"
+    },
+    "fullstack": {
+      "carlos-coordenador": "1.0.0"
+    },
+    "mobile": {
+      "marina-mobile": "1.0.0",
+      "felipe-feature": "1.0.0",
+      "viviane-visual": "1.0.0"
+    },
+    "devops": {
+      "igor-infra": "1.0.0",
+      "claudio-containers": "1.0.0",
+      "patricia-pipeline": "1.0.0",
+      "osvaldo-observabilidade": "1.0.0"
+    },
+    "ia-dados": {
+      "larissa-llm": "1.0.0",
+      "marco-ml": "1.0.0",
+      "diana-dados": "1.0.0",
+      "nelson-notebook": "1.0.0"
+    }
+  },
+  "skills": {
+    "brave-search": "1.0.0",
+    "playwright-browser": "1.0.0",
+    "github": "1.0.0",
+    "fetch-url": "1.0.0",
+    "filesystem": "1.0.0"
+  }
+}

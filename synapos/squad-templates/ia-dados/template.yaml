@@ -1,0 +1,57 @@
+name: ia-dados
+displayName: "Squad IA / Dados"
+icon: "🤖"
+version: "1.0.0"
+description: "ML, pipelines de dados, LLMs e análise — da exploração ao modelo em produção"
+
+agents:
+  base:
+    - id: larissa-llm
+      file: agents/larissa-llm.agent.md
+      displayName: "Larissa LLM"
+      icon: "🧠"
+      role: "LLM Specialist"
+    - id: diana-dados
+      file: agents/diana-dados.agent.md
+      displayName: "Diana Dados"
+      icon: "🗄️"
+      role: "Engenheira de Dados"
+    - id: nelson-notebook
+      file: agents/nelson-notebook.agent.md
+      displayName: "Nelson Notebook"
+      icon: "📊"
+      role: "Analista de Dados"
+  optional:
+    - id: marco-ml
+      file: agents/marco-ml.agent.md
+      displayName: "Marco ML"
+      icon: "🔬"
+      role: "ML Engineer"
+    - id: tania-tecnica
+      file: ../produto/agents/tania-tecnica.agent.md
+      displayName: "Tânia Técnica"
+      icon: "📝"
+      role: "Tech Writer"
+
+pipelines:
+  default: ml-feature
+  available:
+    - id: ml-feature
+      name: "Feature de IA / ML"
+      description: "Exploração → Design → Implementação → Avaliação → Deploy"
+      file: pipelines/ml-feature.yaml
+    - id: data-pipeline
+      name: "Pipeline de Dados"
+      description: "Design → Implementação → Qualidade → Validação → Deploy"
+      file: pipelines/data-pipeline.yaml
+
+performance_modes:
+  alta:
+    description: "Exploração completa, ML engineering, pipelines de dados, documentação e análise"
+    agents: all
+  economico:
+    description: "LLM specialist + dados + análise — para features de IA focadas"
+    agents:
+      - larissa-llm
+      - diana-dados
+      - nelson-notebook

@@ -1,0 +1,25 @@
+{
+  "name": "synapos",
+  "version": "1.4.0",
+  "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
+  "keywords": ["ai", "agents", "claude", "cursor", "framework", "orchestration", "llm"],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bin": {
+    "synapos": "./bin/synapos.js"
+  },
+  "files": [
+    "bin/",
+    "synapos/"
+  ],
+  "dependencies": {
+    "prompts": "^2.4.2"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

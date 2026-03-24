@@ -1,0 +1,62 @@
+name: mobile
+displayName: "Squad Mobile"
+icon: "📱"
+version: "1.0.0"
+description: "Especialistas em React Native e Flutter: arquitetura, implementação, UX mobile e testes"
+
+agents:
+  base:
+    - id: marina-mobile
+      file: agents/marina-mobile.agent.md
+      displayName: "Marina Mobile"
+      icon: "📐"
+      role: "Arquiteta Mobile"
+    - id: felipe-feature
+      file: agents/felipe-feature.agent.md
+      displayName: "Felipe Feature"
+      icon: "📱"
+      role: "Dev Mobile"
+    - id: viviane-visual
+      file: agents/viviane-visual.agent.md
+      displayName: "Viviane Visual"
+      icon: "🎨"
+      role: "UX Mobile"
+  optional:
+    - id: tiago-testes-fe
+      file: ../frontend/agents/tiago-testes-fe.agent.md
+      displayName: "Tiago Testes"
+      icon: "🧪"
+      role: "Engenheiro de Testes"
+    - id: paulo-performance
+      file: ../frontend/agents/paulo-performance.agent.md
+      displayName: "Paulo Performance"
+      icon: "⚡"
+      role: "Engenheiro de Performance"
+    - id: renata-revisao-fe
+      file: ../frontend/agents/renata-revisao-fe.agent.md
+      displayName: "Renata Revisão"
+      icon: "🔍"
+      role: "Reviewer Mobile"
+
+pipelines:
+  default: feature-development
+  available:
+    - id: feature-development
+      name: "Desenvolvimento de Feature Mobile"
+      description: "Arquitetura → Design UI → Implementação → Review → Testes"
+      file: pipelines/feature-development.yaml
+    - id: bug-fix
+      name: "Correção de Bug Mobile"
+      description: "Diagnóstico → Fix → Testes → Review"
+      file: pipelines/bug-fix.yaml
+
+performance_modes:
+  alta:
+    description: "Arquitetura, UX mobile, implementação, testes e review de performance"
+    agents: all
+  economico:
+    description: "Arquiteta + dev + review — para tasks bem definidas"
+    agents:
+      - marina-mobile
+      - felipe-feature
+      - renata-revisao-fe

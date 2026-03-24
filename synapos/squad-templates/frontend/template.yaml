@@ -1,0 +1,66 @@
+name: frontend
+displayName: "Squad de Frontend"
+icon: "🖥️"
+version: "1.0.0"
+description: "Especialistas em desenvolvimento frontend com foco em qualidade, performance e experiência do usuário"
+
+agents:
+  base:
+    - id: ana-arquitetura-fe
+      file: agents/ana-arquitetura-fe.agent.md
+      displayName: "Ana Arquitetura"
+      icon: "🏗️"
+      role: "Arquiteta Frontend"
+    - id: rodrigo-react
+      file: agents/rodrigo-react.agent.md
+      displayName: "Rodrigo React"
+      icon: "⚛️"
+      role: "Dev Frontend"
+    - id: renata-revisao-fe
+      file: agents/renata-revisao-fe.agent.md
+      displayName: "Renata Revisão"
+      icon: "🔍"
+      role: "Reviewer Frontend"
+  optional:
+    - id: ursula-ui
+      file: agents/ursula-ui.agent.md
+      displayName: "Úrsula UI"
+      icon: "🎨"
+      role: "UX/UI Designer"
+    - id: tiago-testes-fe
+      file: agents/tiago-testes-fe.agent.md
+      displayName: "Tiago Testes"
+      icon: "🧪"
+      role: "Engenheiro de Testes"
+    - id: paulo-performance
+      file: agents/paulo-performance.agent.md
+      displayName: "Paulo Performance"
+      icon: "⚡"
+      role: "Engenheiro de Performance"
+
+pipelines:
+  default: feature-development
+  available:
+    - id: feature-development
+      name: "Desenvolvimento de Feature"
+      description: "Discovery → Arquitetura → Implementação → Review → Testes → Docs"
+      file: pipelines/feature-development.yaml
+    - id: component-design
+      name: "Design de Componente"
+      description: "Spec → Implementação → Review → Storybook"
+      file: pipelines/component-development.yaml
+    - id: bug-fix
+      name: "Correção de Bug"
+      description: "Diagnóstico → Fix → Testes → Review"
+      file: pipelines/bug-fix.yaml
+
+performance_modes:
+  alta:
+    description: "Arquitetura detalhada, implementação completa, testes, docs e review de performance"
+    agents: all
+  economico:
+    description: "Implementação direta + review — ideal para tasks bem definidas"
+    agents:
+      - ana-arquitetura-fe
+      - rodrigo-react
+      - renata-revisao-fe

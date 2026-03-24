@@ -1,0 +1,71 @@
+name: "Pipeline de Dados"
+description: "Design → Implementação → Testes de qualidade → Validação → Deploy."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: dp-02-design
+    name: "Design do Pipeline"
+    agent: diana-dados
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/dp-02-design.md
+    depends_on: [01-gate-integridade]
+    output_files:
+      - docs/pipeline-design.md
+    veto_conditions:
+      - "Fontes de dados não documentadas"
+      - "SLA de frescor não definido"
+      - "Consumidores dos dados não mapeados"
+
+  - id: dp-03-checkpoint
+    name: "Aprovação do Design"
+    execution: checkpoint
+    file: pipeline/steps/dp-03-checkpoint.md
+    depends_on: [dp-02-design]
+
+  - id: dp-04-implementacao
+    name: "Implementação do Pipeline"
+    agent: diana-dados
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/dp-04-implementacao.md
+    depends_on: [dp-03-checkpoint]
+    veto_conditions:
+      - "Pipeline não idempotente"
+      - "Sem testes de qualidade de dados (not_null, unique)"
+      - "Sem documentação de colunas nas tabelas de mart"
+    on_reject: dp-04-implementacao
+
+  - id: dp-05-qualidade
+    name: "Validação de Qualidade"
+    agent: nelson-notebook
+    execution: subagent
+    model_tier: fast
+    file: pipeline/steps/dp-05-qualidade.md
+    depends_on: [dp-04-implementacao]
+    output_files:
+      - docs/data-quality-report.md
+    veto_conditions:
+      - "Dados críticos com valores nulos não justificados"
+      - "Volume anômalo sem explicação"
+    on_reject: dp-04-implementacao
+
+  - id: dp-06-deploy
+    name: "Deploy e Agendamento"
+    agent: diana-dados
+    execution: subagent
+    model_tier: fast
+    file: pipeline/steps/dp-06-deploy.md
+    depends_on: [dp-05-qualidade]
+    output_files:
+      - docs/pipeline-deployment.md
+    gate: GATE-5
+    veto_conditions:
+      - "Sem alerta de frescor configurado"
+      - "Sem estratégia de reprocessamento em caso de falha"

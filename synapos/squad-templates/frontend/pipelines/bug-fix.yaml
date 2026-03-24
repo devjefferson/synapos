@@ -1,0 +1,40 @@
+name: "Correção de Bug"
+description: "Diagnóstico → análise de causa raiz → fix → review. Para bugs bem identificados."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: bf-02-diagnostico
+    name: "Diagnóstico e Causa Raiz"
+    agent: ana-arquitetura-fe
+    execution: inline
+    model_tier: powerful
+    file: pipeline/steps/bf-02-diagnostico.md
+    depends_on: [01-gate-integridade]
+
+  - id: bf-03-fix
+    name: "Fix"
+    agent: rodrigo-react
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/bf-03-fix.md
+    depends_on: [bf-02-diagnostico]
+    veto_conditions:
+      - "Fix sem teste que reproduz o bug antes da correção"
+      - "Fix que quebra outro comportamento existente"
+
+  - id: bf-04-review
+    name: "Review do Fix"
+    agent: renata-revisao-fe
+    execution: inline
+    model_tier: powerful
+    file: pipeline/steps/bf-04-review.md
+    depends_on: [bf-03-fix]
+    output_files:
+      - docs/bugfix-notes.md
+    gate: GATE-5

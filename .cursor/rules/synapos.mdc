@@ -1,0 +1,11 @@
+---
+description: Synapos Framework — agent orchestration for automation and development
+alwaysApply: true
+---
+
+Este projeto usa o **Synapos Framework** para orquestração de agents.
+
+**Framework location:** `synapos/`
+**Protocolo de inicialização:** `synapos/core/orchestrator.md`
+
+Quando o usuário quiser trabalhar com agents ou iniciar uma sessão de desenvolvimento/automação, leia e execute o protocolo em `synapos/core/orchestrator.md`.

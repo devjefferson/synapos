@@ -1,0 +1,61 @@
+name: backend
+displayName: "Squad de Backend"
+icon: "⚙️"
+version: "1.0.0"
+description: "Especialistas em desenvolvimento backend com foco em APIs robustas, segurança e escalabilidade"
+
+agents:
+  base:
+    - id: bruno-base
+      file: agents/bruno-base.agent.md
+      displayName: "Bruno Base"
+      icon: "🏗️"
+      role: "Arquiteto Backend"
+    - id: alexandre-api
+      file: agents/alexandre-api.agent.md
+      displayName: "Alexandre API"
+      icon: "🔌"
+      role: "Dev Backend"
+    - id: roberto-revisao-be
+      file: agents/roberto-revisao-be.agent.md
+      displayName: "Roberto Revisão"
+      icon: "🔍"
+      role: "Reviewer Backend"
+  optional:
+    - id: daniela-dados
+      file: agents/daniela-dados.agent.md
+      displayName: "Daniela Dados"
+      icon: "🗄️"
+      role: "Arquiteta de Dados"
+    - id: sergio-seguranca
+      file: agents/sergio-seguranca.agent.md
+      displayName: "Sérgio Segurança"
+      icon: "🔒"
+      role: "Engenheiro de Segurança"
+
+pipelines:
+  default: api-development
+  available:
+    - id: api-development
+      name: "Desenvolvimento de API"
+      description: "Design → Implementação → Segurança → Testes → Docs"
+      file: pipelines/api-development.yaml
+    - id: database-migration
+      name: "Migração de Banco"
+      description: "Análise → Schema → Migration → Validação"
+      file: pipelines/database-migration.yaml
+    - id: bug-fix-be
+      name: "Correção de Bug"
+      description: "Diagnóstico → Fix → Testes → Review"
+      file: pipelines/bug-fix.yaml
+
+performance_modes:
+  alta:
+    description: "Arquitetura detalhada, implementação completa, auditoria de segurança, testes e docs"
+    agents: all
+  economico:
+    description: "Implementação direta + review — ideal para endpoints simples"
+    agents:
+      - bruno-base
+      - alexandre-api
+      - roberto-revisao-be

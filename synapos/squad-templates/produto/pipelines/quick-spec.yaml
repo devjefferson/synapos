@@ -1,0 +1,60 @@
+name: "Spec Rápida"
+description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff. Ideal quando pesquisa de mercado já foi feita."
+version: "1.0.0"
+estimated_docs: 5
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: qs-02-contexto
+    name: "Contexto e Problema"
+    agent: priscila-produto
+    execution: checkpoint
+    file: pipeline/steps/qs-02-contexto.md
+    depends_on: [01-gate-integridade]
+    output_files:
+      - docs/business-context.md
+
+  - id: qs-03-spec
+    name: "Spec e Critérios de Aceite"
+    agent: priscila-produto
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/qs-03-spec.md
+    depends_on: [qs-02-contexto]
+    output_files:
+      - docs/spec.md
+    veto_conditions:
+      - "Spec sem critérios de aceite"
+      - "Sem seção IN/OUT de escopo"
+    on_reject: qs-03-spec
+
+  - id: qs-04-requisitos
+    name: "Requisitos Essenciais"
+    agent: ana-analise
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/06-requisitos.md
+    depends_on: [qs-03-spec]
+    output_files:
+      - docs/requirements.md
+    veto_conditions:
+      - "RF sem critério de aceite"
+      - "RNF sem valor numérico"
+    on_reject: qs-04-requisitos
+
+  - id: qs-05-handoff
+    name: "Handoff Essencial"
+    agent: tania-tecnica
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/qs-05-handoff.md
+    depends_on: [qs-04-requisitos]
+    gate: GATE-2
+    output_files:
+      - docs/decisions-log.md
+      - docs/handoff-checklist.md
