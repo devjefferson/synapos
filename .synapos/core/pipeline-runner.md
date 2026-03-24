@@ -127,16 +127,16 @@ on_reject: step-id
 
 ### 2.4 — Executar por modo
 
-**`execution: checkpoint`** — pausa para decisão do usuário:
+**`execution: checkpoint`** — pausa para decisão do usuário. Use menu interativo:
 ```
 ⏸ CHECKPOINT: {nome do step}
 {pergunta ou contexto do step}
 
-[1] Continuar
-[2] Ajustar contexto
-[3] Pular este step
+- ✅ Continuar
+- ✏️ Ajustar contexto
+- ⏭️ Pular este step
 ```
-Salve a resposta do usuário e continue.
+Aguarde a seleção do usuário. Salve a resposta e continue.
 
 **`execution: inline`** — agent executa diretamente na conversa:
 - Assuma a persona do agent (lida do .agent.md)

@@ -11,6 +11,26 @@ description: Meta-orquestrador do Synapos Framework — ponto de entrada univers
 
 ---
 
+## REGRA GLOBAL — MENUS INTERATIVOS
+
+**Sempre que precisar apresentar opções ao usuário, use o formato de seleção interativa abaixo.**
+Nunca apresente menus como texto puro esperando que o usuário digite um número.
+Use botões / seleção clicável sempre que a IDE suportar.
+
+Formato padrão para qualquer menu:
+```
+<pergunta clara e direta>
+
+- Opção A
+- Opção B
+- Opção C
+```
+
+Apresente cada opção como um item de lista separado e aguarde o usuário clicar ou responder.
+Para multi-seleção, instrua explicitamente: "Selecione uma ou mais opções".
+
+---
+
 ## PROTOCOLO DE ATIVAÇÃO
 
 Ao ser ativado por qualquer adapter de IDE, execute este protocolo na ordem exata. Nunca pule passos.
@@ -80,21 +100,17 @@ Construa a lista interna de squads ativos.
 
 ## PASSO 3 — MENU PRINCIPAL
 
-**Se existem squads**, apresente:
+**Se existem squads**, apresente um menu interativo:
 
 ```
-╔══════════════════════════════════════════════╗
-║            SYNAPOS FRAMEWORK v1.0            ║
-║         Olá, {nome do usuário}!              ║
-╠══════════════════════════════════════════════╣
-║  SQUADS ATIVOS                               ║
-║  ──────────────────────────────────────────  ║
-║  🟢 [1] {slug} · {domain} · {description}   ║
-║  🟡 [2] {slug} · {domain} · {description}   ║
-║  ──────────────────────────────────────────  ║
-║  [N] Criar novo squad                        ║
-╚══════════════════════════════════════════════╝
+Olá, {nome do usuário}! Qual squad você quer trabalhar?
+
+- 🟢 {slug} · {domain} · {description}   (ativo)
+- 🟡 {slug} · {domain} · {description}   (pausado)
+- ✨ Criar novo squad
 ```
+
+Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 **Status visual:**
 - 🟢 active — squad em andamento
@@ -110,16 +126,17 @@ Construa a lista interna de squads ativos.
 Liste os subdiretórios presentes em `.synapos/squad-templates/` (ignorar `.gitkeep`).
 Para cada diretório encontrado, leia o `template.yaml` e extraia `name`, `displayName`, `icon`, `description`.
 
-Monte o menu **apenas com os squads instalados**:
+Monte o menu interativo **apenas com os squads instalados**:
 
 ```
 Qual domínio você quer trabalhar?
 
-  [1] {icon}  {displayName}  — {description}
-  [2] {icon}  {displayName}  — {description}
-  ...
-  [N] ✨  Customizado  — Monte seu próprio squad
+- {icon} {displayName} — {description}
+- {icon} {displayName} — {description}
+- ✨ Customizado — Monte seu próprio squad
 ```
+
+Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 **Se nenhum template for encontrado:** informe que nenhum squad está instalado e oriente o usuário a rodar `npx synapos` para instalar.
 
@@ -131,28 +148,35 @@ Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/temp
 
 ### 5.1 — Apresentar agents disponíveis
 
-```
-SQUAD: {displayName do template}
+Apresente os agents BASE como já incluídos e os OPCIONAIS como seleção interativa:
 
-BASE (sempre incluídos):
+```
+Squad: {displayName}
+
+Agents base (sempre incluídos):
   ✅ {icon} {displayName} — {role}
   ✅ {icon} {displayName} — {role}
 
-OPCIONAIS (pressione o número para incluir):
-  [ ] [4] {icon} {displayName} — {role}
-  [ ] [5] {icon} {displayName} — {role}
-  [ ] [6] {icon} {displayName} — {role}
+Quais agents opcionais você quer adicionar? (selecione um ou mais)
 
-Digite os números desejados (ex: 4,5) ou ENTER para base apenas:
+- {icon} {displayName} — {role}
+- {icon} {displayName} — {role}
+- {icon} {displayName} — {role}
+- Nenhum — usar apenas os agents base
 ```
+
+Aguarde a seleção do usuário antes de continuar.
 
 ### 5.2 — Modo de performance
 
 ```
-MODO DE OPERAÇÃO:
-  [1] ⚡ Alta Performance — squad completo, documentação máxima, revisões aprofundadas
-  [2] 💰 Econômico       — agentes essenciais, documentação core, execução rápida
+Qual modo de operação você prefere?
+
+- ⚡ Alta Performance — squad completo, documentação máxima, revisões aprofundadas
+- 💰 Econômico — agentes essenciais, documentação core, execução rápida
 ```
+
+Aguarde a seleção do usuário.
 
 ### 5.3 — Contexto do squad
 
@@ -274,11 +298,15 @@ Quando o usuário escolhe um squad ativo (PASSO 3):
 Squad {slug} carregado.
 Último output: {data} — {arquivo mais recente, se houver}
 
-[1] Continuar de onde parou
-[2] Nova execução (manter contexto)
-[3] Ver memória do squad
-[4] Pausar / arquivar squad
+O que você quer fazer?
+
+- ▶️ Continuar de onde parou
+- 🔄 Nova execução (manter contexto)
+- 🧠 Ver memória do squad
+- ⏸️ Pausar / arquivar squad
 ```
+
+Aguarde a seleção do usuário.
 
 5. Siga a escolha do usuário e execute via `.synapos/core/pipeline-runner.md`.
 
