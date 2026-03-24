@@ -107,20 +107,21 @@ Construa a lista interna de squads ativos.
 
 ## PASSO 4 — SELEÇÃO DE DOMÍNIO
 
-Apresente o menu de domínios disponíveis:
+Liste os subdiretórios presentes em `.synapos/squad-templates/` (ignorar `.gitkeep`).
+Para cada diretório encontrado, leia o `template.yaml` e extraia `name`, `displayName`, `icon`, `description`.
+
+Monte o menu **apenas com os squads instalados**:
 
 ```
 Qual domínio você quer trabalhar?
 
-  [1] 🖥️  Frontend        — React, Vue, CSS, UX/UI, testes
-  [2] ⚙️  Backend         — APIs, banco de dados, segurança
-  [3] 📦  Fullstack       — Frontend + Backend integrados
-  [4] 📋  Produto         — Pesquisa, spec, documentação completa
-  [5] 📱  Mobile          — React Native, Flutter, iOS, Android
-  [6] 🚀  DevOps / Infra  — CI/CD, containers, cloud, infra
-  [7] 🤖  IA / Dados      — ML, pipelines de dados, LLMs
-  [8] ✨  Customizado     — Monte seu próprio squad
+  [1] {icon}  {displayName}  — {description}
+  [2] {icon}  {displayName}  — {description}
+  ...
+  [N] ✨  Customizado  — Monte seu próprio squad
 ```
+
+**Se nenhum template for encontrado:** informe que nenhum squad está instalado e oriente o usuário a rodar `npx synapos` para instalar.
 
 ---
 
