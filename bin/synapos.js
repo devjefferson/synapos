@@ -43,22 +43,19 @@ const SQUADS = [
   { value: 'ia-dados',  title: '🤖  IA / Dados', description: 'ML, pipelines de dados, LLMs' },
 ];
 
-const SQUAD_ALIASES = {
-  front:   'frontend',
-  back:    'backend',
-  full:    'fullstack',
-  fs:      'fullstack',
-  product: 'produto',
-  ia:      'ia-dados',
-  data:    'ia-dados',
-  dados:   'ia-dados',
-};
 
-const CLAUDE_FILES = [
-  {
-    dest: '.claude/commands/init.md',
-    content: `Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n`,
-  },
+const COMMANDS = [
+  { file: 'init.md',                  src: '.synapos/core/orchestrator.md' },
+  { file: 'bump.md',                  src: '.synapos/core/commands/bump.md' },
+  { file: 'setup/start.md',           src: '.synapos/core/commands/setup/start.md' },
+  { file: 'setup/build-business.md',  src: '.synapos/core/commands/setup/build-business.md' },
+  { file: 'setup/build-tech.md',      src: '.synapos/core/commands/setup/build-tech.md' },
+  { file: 'setup/discover.md',        src: '.synapos/core/commands/setup/discover.md' },
+];
+
+const IDES = [
+  { value: 'claude',   title: 'Claude Code', commandsDir: '.claude/commands',   hint: '/init na conversa'   },
+  { value: 'opencode', title: 'OpenCode',    commandsDir: '.opencode/commands', hint: '/init no chat'       },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -101,12 +98,6 @@ function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, 'utf8');
 }
 
-function resolveSquad(input) {
-  if (!input) return null;
-  const lower = input.toLowerCase();
-  return SQUAD_ALIASES[lower] || (SQUADS.find(s => s.value === lower) ? lower : null);
-}
-
 // Copia o core do framework (sem squad-templates e sem dados de projeto)
 function installCore(src, dest) {
   const coreDirs = ['core', 'skills'];
@@ -122,7 +113,6 @@ function installCore(src, dest) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function run() {
-  const args = process.argv.slice(2).filter(a => !a.startsWith('-'));
   const flags = process.argv.slice(2).filter(a => a.startsWith('-'));
 
   if (flags.includes('--version') || flags.includes('-v')) {
@@ -135,26 +125,11 @@ async function run() {
 ${bold('SYNAPOS')} — AI Agent Orchestration Framework
 
 ${bold('USAGE')}
-  npx synapos [squad...] [options]
-
-${bold('SQUADS')}
-  front / frontend   🖥️  React, Vue, CSS, UX/UI
-  back  / backend    ⚙️  APIs, banco de dados
-  full  / fullstack  📦  Frontend + Backend
-  produto            📋  Pesquisa, spec, docs
-  mobile             📱  React Native, Flutter
-  devops             🚀  CI/CD, containers, cloud
-  ia / ia-dados      🤖  ML, pipelines, LLMs
+  npx synapos [options]
 
 ${bold('OPTIONS')}
   -v, --version      Exibe a versão
   -h, --help         Exibe esta ajuda
-
-${bold('EXEMPLOS')}
-  npx synapos                    menu interativo (multi-select)
-  npx synapos front              instala frontend
-  npx synapos front back         instala frontend + backend
-  npx synapos front back devops  instala três squads
 `);
     process.exit(0);
   }
@@ -169,50 +144,8 @@ ${bold('EXEMPLOS')}
     process.exit(1);
   }
 
-  // ── 1. Resolver squads dos args ─────────────────────────────────────────────
-  let squadIds = [];
-
-  // Args válidos → pré-selecionados; args inválidos → aviso
-  const invalidArgs = [];
-  for (const arg of args) {
-    const resolved = resolveSquad(arg);
-    if (resolved) {
-      if (!squadIds.includes(resolved)) squadIds.push(resolved);
-    } else {
-      invalidArgs.push(arg);
-    }
-  }
-
-  if (invalidArgs.length > 0) {
-    for (const a of invalidArgs) warn(`Squad "${a}" não reconhecido — ignorado.`);
-    console.log('');
-  }
-
-  // ── 2. Se nenhum squad via arg, mostrar multi-select ────────────────────────
-  if (squadIds.length === 0) {
-    const { selected } = await prompts({
-      type:         'multiselect',
-      name:         'selected',
-      message:      'Selecione os squads para instalar:',
-      choices:      SQUADS.map(s => ({
-        title:       s.title,
-        value:       s.value,
-        description: s.description,
-        selected:    false,
-      })),
-      hint:         '- Espaço para selecionar, Enter para confirmar',
-      instructions: false,
-      min:          1,
-    }, { onCancel: () => { console.log(''); process.exit(0); } });
-
-    squadIds = selected || [];
-    if (squadIds.length === 0) process.exit(0);
-  }
-
-  const selectedSquads = squadIds.map(id => SQUADS.find(s => s.value === id));
-  console.log('');
-  info(`Squads: ${selectedSquads.map(s => bold(s.title.trim())).join(', ')}`);
-  console.log('');
+  // ── Instalar todos os squads ─────────────────────────────────────────────────
+  const squadIds = SQUADS.map(s => s.value);
 
   // ── 3. Verificar se .synapos/ já existe ─────────────────────────────────────
   const synaposTarget = path.join(targetDir, '.synapos');
@@ -232,7 +165,20 @@ ${bold('EXEMPLOS')}
     console.log('');
   }
 
-  // ── 4. Configurar Claude Code ───────────────────────────────────────────────
+  // ── 4. Selecionar IDE ────────────────────────────────────────────────────────
+  const { selectedIdes } = await prompts({
+    type:         'multiselect',
+    name:         'selectedIdes',
+    message:      'Qual IDE você usa?',
+    choices:      IDES.map(ide => ({ title: ide.title, value: ide.value, selected: false })),
+    hint:         '- Espaço para selecionar, Enter para confirmar',
+    instructions: false,
+    min:          1,
+  }, { onCancel: () => { console.log(''); process.exit(0); } });
+
+  if (!selectedIdes || selectedIdes.length === 0) process.exit(0);
+  console.log('');
+
   // ── 5. Copiar framework ─────────────────────────────────────────────────────
   info('Instalando Synapos Framework...');
   console.log('');
@@ -257,17 +203,22 @@ ${bold('EXEMPLOS')}
     }
   }
 
-  // ── 6. Configurar Claude Code ───────────────────────────────────────────────
-  try {
-    for (const file of CLAUDE_FILES) {
-      writeFile(path.join(targetDir, file.dest), file.content);
+  // ── 6. Configurar IDEs ───────────────────────────────────────────────────────
+  for (const ideId of selectedIdes) {
+    const ide = IDES.find(i => i.value === ideId);
+    try {
+      for (const cmd of COMMANDS) {
+        const dest = path.join(targetDir, ide.commandsDir, cmd.file);
+        writeFile(dest, `Leia e execute exatamente o protocolo em: ${cmd.src}\n`);
+      }
+      ok(`${ide.title} configurado ${gray(`(${ide.commandsDir}/, ${COMMANDS.length} comandos)`)}`);
+    } catch (e) {
+      err(`Erro ao configurar ${ide.title}: ${e.message}`);
     }
-    ok(`Claude Code configurado ${gray('(' + CLAUDE_FILES.map(f => f.dest).join(', ') + ')')}`);
-  } catch (e) {
-    err(`Erro ao configurar Claude Code: ${e.message}`);
   }
 
   // ── 7. Mensagem final ───────────────────────────────────────────────────────
+  const configuredIdes = selectedIdes.map(id => IDES.find(i => i.value === id));
   console.log('');
   console.log(bold(green('  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')));
   console.log(green('  ✅') + bold(`  Synapos v${VERSION} instalado com sucesso!`));
@@ -275,9 +226,9 @@ ${bold('EXEMPLOS')}
   console.log('');
   console.log(bold('  Próximos passos:'));
   console.log('');
-  console.log(cyan('  →') + dim('  Claude Code  →  digite /init na conversa'));
-  console.log('');
-  console.log(gray(`  Squads: ${selectedSquads.map(s => s.title.trim()).join(' · ')}`));
+  for (const ide of configuredIdes) {
+    console.log(cyan('  →') + dim(`  ${ide.title.padEnd(12)} →  digite /init — ${ide.hint}`));
+  }
   console.log('');
 }
 

@@ -100,9 +100,9 @@ Nenhum squad pode ser executado sem documentação do projeto em docs/.
 
 O que você quer fazer?
 
-- 📋 Criar documentação de negócio   (/docs-commands/build-business-docs)
-- 🔧 Criar documentação técnica      (/docs-commands/build-tech-docs)
-- 🚀 Configurar documentação completa (/docs-commands/setup-docs)
+- 📋 Criar documentação de negócio   (/setup:build-business)
+- 🔧 Criar documentação técnica      (/setup:build-tech)
+- 🚀 Configurar documentação completa (/setup:start)
 ```
 
 Aguarde a seleção do usuário. Se escolher criar documentação, execute o comando correspondente e **não continue** para os próximos passos até que `docs/` tenha conteúdo.

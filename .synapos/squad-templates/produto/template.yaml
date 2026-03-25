@@ -49,6 +49,14 @@ pipelines:
       name: "Refinar Docs"
       description: "Versiona um doc existente em docs/business/ preservando o original"
       file: pipelines/refinar-docs.yaml
+    - id: discovery-spec-handoff
+      name: "Discovery → Spec → Handoff"
+      description: "Fluxo completo de discovery: pesquisa de mercado, personas, spec completa e handoff para dev"
+      file: pipelines/discovery-spec-handoff.yaml
+    - id: quick-spec
+      name: "Spec Rápida"
+      description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff"
+      file: pipelines/quick-spec.yaml
 
 performance_modes:
   alta:

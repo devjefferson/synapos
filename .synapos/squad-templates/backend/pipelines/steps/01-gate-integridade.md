@@ -10,7 +10,7 @@ gate: GATE-0
 Verifique antes de prosseguir:
 
 - [ ] `.synapos/core/orchestrator.md` existe
-- [ ] `.synapos/_memory/company.md` existe
+- [ ] `docs/_memory/company.md` existe
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe com `description` preenchida
 - [ ] `.synapos/squads/{slug}/agents/` tem ao menos um `.agent.md`
 
