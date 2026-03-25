@@ -55,22 +55,22 @@ performance_modes:
     description: "Pesquisa aprofundada, 15+ documentos, 2 ciclos de revisão"
     agents: all
     docs:
-      - docs/research/market-analysis.md
-      - docs/research/user-research.md
-      - docs/research/benchmarks.md
-      - docs/personas/user-personas.md
-      - docs/product-vision.md
-      - docs/business-context.md
-      - docs/requirements.md
-      - docs/spec.md
-      - docs/architecture.md
-      - docs/adrs/
-      - docs/roadmap.md
-      - docs/success-metrics.md
-      - docs/risks.md
-      - docs/decisions-log.md
-      - docs/open-questions.md
-      - docs/handoff-checklist.md
+      - research/market-analysis.md
+      - research/user-research.md
+      - research/benchmarks.md
+      - personas/user-personas.md
+      - product-vision.md
+      - business-context.md
+      - requirements.md
+      - spec.md
+      - architecture.md
+      - adrs/
+      - roadmap.md
+      - success-metrics.md
+      - risks.md
+      - decisions-log.md
+      - open-questions.md
+      - handoff-checklist.md
   economico:
     description: "Spec essencial, 8 documentos core, 1 ciclo de revisão"
     agents:
@@ -78,11 +78,11 @@ performance_modes:
       - paulo-pesquisa
       - ana-analise
     docs:
-      - docs/product-vision.md
-      - docs/business-context.md
-      - docs/requirements.md
-      - docs/spec.md
-      - docs/architecture.md
-      - docs/roadmap.md
-      - docs/decisions-log.md
-      - docs/handoff-checklist.md
+      - product-vision.md
+      - business-context.md
+      - requirements.md
+      - spec.md
+      - architecture.md
+      - roadmap.md
+      - decisions-log.md
+      - handoff-checklist.md

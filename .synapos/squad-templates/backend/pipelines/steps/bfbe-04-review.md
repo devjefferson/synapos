@@ -6,7 +6,7 @@ execution: inline
 model_tier: powerful
 gate: GATE-5
 output_files:
-  - docs/bugfix-notes.md
+  - bugfix-notes.md
 ---
 
 # Review do Fix Backend

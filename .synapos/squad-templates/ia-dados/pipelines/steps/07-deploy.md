@@ -5,7 +5,7 @@ agent: diana-dados
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/deployment-plan.md
+  - deployment-plan.md
 gate: GATE-5
 ---
 

@@ -5,7 +5,7 @@ agent: sergio-seguranca
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/security-review.md
+  - security-review.md
 veto_conditions:
   - "IDOR identificado sem correção proposta"
   - "Secret em código ou log"

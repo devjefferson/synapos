@@ -5,9 +5,9 @@ agent: paulo-pesquisa
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/research/market-analysis.md
-  - docs/research/benchmarks.md
-  - docs/business-context.md
+  - research/market-analysis.md
+  - research/benchmarks.md
+  - business-context.md
 veto_conditions:
   - "Análise sem fontes citadas"
   - "Menos de 3 concorrentes analisados"

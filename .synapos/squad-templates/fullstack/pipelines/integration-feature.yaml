@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-contrato-api.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/api-contract.md
+      - api-contract.md
     veto_conditions:
       - "Endpoint sem todos os status codes documentados (sucesso e erro)"
       - "Request/Response sem schema tipado"
@@ -64,7 +64,7 @@ steps:
     file: pipeline/steps/06-integracao.md
     depends_on: [04-frontend, 05-backend]
     output_files:
-      - docs/integration-checklist.md
+      - integration-checklist.md
     veto_conditions:
       - "Frontend e backend com contratos divergentes"
       - "Casos de erro do backend não tratados no frontend"
@@ -78,7 +78,7 @@ steps:
     file: pipeline/steps/07-review.md
     depends_on: [06-integracao]
     output_files:
-      - docs/review-notes.md
+      - review-notes.md
     gate: GATE-5
     veto_conditions:
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"

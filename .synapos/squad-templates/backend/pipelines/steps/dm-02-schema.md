@@ -5,7 +5,7 @@ agent: daniela-dados
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/schema-design.md
+  - schema-design.md
 veto_conditions:
   - "Tabela sem timestamps"
   - "FK sem constraint"

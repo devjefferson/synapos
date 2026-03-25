@@ -5,7 +5,7 @@ agent: igor-infra
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/infra-design.md
+  - infra-design.md
 ---
 
 # Design de Infraestrutura

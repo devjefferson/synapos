@@ -5,7 +5,7 @@ agent: nelson-notebook
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/data-exploration.md
+  - data-exploration.md
 ---
 
 # Exploração e Definição do Problema

@@ -5,7 +5,7 @@ agent: ursula-ui
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/component-spec.md
+  - component-spec.md
 veto_conditions:
   - "Spec sem todos os estados (default, hover, focus, disabled)"
   - "Sem especificação de acessibilidade"

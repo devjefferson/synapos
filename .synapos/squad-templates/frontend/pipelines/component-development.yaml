@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/cd-02-spec.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/component-spec.md
+      - component-spec.md
     veto_conditions:
       - "Spec sem todos os estados (default, hover, focus, disabled)"
       - "Sem especificação de acessibilidade"
@@ -44,5 +44,5 @@ steps:
     file: pipeline/steps/05-review.md
     depends_on: [cd-03-implementacao]
     output_files:
-      - docs/review-notes.md
+      - review-notes.md
     gate: GATE-5

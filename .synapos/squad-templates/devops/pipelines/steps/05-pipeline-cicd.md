@@ -5,7 +5,7 @@ agent: patricia-pipeline
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/cicd-pipeline.md
+  - cicd-pipeline.md
 ---
 
 # Configuração do Pipeline CI/CD

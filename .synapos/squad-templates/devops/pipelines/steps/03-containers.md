@@ -5,7 +5,7 @@ agent: claudio-containers
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/container-spec.md
+  - container-spec.md
 ---
 
 # Containerização

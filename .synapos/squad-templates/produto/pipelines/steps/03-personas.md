@@ -5,8 +5,8 @@ agent: paulo-pesquisa
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/personas/user-personas.md
-  - docs/research/user-research.md
+  - personas/user-personas.md
+  - research/user-research.md
 veto_conditions:
   - "Personas sem Jobs-to-be-Done definidos"
   - "Personas genéricas sem comportamento específico"

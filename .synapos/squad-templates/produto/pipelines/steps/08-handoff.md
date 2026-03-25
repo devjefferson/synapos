@@ -6,9 +6,9 @@ execution: subagent
 model_tier: powerful
 gate: GATE-4
 output_files:
-  - docs/decisions-log.md
-  - docs/open-questions.md
-  - docs/handoff-checklist.md
+  - decisions-log.md
+  - open-questions.md
+  - handoff-checklist.md
 veto_conditions:
   - "Handoff checklist com item em branco ou N/A sem justificativa"
   - "Decisão sem data ou responsável"

@@ -17,19 +17,37 @@ Use `gate:` nos steps do pipeline.yaml para ativar um gate antes de continuar.
 
 ---
 
-### GATE-0 — Integridade do Framework
+### GATE-0 — Integridade do Framework e Documentação do Projeto
 
-**Quando usar:** No primeiro step de qualquer pipeline.
+**Quando usar:** No primeiro step de qualquer pipeline. **Obrigatório antes de qualquer execução.**
 
-**Verifica:**
+**Verifica — Framework:**
 - [ ] `.synapos/core/orchestrator.md` existe
 - [ ] `.synapos/core/pipeline-runner.md` existe
-- [ ] `.synapos/_memory/company.md` existe
-- [ ] `.synapos/_memory/preferences.md` existe
+- [ ] `docs/_memory/company.md` existe
+- [ ] `docs/_memory/preferences.md` existe
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe
 - [ ] `.synapos/squads/{slug}/agents/` tem pelo menos um .agent.md
 
-**Falha:** Liste os arquivos faltantes e pare.
+**Verifica — Documentação do Projeto (obrigatório):**
+- [ ] Pasta `docs/` existe na raiz do projeto
+- [ ] `docs/` contém pelo menos um arquivo `.md`
+
+**Se `docs/` não existe ou está vazia:**
+```
+🚫 GATE-0 — Documentação ausente
+
+A pasta docs/ está vazia ou não existe.
+Nenhum agent pode executar sem documentação do projeto.
+
+Execute primeiro o fluxo de documentação:
+  → /docs-commands/build-business-docs   (contexto de negócio)
+  → /docs-commands/build-tech-docs       (contexto técnico, se aplicável)
+
+Após gerar a documentação, execute o pipeline novamente.
+```
+
+**Falha de framework:** Liste os arquivos faltantes e pare.
 
 ---
 

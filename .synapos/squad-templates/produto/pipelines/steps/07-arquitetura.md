@@ -5,10 +5,10 @@ agent: tania-tecnica
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/architecture.md
-  - docs/roadmap.md
-  - docs/success-metrics.md
-  - docs/risks.md
+  - architecture.md
+  - roadmap.md
+  - success-metrics.md
+  - risks.md
 veto_conditions:
   - "Decisão arquitetural sem ADR correspondente"
   - "ADR sem alternativas rejeitadas documentadas"

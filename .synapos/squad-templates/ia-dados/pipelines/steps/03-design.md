@@ -5,7 +5,7 @@ agent: larissa-llm
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/solution-design.md
+  - solution-design.md
 ---
 
 # Design da Solução IA/ML

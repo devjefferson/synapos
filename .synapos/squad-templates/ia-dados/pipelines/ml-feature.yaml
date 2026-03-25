@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-exploracao.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/data-exploration.md
+      - data-exploration.md
     veto_conditions:
       - "Pergunta de negócio não definida"
       - "Baseline não estabelecido"
@@ -31,7 +31,7 @@ steps:
     file: pipeline/steps/03-design.md
     depends_on: [02-exploracao]
     output_files:
-      - docs/solution-design.md
+      - solution-design.md
     veto_conditions:
       - "Abordagem não justificada com trade-offs"
       - "Estimativa de custo não documentada"
@@ -64,7 +64,7 @@ steps:
     file: pipeline/steps/06-avaliacao.md
     depends_on: [05-implementacao]
     output_files:
-      - docs/model-evaluation.md
+      - model-evaluation.md
     veto_conditions:
       - "Métricas apenas técnicas sem tradução para negócio"
       - "Sem análise de erros (onde o modelo erra e por quê)"
@@ -78,7 +78,7 @@ steps:
     file: pipeline/steps/07-deploy.md
     depends_on: [06-avaliacao]
     output_files:
-      - docs/deployment-plan.md
+      - deployment-plan.md
     gate: GATE-5
     veto_conditions:
       - "Sem estratégia de monitoramento de drift"

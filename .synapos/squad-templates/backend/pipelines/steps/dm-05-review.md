@@ -6,7 +6,7 @@ execution: inline
 model_tier: powerful
 gate: GATE-5
 output_files:
-  - docs/migration-review.md
+  - migration-review.md
 ---
 
 # Review da Migration

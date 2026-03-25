@@ -5,8 +5,8 @@ agent: priscila-produto
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/product-vision.md
-  - docs/spec.md
+  - product-vision.md
+  - spec.md
 veto_conditions:
   - "Spec sem critérios de aceite em qualquer feature"
   - "Sem seção IN/OUT de escopo"

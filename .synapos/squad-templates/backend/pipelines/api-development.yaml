@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-design-api.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/api-contract.md
+      - api-contract.md
     veto_conditions:
       - "Endpoint sem todos os status codes documentados (sucesso e erro)"
       - "Request/Response sem schema tipado"
@@ -53,7 +53,7 @@ steps:
     file: pipeline/steps/05-seguranca.md
     depends_on: [04-implementacao]
     output_files:
-      - docs/security-review.md
+      - security-review.md
     veto_conditions:
       - "IDOR identificado sem correção"
       - "Secret em código ou log"
@@ -69,7 +69,7 @@ steps:
     file: pipeline/steps/06-review.md
     depends_on: [05-seguranca]
     output_files:
-      - docs/review-notes.md
+      - review-notes.md
     gate: GATE-5
     veto_conditions:
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"

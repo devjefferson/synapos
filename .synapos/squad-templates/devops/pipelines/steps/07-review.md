@@ -5,7 +5,7 @@ agent: igor-infra
 execution: inline
 model_tier: powerful
 output_files:
-  - docs/infra-review.md
+  - infra-review.md
 gate: GATE-5
 ---
 

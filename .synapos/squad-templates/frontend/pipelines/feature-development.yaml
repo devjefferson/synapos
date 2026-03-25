@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-arquitetura.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/architecture-decision.md
+      - architecture-decision.md
     veto_conditions:
       - "Estrutura de componentes não documentada"
       - "Decisão de estado sem justificativa (local vs server vs global)"
@@ -52,7 +52,7 @@ steps:
     file: pipeline/steps/05-review.md
     depends_on: [04-implementacao]
     output_files:
-      - docs/review-notes.md
+      - review-notes.md
     veto_conditions:
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
@@ -67,4 +67,4 @@ steps:
     depends_on: [05-review]
     gate: GATE-5
     output_files:
-      - docs/feature-notes.md
+      - feature-notes.md

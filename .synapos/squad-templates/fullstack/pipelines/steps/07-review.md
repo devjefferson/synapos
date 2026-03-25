@@ -5,7 +5,7 @@ agent: renata-revisao-fe
 execution: inline
 model_tier: powerful
 output_files:
-  - docs/review-notes.md
+  - review-notes.md
 gate: GATE-5
 ---
 

@@ -5,7 +5,7 @@ agent: marina-mobile
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/mobile-architecture.md
+  - mobile-architecture.md
 ---
 
 # Arquitetura Mobile

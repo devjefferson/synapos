@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/dp-02-design.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/pipeline-design.md
+      - pipeline-design.md
     veto_conditions:
       - "Fontes de dados não documentadas"
       - "SLA de frescor não definido"
@@ -50,7 +50,7 @@ steps:
     file: pipeline/steps/dp-05-qualidade.md
     depends_on: [dp-04-implementacao]
     output_files:
-      - docs/data-quality-report.md
+      - data-quality-report.md
     veto_conditions:
       - "Dados críticos com valores nulos não justificados"
       - "Volume anômalo sem explicação"
@@ -64,7 +64,7 @@ steps:
     file: pipeline/steps/dp-06-deploy.md
     depends_on: [dp-05-qualidade]
     output_files:
-      - docs/pipeline-deployment.md
+      - pipeline-deployment.md
     gate: GATE-5
     veto_conditions:
       - "Sem alerta de frescor configurado"

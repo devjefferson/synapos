@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-infra-design.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/infra-architecture.md
+      - infra-architecture.md
     veto_conditions:
       - "Diagrama de arquitetura ausente"
       - "Estimativa de custo não documentada"
@@ -31,7 +31,7 @@ steps:
     file: pipeline/steps/03-containers.md
     depends_on: [02-infra-design]
     output_files:
-      - docs/container-spec.md
+      - container-spec.md
     veto_conditions:
       - "Dockerfile sem multi-stage build"
       - "Container rodando como root"
@@ -51,7 +51,7 @@ steps:
     file: pipeline/steps/05-pipeline-cicd.md
     depends_on: [04-checkpoint]
     output_files:
-      - docs/cicd-pipeline.md
+      - cicd-pipeline.md
     veto_conditions:
       - "Pipeline sem estágio de testes"
       - "Secrets hardcoded no workflow"
@@ -66,7 +66,7 @@ steps:
     file: pipeline/steps/06-observabilidade.md
     depends_on: [05-pipeline-cicd]
     output_files:
-      - docs/observability-setup.md
+      - observability-setup.md
     veto_conditions:
       - "Sem alertas definidos para erros críticos"
       - "Logs sem structured logging"
@@ -80,7 +80,7 @@ steps:
     file: pipeline/steps/07-review.md
     depends_on: [06-observabilidade]
     output_files:
-      - docs/infra-review.md
+      - infra-review.md
     gate: GATE-5
     veto_conditions:
       - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"

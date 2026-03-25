@@ -5,7 +5,7 @@ agent: carlos-coordenador
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/api-contract.md
+  - api-contract.md
 ---
 
 # Definição do Contrato de API

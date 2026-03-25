@@ -5,7 +5,7 @@ agent: ana-arquitetura-fe
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/architecture-decision.md
+  - architecture-decision.md
 veto_conditions:
   - "Estrutura de componentes não documentada"
   - "Decisão de estado sem justificativa"

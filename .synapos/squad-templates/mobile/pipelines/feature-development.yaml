@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-arquitetura.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/mobile-architecture.md
+      - mobile-architecture.md
     veto_conditions:
       - "Estrutura de navegação não documentada"
       - "Decisão de estado sem justificativa"
@@ -31,7 +31,7 @@ steps:
     file: pipeline/steps/03-design-ux.md
     depends_on: [02-arquitetura]
     output_files:
-      - docs/ux-notes.md
+      - ux-notes.md
     veto_conditions:
       - "Áreas de toque sem verificação de tamanho mínimo (44pt/48dp)"
       - "Padrões de plataforma ignorados sem justificativa"
@@ -63,7 +63,7 @@ steps:
     file: pipeline/steps/06-review.md
     depends_on: [05-implementacao]
     output_files:
-      - docs/review-notes.md
+      - review-notes.md
     gate: GATE-5
     veto_conditions:
       - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"

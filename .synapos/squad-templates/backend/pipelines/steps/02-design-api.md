@@ -5,7 +5,7 @@ agent: bruno-base
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/api-contract.md
+  - api-contract.md
 veto_conditions:
   - "Endpoint sem todos os status codes documentados"
   - "Request/Response sem schema tipado"

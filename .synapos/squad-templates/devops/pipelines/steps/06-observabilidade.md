@@ -5,7 +5,7 @@ agent: osvaldo-observabilidade
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/observability-setup.md
+  - observability-setup.md
 ---
 
 # Observabilidade

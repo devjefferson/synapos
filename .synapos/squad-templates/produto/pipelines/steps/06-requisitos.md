@@ -5,7 +5,7 @@ agent: ana-analise
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/requirements.md
+  - requirements.md
 veto_conditions:
   - "RF sem critério de aceite"
   - "RNF sem valor numérico mensurável"

@@ -4,7 +4,7 @@ name: "Contexto e Problema"
 agent: priscila-produto
 execution: checkpoint
 output_files:
-  - docs/business-context.md
+  - business-context.md
 ---
 
 # Contexto e Problema (Quick Spec)

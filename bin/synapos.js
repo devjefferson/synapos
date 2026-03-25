@@ -54,100 +54,10 @@ const SQUAD_ALIASES = {
   dados:   'ia-dados',
 };
 
-const IDES = [
+const CLAUDE_FILES = [
   {
-    value:   'claude',
-    title:   'Claude Code',
-    checked: true,
-    files: [
-      {
-        dest: '.claude/commands/init.md',
-        content: `Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n`,
-      },
-    ],
-  },
-  {
-    value:   'cursor',
-    title:   'Cursor',
-    checked: true,
-    files: [
-      {
-        dest: '.cursor/rules/synapos.mdc',
-        content: `---
-description: Synapos Framework — agent orchestration for automation and development
-alwaysApply: true
----
-
-Este projeto usa o **Synapos Framework** para orquestração de agents.
-
-**Framework location:** \`.synapos/\`
-**Protocolo de inicialização:** \`.synapos/core/orchestrator.md\`
-
-Quando o usuário quiser trabalhar com agents ou iniciar uma sessão de desenvolvimento/automação, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
-`,
-      },
-    ],
-  },
-  {
-    value:   'trae',
-    title:   'Trae',
-    checked: false,
-    files: [
-      {
-        dest: '.trae/rules.md',
-        content: `# Synapos Framework
-
-Este projeto usa o **Synapos Framework** para orquestração de agents.
-
-**Framework:** \`.synapos/\`
-**Init:** \`.synapos/core/orchestrator.md\`
-
-Para iniciar, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
-`,
-      },
-    ],
-  },
-  {
-    value:   'opencode',
-    title:   'OpenCode',
-    checked: false,
-    files: [
-      {
-        dest: '.opencode/instructions.md',
-        content: `# Synapos Framework
-
-Este projeto usa o **Synapos Framework** para orquestração de agents.
-
-**Framework:** \`.synapos/\`
-**Init:** \`.synapos/core/orchestrator.md\`
-
-Para iniciar, use o comando \`/init\` ou leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
-`,
-      },
-      {
-        dest: '.opencode/commands/init.md',
-        content: `Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n`,
-      },
-    ],
-  },
-  {
-    value:   'antigravity',
-    title:   'Antigravity',
-    checked: false,
-    files: [
-      {
-        dest: '.antigravity/rules.md',
-        content: `# Synapos Framework
-
-Este projeto usa o **Synapos Framework** para orquestração de agents multi-especialidade.
-
-**Framework:** \`.synapos/\`
-**Init:** \`.synapos/core/orchestrator.md\`
-
-Para iniciar, leia e execute o protocolo em \`.synapos/core/orchestrator.md\`.
-`,
-      },
-    ],
+    dest: '.claude/commands/init.md',
+    content: `Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n`,
   },
 ];
 
@@ -156,7 +66,7 @@ function header() {
   console.log('');
   console.log(bold(cyan('  ╔══════════════════════════════════════════╗')));
   console.log(bold(cyan('  ║') + bold(`        SYNAPOS FRAMEWORK v${VERSION}        `) + bold(cyan('║'))));
-  console.log(bold(cyan('  ║') + gray('    AI Agent Orchestration — Multi-IDE    ') + bold(cyan('║'))));
+  console.log(bold(cyan('  ║') + gray('     AI Agent Orchestration — Claude      ') + bold(cyan('║'))));
   console.log(bold(cyan('  ╚══════════════════════════════════════════╝')));
   console.log('');
 }
@@ -197,9 +107,9 @@ function resolveSquad(input) {
   return SQUAD_ALIASES[lower] || (SQUADS.find(s => s.value === lower) ? lower : null);
 }
 
-// Copia o core do framework (sem squad-templates)
+// Copia o core do framework (sem squad-templates e sem dados de projeto)
 function installCore(src, dest) {
-  const coreDirs = ['core', 'skills', '_memory', 'squads'];
+  const coreDirs = ['core', 'skills'];
   const coreFiles = ['.manifest.json', 'VERSION', 'CHANGELOG.md'];
 
   for (const dir of coreDirs) {
@@ -322,28 +232,7 @@ ${bold('EXEMPLOS')}
     console.log('');
   }
 
-  // ── 4. Selecionar IDEs ──────────────────────────────────────────────────────
-  const { selectedIdes } = await prompts({
-    type:         'multiselect',
-    name:         'selectedIdes',
-    message:      'Selecione as IDEs para configurar:',
-    choices:      IDES.map(ide => ({
-      title:    ide.title,
-      value:    ide.value,
-      selected: ide.checked,
-    })),
-    hint:         '- Espaço para selecionar, Enter para confirmar',
-    instructions: false,
-    min:          1,
-  }, { onCancel: () => { console.log(''); process.exit(0); } });
-
-  if (!selectedIdes || selectedIdes.length === 0) {
-    err('Nenhuma IDE selecionada. Instalação cancelada.');
-    process.exit(1);
-  }
-
-  console.log('');
-
+  // ── 4. Configurar Claude Code ───────────────────────────────────────────────
   // ── 5. Copiar framework ─────────────────────────────────────────────────────
   info('Instalando Synapos Framework...');
   console.log('');
@@ -368,18 +257,14 @@ ${bold('EXEMPLOS')}
     }
   }
 
-  // ── 6. Configurar IDEs ──────────────────────────────────────────────────────
-  for (const ideValue of selectedIdes) {
-    const ide = IDES.find(i => i.value === ideValue);
-    if (!ide) continue;
-    try {
-      for (const file of ide.files) {
-        writeFile(path.join(targetDir, file.dest), file.content);
-      }
-      ok(`${ide.title} configurado ${gray('(' + ide.files.map(f => f.dest).join(', ') + ')')}`);
-    } catch (e) {
-      err(`Erro ao configurar ${ide.title}: ${e.message}`);
+  // ── 6. Configurar Claude Code ───────────────────────────────────────────────
+  try {
+    for (const file of CLAUDE_FILES) {
+      writeFile(path.join(targetDir, file.dest), file.content);
     }
+    ok(`Claude Code configurado ${gray('(' + CLAUDE_FILES.map(f => f.dest).join(', ') + ')')}`);
+  } catch (e) {
+    err(`Erro ao configurar Claude Code: ${e.message}`);
   }
 
   // ── 7. Mensagem final ───────────────────────────────────────────────────────
@@ -388,22 +273,9 @@ ${bold('EXEMPLOS')}
   console.log(green('  ✅') + bold(`  Synapos v${VERSION} instalado com sucesso!`));
   console.log(bold(green('  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')));
   console.log('');
-
-  const ideInstructions = {
-    claude:      '  Claude Code  →  digite /init na conversa',
-    cursor:      '  Cursor       →  inicie uma nova conversa com o agente',
-    trae:        '  Trae         →  inicie uma nova conversa',
-    opencode:    '  OpenCode     →  inicie uma nova conversa',
-    antigravity: '  Antigravity  →  inicie uma nova conversa',
-  };
-
   console.log(bold('  Próximos passos:'));
   console.log('');
-  for (const ideValue of selectedIdes) {
-    if (ideInstructions[ideValue]) {
-      console.log(cyan('  →') + dim(ideInstructions[ideValue]));
-    }
-  }
+  console.log(cyan('  →') + dim('  Claude Code  →  digite /init na conversa'));
   console.log('');
   console.log(gray(`  Squads: ${selectedSquads.map(s => s.title.trim()).join(' · ')}`));
   console.log('');
