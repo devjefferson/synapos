@@ -83,3 +83,9 @@ steps:
     veto_conditions:
       - "Sem estratégia de monitoramento de drift"
       - "Sem plano de rollback"
+
+  - id: atualizar-tarefa
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: pipeline/steps/atualizar-tarefa.md
+    depends_on: [07-deploy]

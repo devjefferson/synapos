@@ -85,3 +85,9 @@ steps:
     veto_conditions:
       - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
+
+  - id: atualizar-tarefa
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: pipeline/steps/atualizar-tarefa.md
+    depends_on: [07-review]

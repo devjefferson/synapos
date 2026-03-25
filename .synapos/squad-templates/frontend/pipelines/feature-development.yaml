@@ -68,3 +68,9 @@ steps:
     gate: GATE-5
     output_files:
       - feature-notes.md
+
+  - id: atualizar-tarefa
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: pipeline/steps/atualizar-tarefa.md
+    depends_on: [06-docs]

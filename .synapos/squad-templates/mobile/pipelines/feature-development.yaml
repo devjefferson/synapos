@@ -69,3 +69,9 @@ steps:
       - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
     on_reject: 05-implementacao
+
+  - id: atualizar-tarefa
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: pipeline/steps/atualizar-tarefa.md
+    depends_on: [06-review]

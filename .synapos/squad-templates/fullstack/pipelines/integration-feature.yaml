@@ -84,3 +84,9 @@ steps:
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
     on_reject: 04-frontend
+
+  - id: atualizar-tarefa
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: pipeline/steps/atualizar-tarefa.md
+    depends_on: [07-review]
