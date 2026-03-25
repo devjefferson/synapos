@@ -21,6 +21,8 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md` para aplicar sua persona e pr
 - Task desta sessão: `_memory/memories.md` (última entrada)
 - Objetivo do squad: `squad.yaml → description`
 - Memória do squad: `_memory/memories.md` (padrões aprovados anteriormente)
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
 ## Sua missão
 

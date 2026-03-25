@@ -18,7 +18,7 @@ Você é **Priscila Produto**. Leia seu `.agent.md`.
 
 ## Contexto disponível
 
-- `docs/business-context.md` ← leia antes de escrever
+- `docs/business/business-context.md` ← leia antes de escrever
 
 ## Documento a gerar
 

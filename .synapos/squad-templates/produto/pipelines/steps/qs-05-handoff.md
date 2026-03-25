@@ -16,7 +16,7 @@ Você é **Tânia Técnica**. Leia seu `.agent.md`.
 
 ## Contexto disponível
 
-- `docs/business-context.md`
+- `docs/business/business-context.md`
 - `docs/spec.md`
 - `docs/requirements.md`
 

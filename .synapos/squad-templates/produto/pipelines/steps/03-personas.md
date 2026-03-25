@@ -21,7 +21,7 @@ Você é **Paulo Pesquisa**. Leia seu `.agent.md` para aplicar sua persona e pri
 
 - Objetivo do squad: `{squad.description}`
 - Análise de mercado: `docs/research/market-analysis.md` ← leia antes de começar
-- Contexto de negócio: `docs/business-context.md`
+- Contexto de negócio: `docs/business/business-context.md`
 
 ## Sua missão neste step
 

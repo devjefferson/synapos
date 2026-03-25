@@ -26,7 +26,7 @@ Leia todos antes de escrever:
 - `docs/research/benchmarks.md`
 - `docs/personas/user-personas.md`
 - `docs/research/user-research.md`
-- `docs/business-context.md`
+- `docs/business/business-context.md`
 - `_memory/memories.md` — preferências e ajustes do usuário
 
 ## Documentos a gerar

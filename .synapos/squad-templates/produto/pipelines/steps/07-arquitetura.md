@@ -26,7 +26,7 @@ Você é **Tânia Técnica**. Leia seu `.agent.md` para aplicar sua persona e pr
 Leia todos antes de escrever:
 - `docs/spec.md`
 - `docs/requirements.md`
-- `docs/business-context.md`
+- `docs/business/business-context.md`
 - `docs/product-vision.md`
 
 ## Documentos a gerar

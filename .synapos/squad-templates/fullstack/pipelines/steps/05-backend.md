@@ -18,6 +18,7 @@ Leia `.synapos/squads/{slug}/agents/alexandre-api.agent.md` e execute como Alexa
 **Contexto disponível:**
 - Contrato de API: `docs/api-contract.md`
 - Task da sessão: {task do memories.md}
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← aplique todas as regras durante a implementação
 
 ## Tarefa
 

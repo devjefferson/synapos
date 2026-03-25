@@ -14,6 +14,12 @@ Verifique antes de prosseguir:
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe com `description` preenchida
 - [ ] `.synapos/squads/{slug}/agents/` tem ao menos um `.agent.md`
 
+**Documentação do projeto (bloqueante):**
+- [ ] `docs/tech-context/project-briefing.md` existe
+- [ ] `docs/tech-context/briefing/critical-rules.md` existe
+
+Se ausente: 🚫 Execute `/setup:discover` antes de continuar. Implementação sem ADRs cria débito técnico imediato.
+
 ## Contexto do squad
 
 Apresente ao usuário:

@@ -30,7 +30,7 @@ Vamos capturar o contexto rapidamente:
 6. Como vamos medir que deu certo?
 ```
 
-## Gerar `docs/business-context.md`
+## Gerar `docs/business/business-context.md`
 
 Com base nas respostas, crie:
 

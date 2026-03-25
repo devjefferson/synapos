@@ -22,6 +22,7 @@ Você é **Rodrigo React**. Leia seu `.agent.md` para aplicar sua persona e prin
 - Arquitetura decidida: `docs/architecture-decision.md` ← **leia antes de escrever qualquer código**
 - Memória do squad: `_memory/memories.md` — padrões aprovados anteriormente
 - Objetivo do squad: `squad.yaml → description`
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← aplique todas as regras durante a implementação
 
 ## Sua missão
 

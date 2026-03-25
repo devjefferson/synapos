@@ -21,7 +21,7 @@ Você é **Paulo Pesquisa**. Leia seu `.agent.md` para aplicar sua persona e pri
 ## Contexto disponível
 
 - Objetivo do squad: `{squad.description}` (leia de `squad.yaml`)
-- Perfil da empresa: `.synapos/_memory/company.md`
+- Perfil da empresa: `docs/_memory/company.md`
 - Memória do squad: `_memory/memories.md`
 
 ## Sua missão neste step
@@ -89,7 +89,7 @@ Estrutura obrigatória:
 ## Fontes
 ```
 
-### `docs/business-context.md`
+### `docs/business/business-context.md`
 
 ```markdown
 # Contexto de Negócio

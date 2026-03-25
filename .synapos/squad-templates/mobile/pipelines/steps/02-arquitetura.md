@@ -12,6 +12,12 @@ output_files:
 
 **Agent:** Marina Mobile 📐
 
+## Contexto disponível
+
+- Task desta sessão: `_memory/memories.md`
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
+
 ## Tarefa
 
 1. Defina a estrutura de navegação para a feature
