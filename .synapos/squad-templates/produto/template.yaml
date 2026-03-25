@@ -1,8 +1,8 @@
 name: produto
 displayName: "Squad de Produto"
 icon: "📋"
-version: "1.0.0"
-description: "Especialistas em product management com documentação mais completa que qualquer framework tradicional"
+version: "2.0.0"
+description: "Refina e versiona a documentação de produto. Requer docs/business/ criada pelo /setup:build-business. Nunca sobrescreve — apenas versiona."
 
 agents:
   base:
@@ -11,22 +11,22 @@ agents:
       displayName: "Priscila Produto"
       icon: "📋"
       role: "Product Manager"
-    - id: paulo-pesquisa
-      file: agents/paulo-pesquisa.agent.md
-      displayName: "Paulo Pesquisa"
-      icon: "🔍"
-      role: "Pesquisador"
     - id: ana-analise
       file: agents/ana-analise.agent.md
       displayName: "Ana Análise"
       icon: "📊"
       role: "Analista de Negócio"
-  optional:
     - id: tania-tecnica
       file: agents/tania-tecnica.agent.md
       displayName: "Tânia Técnica"
       icon: "✍️"
       role: "Tech Writer"
+  optional:
+    - id: paulo-pesquisa
+      file: agents/paulo-pesquisa.agent.md
+      displayName: "Paulo Pesquisa"
+      icon: "🔍"
+      role: "Pesquisador"
     - id: eduardo-estrategia
       file: agents/eduardo-estrategia.agent.md
       displayName: "Eduardo Estratégia"
@@ -39,50 +39,32 @@ agents:
       role: "UX Researcher"
 
 pipelines:
-  default: discovery-spec-handoff
+  default: nova-feature
   available:
-    - id: discovery-spec-handoff
-      name: "Descoberta → Spec → Decisões → Handoff"
-      description: "Fluxo completo de produto — 15+ documentos"
-      file: pipelines/discovery-spec-handoff.yaml
-    - id: quick-spec
-      name: "Spec Rápida"
-      description: "Contexto + Spec + Handoff — ideal para features bem definidas"
-      file: pipelines/quick-spec.yaml
+    - id: nova-feature
+      name: "Nova Feature"
+      description: "Valida requisito → verifica docs → gera spec versionada → handoff para dev"
+      file: pipelines/nova-feature.yaml
+    - id: refinar-docs
+      name: "Refinar Docs"
+      description: "Versiona um doc existente em docs/business/ preservando o original"
+      file: pipelines/refinar-docs.yaml
 
 performance_modes:
   alta:
-    description: "Pesquisa aprofundada, 15+ documentos, 2 ciclos de revisão"
+    description: "Verificação aprofundada de restrições, spec completa com todos os campos, handoff detalhado"
     agents: all
     docs:
-      - research/market-analysis.md
-      - research/user-research.md
-      - research/benchmarks.md
-      - personas/user-personas.md
-      - product-vision.md
-      - business-context.md
-      - requirements.md
-      - spec.md
-      - architecture.md
-      - adrs/
-      - roadmap.md
-      - success-metrics.md
-      - risks.md
-      - decisions-log.md
-      - open-questions.md
-      - handoff-checklist.md
+      - docs/specs/{feature-slug}-v1.md
+      - docs/specs/{feature-slug}-handoff.md
+      - docs/business/index.md        # append
+      - docs/CHANGELOG.md             # append
   economico:
-    description: "Spec essencial, 8 documentos core, 1 ciclo de revisão"
+    description: "Spec essencial com RFs, critérios de aceite e handoff mínimo"
     agents:
       - priscila-produto
-      - paulo-pesquisa
       - ana-analise
+      - tania-tecnica
     docs:
-      - product-vision.md
-      - business-context.md
-      - requirements.md
-      - spec.md
-      - architecture.md
-      - roadmap.md
-      - decisions-log.md
-      - handoff-checklist.md
+      - docs/specs/{feature-slug}-v1.md
+      - docs/CHANGELOG.md             # append
