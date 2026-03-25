@@ -1,7 +1,7 @@
 name: "Nova Feature"
-description: "Especifica uma nova feature com base nos docs existentes: valida requisito → verifica restrições → gera spec versionada → handoff para dev."
-version: "1.0.0"
-estimated_docs: 3
+description: "Especifica uma nova feature com base nos docs existentes: valida requisito → verifica restrições → gera spec versionada → handoff → cria tarefas (local, GitHub, Linear, Jira)."
+version: "1.1.0"
+estimated_docs: 4
 
 steps:
   - id: 01-gate-integridade
@@ -69,3 +69,9 @@ steps:
       - "Handoff sem link para a spec aprovada"
       - "Critério de aceite ausente no checklist"
       - "Dependência técnica não documentada"
+
+  - id: nf-08-criar-tarefas
+    name: "Criar Tarefas"
+    execution: checkpoint
+    file: pipeline/steps/nf-08-criar-tarefas.md
+    depends_on: [nf-07-handoff]
