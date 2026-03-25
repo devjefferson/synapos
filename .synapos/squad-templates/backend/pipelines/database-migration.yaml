@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/dm-02-schema.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/schema-design.md
+      - schema-design.md
     veto_conditions:
       - "Tabela sem timestamps (created_at, updated_at)"
       - "FK sem constraint no banco"
@@ -38,7 +38,7 @@ steps:
     file: pipeline/steps/dm-04-migration.md
     depends_on: [dm-03-checkpoint]
     output_files:
-      - docs/migration.sql
+      - migration.sql
     veto_conditions:
       - "Migration sem BEGIN/COMMIT (não transacional)"
       - "Sem seção DOWN (rollback)"
@@ -52,5 +52,5 @@ steps:
     file: pipeline/steps/dm-05-review.md
     depends_on: [dm-04-migration]
     output_files:
-      - docs/migration-review.md
+      - migration-review.md
     gate: GATE-5

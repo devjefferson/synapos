@@ -11,6 +11,34 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.5.0] — 2026-03-25
+
+### Adicionado
+
+#### Agent — Produto
+- `ursula-ux` v1.0.0 — UX Researcher (personas, journey mapping, análise competitiva, research baseado em evidência)
+
+#### Pipelines — Produto registrados no template
+- `discovery-spec-handoff` registrado em `produto/template.yaml` (arquivos já existiam desde v1.1.0)
+- `quick-spec` registrado em `produto/template.yaml` (arquivos já existiam desde v1.1.0)
+
+#### Pipelines — Gestão de tarefas
+- Etapa de criação de tarefas adicionada após spec aprovada nos pipelines de produto
+- Etapas de verificação e atualização de tarefas adicionadas ao final de todos os pipelines de desenvolvimento (frontend, backend, fullstack, mobile, devops, ia-dados)
+
+### Corrigido
+
+#### GATE-0 — Todos os squads
+- Path de verificação corrigido: `.synapos/_memory/company.md` → `docs/_memory/company.md` em todos os squad templates (frontend, backend, fullstack, mobile, devops, ia-dados)
+
+#### Orchestrator
+- Skill names corrigidos no menu de onboarding: `/docs-commands/build-business-docs` → `/setup:build-business`, `/docs-commands/build-tech-docs` → `/setup:build-tech`, `/docs-commands/setup-docs` → `/setup:start`
+
+#### Fullstack — bug-fix pipeline
+- Step `bf-03-fix` sem `agent` definido — corrigido para `carlos-coordenador`
+
+---
+
 ## [1.4.0] — 2026-03-23
 
 ### Adicionado

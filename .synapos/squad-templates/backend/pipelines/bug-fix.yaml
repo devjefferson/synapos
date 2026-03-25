@@ -37,5 +37,5 @@ steps:
     file: pipeline/steps/bfbe-04-review.md
     depends_on: [bfbe-03-fix]
     output_files:
-      - docs/bugfix-notes.md
+      - bugfix-notes.md
     gate: GATE-5

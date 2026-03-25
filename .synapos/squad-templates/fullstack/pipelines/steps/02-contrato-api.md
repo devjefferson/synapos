@@ -5,7 +5,7 @@ agent: carlos-coordenador
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/api-contract.md
+  - api-contract.md
 ---
 
 # Definição do Contrato de API
@@ -19,7 +19,9 @@ Leia `.synapos/squads/{slug}/agents/carlos-coordenador.agent.md` e execute como 
 
 **Contexto disponível:**
 - Task da sessão: {task do memories.md}
-- Company profile: {.synapos/_memory/company.md}
+- Company profile: `docs/_memory/company.md`
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
 ## Tarefa
 

@@ -5,7 +5,7 @@ agent: carlos-coordenador
 execution: inline
 model_tier: powerful
 output_files:
-  - docs/integration-checklist.md
+  - integration-checklist.md
 ---
 
 # Verificação de Integração

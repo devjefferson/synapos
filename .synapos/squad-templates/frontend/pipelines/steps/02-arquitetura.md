@@ -5,7 +5,7 @@ agent: ana-arquitetura-fe
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/architecture-decision.md
+  - architecture-decision.md
 veto_conditions:
   - "Estrutura de componentes não documentada"
   - "Decisão de estado sem justificativa"
@@ -21,6 +21,8 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md` para aplicar sua persona e pr
 - Task desta sessão: `_memory/memories.md` (última entrada)
 - Objetivo do squad: `squad.yaml → description`
 - Memória do squad: `_memory/memories.md` (padrões aprovados anteriormente)
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
 ## Sua missão
 

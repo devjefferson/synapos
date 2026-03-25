@@ -6,8 +6,8 @@ execution: subagent
 model_tier: powerful
 gate: GATE-2
 output_files:
-  - docs/decisions-log.md
-  - docs/handoff-checklist.md
+  - decisions-log.md
+  - handoff-checklist.md
 ---
 
 # Handoff Essencial (Quick Spec)
@@ -16,7 +16,7 @@ Você é **Tânia Técnica**. Leia seu `.agent.md`.
 
 ## Contexto disponível
 
-- `docs/business-context.md`
+- `docs/business/business-context.md`
 - `docs/spec.md`
 - `docs/requirements.md`
 

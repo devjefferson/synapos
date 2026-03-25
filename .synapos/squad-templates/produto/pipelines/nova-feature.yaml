@@ -1,0 +1,77 @@
+name: "Nova Feature"
+description: "Especifica uma nova feature com base nos docs existentes: valida requisito → verifica restrições → gera spec versionada → handoff → cria tarefas (local, GitHub, Linear, Jira)."
+version: "1.1.0"
+estimated_docs: 4
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: nf-02-validar-requisito
+    name: "Validar Requisito"
+    execution: checkpoint
+    file: pipeline/steps/nf-02-validar-requisito.md
+    depends_on: [01-gate-integridade]
+
+  - id: nf-03-verificar-docs
+    name: "Verificar Docs e Restrições"
+    agent: ana-analise
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/nf-03-verificar-docs.md
+    depends_on: [nf-02-validar-requisito]
+
+  - id: nf-04-spec
+    name: "Spec da Feature"
+    agent: priscila-produto
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/nf-04-spec.md
+    depends_on: [nf-03-verificar-docs]
+    output_files:
+      - spec.md
+    veto_conditions:
+      - "Spec sem critérios de aceite mensuráveis"
+      - "Sem seção IN/OUT de escopo"
+      - "Requisito funcional sem critério de aceite"
+      - "Critério de aceite vago sem condição verificável"
+      - "Decisão técnica que viola uma ADR sem justificativa"
+    on_reject: nf-04-spec
+
+  - id: nf-05-checkpoint-aprovacao
+    name: "Aprovação da Spec"
+    execution: checkpoint
+    file: pipeline/steps/nf-05-checkpoint-aprovacao.md
+    depends_on: [nf-04-spec]
+
+  - id: nf-06-versionar
+    name: "Versionar e Registrar"
+    agent: tania-tecnica
+    execution: subagent
+    model_tier: fast
+    file: pipeline/steps/nf-06-versionar.md
+    depends_on: [nf-05-checkpoint-aprovacao]
+
+  - id: nf-07-handoff
+    name: "Handoff para Dev"
+    agent: tania-tecnica
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/nf-07-handoff.md
+    depends_on: [nf-06-versionar]
+    gate: GATE-2
+    output_files:
+      - handoff.md
+    veto_conditions:
+      - "Handoff sem link para a spec aprovada"
+      - "Critério de aceite ausente no checklist"
+      - "Dependência técnica não documentada"
+
+  - id: nf-08-criar-tarefas
+    name: "Criar Tarefas"
+    execution: checkpoint
+    file: pipeline/steps/nf-08-criar-tarefas.md
+    depends_on: [nf-07-handoff]

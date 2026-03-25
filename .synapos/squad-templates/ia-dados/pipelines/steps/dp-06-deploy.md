@@ -5,7 +5,7 @@ agent: diana-dados
 execution: subagent
 model_tier: fast
 output_files:
-  - docs/pipeline-deployment.md
+  - pipeline-deployment.md
 gate: GATE-5
 ---
 

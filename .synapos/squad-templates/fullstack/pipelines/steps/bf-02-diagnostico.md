@@ -5,7 +5,7 @@ agent: carlos-coordenador
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/bug-diagnosis.md
+  - bug-diagnosis.md
 ---
 
 # Diagnóstico de Bug Fullstack

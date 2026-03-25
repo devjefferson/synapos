@@ -7,7 +7,7 @@ description: Meta-orquestrador do Synapos Framework — ponto de entrada univers
 # SYNAPOS ORCHESTRATOR v1.0.0
 
 > Framework de gerenciamento de agents para automação e desenvolvimento.
-> Multi-IDE: Claude Code, Cursor, Antigravity, OpenCode, Trae e qualquer AI assistant.
+> Integração: Claude Code.
 
 ---
 
@@ -15,7 +15,7 @@ description: Meta-orquestrador do Synapos Framework — ponto de entrada univers
 
 **Sempre que precisar apresentar opções ao usuário, use o formato de seleção interativa abaixo.**
 Nunca apresente menus como texto puro esperando que o usuário digite um número.
-Use botões / seleção clicável sempre que a IDE suportar.
+Use a ferramenta `AskUserQuestion` para exibir opções como botões clicáveis.
 
 Formato padrão para qualquer menu:
 ```
@@ -33,16 +33,16 @@ Para multi-seleção, instrua explicitamente: "Selecione uma ou mais opções".
 
 ## PROTOCOLO DE ATIVAÇÃO
 
-Ao ser ativado por qualquer adapter de IDE, execute este protocolo na ordem exata. Nunca pule passos.
+Ao ser ativado, execute este protocolo na ordem exata. Nunca pule passos.
 
 ---
 
 ## PASSO 1 — VERIFICAR CONTEXTO
 
-Verifique se `.synapos/_memory/company.md` existe.
+Verifique se `docs/_memory/company.md` existe.
 
 **Se NÃO existe** → execute o **PROTOCOLO DE ONBOARDING** abaixo.
-**Se existe** → leia `.synapos/_memory/company.md` e `.synapos/_memory/preferences.md`, continue para PASSO 2.
+**Se existe** → leia `docs/_memory/company.md` e `docs/_memory/preferences.md`, continue para PASSO 2.
 
 ---
 
@@ -57,12 +57,12 @@ Antes de começar, preciso de algumas informações rápidas:
 1. Seu nome ou nome da empresa:
 2. Setor / tipo de projeto principal:
 3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
-4. IDE principal: [Claude / Cursor / Antigravity / OpenCode / Trae / outro]
+4. IDE principal: Claude Code
 ```
 
 Após as respostas, crie os arquivos abaixo e continue para PASSO 2:
 
-**`.synapos/_memory/company.md`:**
+**`docs/_memory/company.md`:**
 ```markdown
 ---
 atualizado: {YYYY-MM-DD}
@@ -74,7 +74,7 @@ atualizado: {YYYY-MM-DD}
 **Linguagem de saída:** {resposta}
 ```
 
-**`.synapos/_memory/preferences.md`:**
+**`docs/_memory/preferences.md`:**
 ```markdown
 ---
 atualizado: {YYYY-MM-DD}
@@ -87,7 +87,31 @@ atualizado: {YYYY-MM-DD}
 
 ---
 
-## PASSO 2 — ESCANEAR SQUADS ATIVOS
+## PASSO 2 — VERIFICAR DOCUMENTAÇÃO DO PROJETO
+
+Verifique se a pasta `docs/` existe na raiz do projeto e contém pelo menos um arquivo `.md`.
+
+**Se `docs/` não existe ou está vazia:**
+
+```
+⚠️  Documentação não encontrada
+
+Nenhum squad pode ser executado sem documentação do projeto em docs/.
+
+O que você quer fazer?
+
+- 📋 Criar documentação de negócio   (/setup:build-business)
+- 🔧 Criar documentação técnica      (/setup:build-tech)
+- 🚀 Configurar documentação completa (/setup:start)
+```
+
+Aguarde a seleção do usuário. Se escolher criar documentação, execute o comando correspondente e **não continue** para os próximos passos até que `docs/` tenha conteúdo.
+
+**Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
+
+---
+
+## PASSO 3 — ESCANEAR SQUADS ATIVOS
 
 Verifique se existem subdiretórios em `.synapos/squads/` (ignorar `.gitkeep`).
 
@@ -98,7 +122,7 @@ Construa a lista interna de squads ativos.
 
 ---
 
-## PASSO 3 — MENU PRINCIPAL
+## PASSO 4 — MENU PRINCIPAL
 
 **Se existem squads**, apresente um menu interativo:
 
@@ -117,11 +141,11 @@ Aguarde o usuário selecionar. Não prossiga sem seleção.
 - 🟡 paused — pausado, pode retomar
 - ✅ completed — entregue
 
-**Se não existem squads** → vá direto para PASSO 4.
+**Se não existem squads** → vá direto para PASSO 5.
 
 ---
 
-## PASSO 4 — SELEÇÃO DE DOMÍNIO
+## PASSO 5 — SELEÇÃO DE DOMÍNIO
 
 Liste os subdiretórios presentes em `.synapos/squad-templates/` (ignorar `.gitkeep`).
 Para cada diretório encontrado, leia o `template.yaml` e extraia `name`, `displayName`, `icon`, `description`.
@@ -142,11 +166,11 @@ Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 ---
 
-## PASSO 5 — CONFIGURAR SQUAD
+## PASSO 6 — CONFIGURAR SQUAD
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
 
-### 5.1 — Apresentar agents disponíveis
+### 6.1 — Apresentar agents disponíveis
 
 Apresente os agents BASE como já incluídos e os OPCIONAIS como seleção interativa:
 
@@ -167,7 +191,7 @@ Quais agents opcionais você quer adicionar? (selecione um ou mais)
 
 Aguarde a seleção do usuário antes de continuar.
 
-### 5.2 — Modo de performance
+### 6.2 — Modo de performance
 
 ```
 Qual modo de operação você prefere?
@@ -178,7 +202,7 @@ Qual modo de operação você prefere?
 
 Aguarde a seleção do usuário.
 
-### 5.3 — Contexto do squad
+### 6.3 — Contexto do squad
 
 ```
 Descreva o objetivo deste squad (1-2 frases):
@@ -186,7 +210,7 @@ Ex: "Construir o sistema de autenticação do app mobile"
     "Criar spec completa para o módulo de pagamentos"
 ```
 
-### 5.4 — Nome / slug (opcional)
+### 6.4 — Nome / slug (opcional)
 
 ```
 Nome curto para identificar (deixe em branco para auto-gerar):
@@ -197,26 +221,28 @@ Auto-geração de slug: `{domínio}-{NNN}` → frontend-001, produto-002
 
 ---
 
-## PASSO 6 — CRIAR SQUAD
+## PASSO 7 — CRIAR SQUAD
 
-### 6.1 — Estrutura de arquivos
+### 7.1 — Estrutura de arquivos
 
 Crie exatamente esta estrutura:
 
 ```
-.synapos/squads/{slug}/
+.synapos/squads/{slug}/          ← configuração do squad
 ├── squad.yaml
 ├── agents/
 │   └── (copiar os .agent.md selecionados do template)
-├── pipeline/
-│   ├── pipeline.yaml     (copiar pipeline padrão do template)
-│   └── steps/            (copiar steps do pipeline)
-├── output/               (outputs de execução — inicia vazio)
-└── _memory/
-    └── memories.md       (inicializar com template abaixo)
+└── pipeline/
+    ├── pipeline.yaml
+    └── steps/
+
+docs/.squads/{slug}/             ← dados de runtime do projeto
+├── _memory/
+│   └── memories.md
+└── output/                      (histórico de execuções — inicia vazio)
 ```
 
-### 6.2 — Gerar squad.yaml
+### 7.2 — Gerar squad.yaml
 
 ```yaml
 name: {slug}
@@ -234,11 +260,14 @@ pipeline:
   default: {id do pipeline padrão}
   file: pipeline/pipeline.yaml
 project_context:
-  company: .synapos/_memory/company.md
-  squad_memory: _memory/memories.md
+  company: docs/_memory/company.md
+  docs_business: docs/business/
+  docs_tech: docs/tech/
+  docs_context: docs/tech-context/
+  squad_memory: docs/.squads/{slug}/_memory/memories.md
 ```
 
-### 6.3 — Inicializar memories.md
+### 7.3 — Inicializar memories.md
 
 ```markdown
 # Memória do Squad {slug}
@@ -259,7 +288,7 @@ project_context:
 
 ---
 
-## PASSO 7 — ATIVAR SQUAD
+## PASSO 8 — ATIVAR SQUAD
 
 Anuncie o squad criado:
 
@@ -290,8 +319,8 @@ Leia e siga `.synapos/core/pipeline-runner.md` passando como contexto:
 Quando o usuário escolhe um squad ativo (PASSO 3):
 
 1. Leia `.synapos/squads/{squad}/squad.yaml`
-2. Leia `.synapos/squads/{squad}/_memory/memories.md`
-3. Liste os últimos outputs em `.synapos/squads/{squad}/output/` (se existirem)
+2. Leia `docs/.squads/{squad}/_memory/memories.md`
+3. Liste os últimos outputs em `docs/.squads/{squad}/output/` (se existirem)
 4. Apresente resumo:
 
 ```
@@ -335,4 +364,4 @@ Quando o usuário escolhe squad customizado:
 | **Multi-squad é permitido** | Cada squad tem contexto isolado |
 | **Salve estado** | Atualize squad.yaml após mudanças de status |
 | **Fail loud** | Se faltar arquivo de template, informe e pare |
-| **Linguagem** | Siga a preferência em `.synapos/_memory/preferences.md` |
+| **Linguagem** | Siga a preferência em `docs/_memory/preferences.md` |

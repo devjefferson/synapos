@@ -5,7 +5,7 @@ agent: viviane-visual
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/ux-notes.md
+  - ux-notes.md
 ---
 
 # Design UX Mobile

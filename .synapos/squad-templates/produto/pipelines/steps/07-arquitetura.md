@@ -5,10 +5,10 @@ agent: tania-tecnica
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/architecture.md
-  - docs/roadmap.md
-  - docs/success-metrics.md
-  - docs/risks.md
+  - architecture.md
+  - roadmap.md
+  - success-metrics.md
+  - risks.md
 veto_conditions:
   - "Decisão arquitetural sem ADR correspondente"
   - "ADR sem alternativas rejeitadas documentadas"
@@ -26,7 +26,7 @@ Você é **Tânia Técnica**. Leia seu `.agent.md` para aplicar sua persona e pr
 Leia todos antes de escrever:
 - `docs/spec.md`
 - `docs/requirements.md`
-- `docs/business-context.md`
+- `docs/business/business-context.md`
 - `docs/product-vision.md`
 
 ## Documentos a gerar

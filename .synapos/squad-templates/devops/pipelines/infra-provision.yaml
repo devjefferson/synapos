@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/ip-02-design.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/infra-design.md
+      - infra-design.md
     veto_conditions:
       - "Recursos sem estimativa de custo"
       - "Sem least privilege nas IAM roles"
@@ -50,7 +50,7 @@ steps:
     file: pipeline/steps/ip-05-apply.md
     depends_on: [ip-04-checkpoint]
     output_files:
-      - docs/provision-report.md
+      - provision-report.md
     gate: GATE-5
     veto_conditions:
       - "Apply sem smoke test pós-provisionamento"

@@ -17,13 +17,14 @@ steps:
     file: pipeline/steps/bf-02-diagnostico.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/bug-diagnosis.md
+      - bug-diagnosis.md
     veto_conditions:
       - "Camada do bug (FE/BE/integração) não identificada"
       - "Root cause não definido"
 
   - id: bf-03-fix
     name: "Correção"
+    agent: carlos-coordenador
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/bf-03-fix.md

@@ -6,7 +6,7 @@ execution: subagent
 model_tier: fast
 gate: GATE-5
 output_files:
-  - docs/feature-notes.md
+  - feature-notes.md
 ---
 
 # Documentação da Feature

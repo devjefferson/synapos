@@ -15,11 +15,16 @@ Verifique cada item antes de prosseguir:
 
 - [ ] `.synapos/core/orchestrator.md` existe
 - [ ] `.synapos/core/pipeline-runner.md` existe
-- [ ] `.synapos/_memory/company.md` existe e tem `Nome` preenchido
-- [ ] `.synapos/_memory/preferences.md` existe
+- [ ] `docs/_memory/company.md` existe e tem `Nome` preenchido
+- [ ] `docs/_memory/preferences.md` existe
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe
 - [ ] `.synapos/squads/{slug}/agents/` tem ao menos um `.agent.md`
 - [ ] `.synapos/squads/{slug}/pipeline/pipeline.yaml` existe
+
+**Base de produto (bloqueante):**
+- [ ] `docs/business/` existe e contém pelo menos um arquivo `.md`
+
+Se `docs/business/` ausente: 🚫 Execute `/setup:build-business` antes. O squad de produto refina e versiona docs existentes — não os cria do zero.
 
 ## Contexto do squad
 

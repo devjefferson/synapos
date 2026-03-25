@@ -18,9 +18,9 @@ steps:
     file: pipeline/steps/02-contexto-negocio.md
     depends_on: [01-gate-integridade]
     output_files:
-      - docs/research/market-analysis.md
-      - docs/research/benchmarks.md
-      - docs/business-context.md
+      - research/market-analysis.md
+      - research/benchmarks.md
+      - business-context.md
     veto_conditions:
       - "Análise sem fontes citadas"
       - "Menos de 3 concorrentes analisados"
@@ -34,8 +34,8 @@ steps:
     file: pipeline/steps/03-personas.md
     depends_on: [02-contexto-negocio]
     output_files:
-      - docs/personas/user-personas.md
-      - docs/research/user-research.md
+      - personas/user-personas.md
+      - research/user-research.md
     veto_conditions:
       - "Personas sem Jobs-to-be-Done definidos"
       - "Personas genéricas sem comportamento específico"
@@ -61,8 +61,8 @@ steps:
     file: pipeline/steps/05-spec.md
     depends_on: [04b-alinhamento-estrategico]
     output_files:
-      - docs/product-vision.md
-      - docs/spec.md
+      - product-vision.md
+      - spec.md
     veto_conditions:
       - "Spec sem critérios de aceite em qualquer feature"
       - "Sem seção IN/OUT de escopo"
@@ -84,7 +84,7 @@ steps:
     file: pipeline/steps/06-requisitos.md
     depends_on: [05b-checkpoint-spec]
     output_files:
-      - docs/requirements.md
+      - requirements.md
     veto_conditions:
       - "RF sem critério de aceite"
       - "RNF sem valor numérico (ex: 'deve ser rápido' sem tempo definido)"
@@ -106,10 +106,10 @@ steps:
     file: pipeline/steps/07-arquitetura.md
     depends_on: [06b-checkpoint-requisitos]
     output_files:
-      - docs/architecture.md
-      - docs/roadmap.md
-      - docs/success-metrics.md
-      - docs/risks.md
+      - architecture.md
+      - roadmap.md
+      - success-metrics.md
+      - risks.md
     veto_conditions:
       - "Decisão arquitetural sem ADR correspondente"
       - "ADR sem alternativas rejeitadas documentadas"
@@ -126,9 +126,9 @@ steps:
     depends_on: [07-arquitetura]
     gate: GATE-4
     output_files:
-      - docs/decisions-log.md
-      - docs/open-questions.md
-      - docs/handoff-checklist.md
+      - decisions-log.md
+      - open-questions.md
+      - handoff-checklist.md
     veto_conditions:
       - "Handoff checklist com item em branco"
       - "Decisão sem data ou responsável"

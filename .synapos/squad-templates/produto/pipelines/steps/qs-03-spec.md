@@ -5,7 +5,7 @@ agent: priscila-produto
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/spec.md
+  - spec.md
 veto_conditions:
   - "Spec sem critérios de aceite"
   - "Sem seção IN/OUT de escopo"
@@ -18,7 +18,7 @@ Você é **Priscila Produto**. Leia seu `.agent.md`.
 
 ## Contexto disponível
 
-- `docs/business-context.md` ← leia antes de escrever
+- `docs/business/business-context.md` ← leia antes de escrever
 
 ## Documento a gerar
 

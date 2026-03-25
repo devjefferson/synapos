@@ -6,7 +6,7 @@ execution: inline
 model_tier: powerful
 gate: GATE-5
 output_files:
-  - docs/review-notes.md
+  - review-notes.md
 veto_conditions:
   - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
   - "BLOCKER sem fix sugerido"

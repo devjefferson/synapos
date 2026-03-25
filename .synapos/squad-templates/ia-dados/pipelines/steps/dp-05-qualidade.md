@@ -5,7 +5,7 @@ agent: nelson-notebook
 execution: subagent
 model_tier: fast
 output_files:
-  - docs/data-quality-report.md
+  - data-quality-report.md
 ---
 
 # Validação de Qualidade de Dados

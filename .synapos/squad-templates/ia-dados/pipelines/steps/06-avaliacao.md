@@ -5,7 +5,7 @@ agent: larissa-llm
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/model-evaluation.md
+  - model-evaluation.md
 ---
 
 # Avaliação e Validação

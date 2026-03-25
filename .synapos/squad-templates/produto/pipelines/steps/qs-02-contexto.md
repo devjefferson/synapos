@@ -4,7 +4,7 @@ name: "Contexto e Problema"
 agent: priscila-produto
 execution: checkpoint
 output_files:
-  - docs/business-context.md
+  - business-context.md
 ---
 
 # Contexto e Problema (Quick Spec)
@@ -30,7 +30,7 @@ Vamos capturar o contexto rapidamente:
 6. Como vamos medir que deu certo?
 ```
 
-## Gerar `docs/business-context.md`
+## Gerar `docs/business/business-context.md`
 
 Com base nas respostas, crie:
 

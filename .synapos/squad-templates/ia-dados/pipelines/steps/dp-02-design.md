@@ -5,7 +5,7 @@ agent: diana-dados
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/pipeline-design.md
+  - pipeline-design.md
 ---
 
 # Design do Pipeline de Dados

@@ -5,12 +5,18 @@ agent: marina-mobile
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/mobile-architecture.md
+  - mobile-architecture.md
 ---
 
 # Arquitetura Mobile
 
 **Agent:** Marina Mobile 📐
+
+## Contexto disponível
+
+- Task desta sessão: `_memory/memories.md`
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
 ## Tarefa
 

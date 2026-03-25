@@ -5,7 +5,7 @@ agent: daniela-dados
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/migration.sql
+  - migration.sql
 veto_conditions:
   - "Migration sem BEGIN/COMMIT"
   - "Sem seção DOWN (rollback)"

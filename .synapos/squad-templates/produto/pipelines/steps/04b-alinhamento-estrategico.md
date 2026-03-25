@@ -11,9 +11,9 @@ Antes de gerar qualquer documento de produto, é obrigatório alinhar as decisõ
 ## Contexto disponível
 
 Leia os documentos de pesquisa gerados até agora:
-- `.synapos/squads/{slug}/docs/research/market-analysis.md`
-- `.synapos/squads/{slug}/docs/business-context.md`
-- `.synapos/squads/{slug}/docs/personas/user-personas.md`
+- `docs/business/research/market-analysis.md`
+- `docs/business/business-context.md`
+- `docs/business/personas/user-personas.md`
 
 ## Perguntas obrigatórias ao usuário
 

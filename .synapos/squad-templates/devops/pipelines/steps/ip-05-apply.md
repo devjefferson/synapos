@@ -5,7 +5,7 @@ agent: patricia-pipeline
 execution: subagent
 model_tier: fast
 output_files:
-  - docs/provision-report.md
+  - provision-report.md
 gate: GATE-5
 ---
 

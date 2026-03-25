@@ -28,7 +28,7 @@
   "templates": {
     "frontend": "1.1.0",
     "backend": "1.1.0",
-    "produto": "1.1.0",
+    "produto": "2.0.0",
     "fullstack": "1.0.0",
     "mobile": "1.0.0",
     "devops": "1.0.0",

@@ -5,12 +5,18 @@ agent: nelson-notebook
 execution: subagent
 model_tier: powerful
 output_files:
-  - docs/data-exploration.md
+  - data-exploration.md
 ---
 
 # Exploração e Definição do Problema
 
 **Agent:** Nelson Notebook 📊
+
+## Contexto disponível
+
+- Task desta sessão: `_memory/memories.md`
+- **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
+- **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
 ## Tarefa
 
