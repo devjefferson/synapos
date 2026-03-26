@@ -93,7 +93,7 @@ skills:
 ```
 
 ### 2. Para cada skill listada:
-- Verificar se `.synapos/skills/{skill}/SKILL.md` existe
+- Verificar se `.synapos/skills/{skill}/SKILL.md` existe — diretório real **ou symlink**
 - Se não existe → apresentar opções:
   ```
   ⚠ Skill '{skill}' não está instalada.
@@ -134,12 +134,22 @@ A ordem de injeção é: agent → step → skills (na ordem declarada).
 ## INSTALAÇÃO DE NOVA SKILL
 
 ### Passo 1 — Criar estrutura
+
+Duas formas válidas de instalar uma skill:
+
+**Diretório local:**
 ```
 .synapos/skills/{skill-name}/
 ├── SKILL.md          ← definição
 └── scripts/          ← scripts (se type: script ou hybrid)
     └── run.js
 ```
+
+**Symlink** (para skills compartilhadas entre projetos):
+```bash
+ln -s /caminho/para/skill-global/{skill-name} .synapos/skills/{skill-name}
+```
+O resolver trata symlinks exatamente como diretórios reais — nenhuma diferença de comportamento.
 
 ### Passo 2 — Para skills MCP
 Adicionar ao arquivo de configuração do IDE:
@@ -186,6 +196,8 @@ SKILL_API_KEY=sua_chave_aqui
 ## REGRAS
 
 - Skills são **opcionais** — o agent funciona sem elas, com capacidade reduzida
+- **Quando uma skill está ativa, o agent DEVE usá-la** — nunca execute manualmente o que uma skill já oferece
+- Se uma skill cobre a tarefa em execução (busca, browser, arquivo, GitHub etc.), ela é o caminho obrigatório — não o opcional
 - Nunca adicione uma API key diretamente em SKILL.md — use variáveis de ambiente
 - Skills de `mcp` requerem restart do IDE após configuração
 - Documente em SKILL.md o que muda no comportamento do agent com e sem a skill

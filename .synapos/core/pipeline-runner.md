@@ -159,6 +159,8 @@ Aguarde a seleção do usuário. Salve a resposta e continue.
   - As instruções do step
   - O contexto do squad (company.md + memories.md)
   - Os outputs dos steps anteriores relevantes (via `depends_on`)
+  - As instruções de todas as skills ativas (lidas de `.synapos/skills/{skill}/SKILL.md`)
+  - A instrução explícita: **"Use as skills disponíveis para executar esta tarefa. Skills são o caminho preferencial — nunca as ignore."**
 - Aguarde o resultado
 - Se `output_file` definido → salve o resultado
 
@@ -263,8 +265,10 @@ Ao executar qualquer step, o agent recebe automaticamente:
 
 A ordem de composição sempre é:
 ```
-[Agent Persona] + [Contexto Squad] + [docs/ do projeto] + [Memória] + [Outputs Anteriores] + [Instrução do Step]
+[Agent Persona] + [Contexto Squad] + [docs/ do projeto] + [Memória] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
 ```
+
+> **Regra:** Quando há skills ativas, o agent DEVE usá-las para executar a tarefa. Skills não são sugestões — são o caminho preferencial. Nunca execute manualmente o que uma skill já oferece.
 
 > **Regra:** Nenhum agent pode executar sem antes ler a pasta `docs/` da raiz. Se `docs/` não existe ou está vazia, o runner deve bloquear e solicitar que o usuário execute o fluxo de documentação primeiro.
 
@@ -310,3 +314,4 @@ Substitua `{slug}` e `{run_id}` pelos valores reais do squad ativo antes de inje
 | **Falha loud** | Se agent ou arquivo não encontrado, pare e informe |
 | **Nunca escreva em .synapos/** | Outputs vão SEMPRE para `docs/.squads/{slug}/` |
 | **Caminhos absolutos** | Todo agent usa caminhos a partir da raiz do projeto |
+| **Skills são obrigatórias** | Se uma skill cobre a tarefa, o agent DEVE usá-la — nunca a ignore em favor de execução manual |
