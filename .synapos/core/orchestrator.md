@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.0.0
+version: 1.1.0
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -59,9 +59,20 @@ Antes de começar, preciso de algumas informações rápidas:
 3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
 4. IDE principal: Claude Code
 5. Você usa algum task tracker? [GitHub Issues / Linear / Jira / Não uso]
+6. Qual modelo de IA você está usando? [Claude Sonnet/Opus / GPT-4o / Gemini Pro / Kimi / MiniMax / Outro]
 ```
 
-Após as respostas, crie os arquivos abaixo e continue para PASSO 2:
+Após as respostas, mapeie o modelo informado para o perfil de capacidade:
+
+| Modelo | model_capability |
+|---|---|
+| Claude Opus/Sonnet, GPT-4o, Gemini 1.5 Pro+ | `high` |
+| GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
+| Kimi, MiniMax, Llama 3.x, modelos locais, outros não listados | `lite` |
+
+Se o usuário não souber ou pular a pergunta, assuma `high`.
+
+Crie os arquivos abaixo e continue para PASSO 2:
 
 **`docs/_memory/company.md`:**
 ```markdown
@@ -85,6 +96,8 @@ atualizado: {YYYY-MM-DD}
 **IDE Principal:** {resposta}
 **Formato de data:** YYYY-MM-DD
 **Task Tracker:** {github | linear | jira | none}
+**model_capability:** {high | standard | lite}
+**model_name:** {nome do modelo informado}
 ```
 
 ---

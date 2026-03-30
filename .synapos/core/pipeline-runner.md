@@ -1,6 +1,6 @@
 ---
 name: synapos-pipeline-runner
-version: 1.0.0
+version: 1.1.0
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
@@ -33,6 +33,23 @@ docs/.squads/{slug}/_memory/memories.md        → aprendizados do squad
 docs/_memory/company.md                        → perfil da empresa/usuário
 docs/_memory/preferences.md                    → preferências de saída
 docs/_memory/project-learnings.md              → aprendizados transversais (se existir)
+```
+
+### 1.1b — Verificar model_capability
+
+Leia o campo `model_capability` de `docs/_memory/preferences.md`:
+
+| Valor | Ação |
+|---|---|
+| `high` ou ausente | Continuar normalmente — sem adaptação |
+| `standard` | Ativar MODEL-ADAPTER em modo standard antes de cada step |
+| `lite` | Ativar MODEL-ADAPTER em modo lite antes de cada step |
+
+Se `model_capability` for `standard` ou `lite`, leia `.synapos/core/model-adapter.md` **agora** e mantenha o protocolo em memória para aplicar em cada step da FASE 2.
+
+Log ao anunciar início do pipeline:
+```
+🔧 [MODEL-ADAPTER] Modo {standard|lite} ativo — {model_name se disponível, senão "modelo não especificado"}
 ```
 
 ### 1.2 — Resolver pipeline
@@ -113,6 +130,11 @@ Para cada step do pipeline (em ordem, respeitando `depends_on`):
 Leia o arquivo do step: `.synapos/squads/{slug}/{file}`
 
 **Antes de passar as instruções ao agent, substitua todas as ocorrências de `docs/` no texto do step por `docs/.squads/{slug}/output/{run_id}/`.**
+
+**Se `model_capability` for `standard` ou `lite` (verificado em 1.1b):**
+Aplique o protocolo do MODEL-ADAPTER sobre o prompt composto antes de enviar ao agent.
+O adapter atua apenas em steps com `execution: subagent` ou `execution: inline`.
+Steps com `execution: checkpoint` nunca são afetados.
 
 Exemplo: `docs/architecture-decision.md` → `docs/.squads/frontend-001/output/2026-03-24-143000/architecture-decision.md`
 

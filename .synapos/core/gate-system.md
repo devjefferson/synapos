@@ -1,6 +1,6 @@
 ---
 name: synapos-gate-system
-version: 1.0.0
+version: 1.1.0
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 

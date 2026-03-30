@@ -6,6 +6,11 @@
   },
   "best_practices": {
     "catalog": "1.1.0",
+    "content": {
+      "copywriting": "1.0.0",
+      "linkedin-post": "1.0.0",
+      "blog-post": "1.0.0"
+    },
     "dev": {
       "code-review": "1.0.0",
       "testing-strategy": "1.0.0",
@@ -22,6 +27,7 @@
     "orchestrator": "1.1.0",
     "pipeline_runner": "1.1.0",
     "gate_system": "1.1.0",
+    "model_adapter": "1.0.0",
     "skills_engine": "1.0.0",
     "versioning": "1.0.0"
   },
