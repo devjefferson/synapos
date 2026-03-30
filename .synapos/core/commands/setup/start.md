@@ -33,6 +33,7 @@ Verifique a pasta `docs/` na raiz do projeto:
 | `docs/business/` existe e tem arquivos? | ✅ / ⚠️ ausente |
 | `docs/tech/` existe e tem arquivos? | ✅ / ⚠️ ausente |
 | `docs/tech-context/project-briefing.md` existe? | ✅ / ⚠️ ausente |
+| `docs/_memory/codebase-analysis.md` existe? | ✅ / ⚠️ ausente |
 
 ### 1.3 — Verificar squads ativos
 
@@ -53,6 +54,7 @@ Com base na análise, apresente em markdown puro (sem bloco de código):
 
 | | Documento | Caminho |
 |---|---|---|
+| {✅ ou ⚠️} | Análise do Codebase | docs/_memory/codebase-analysis.md |
 | {✅ ou ⚠️} | Project Briefing | docs/tech-context/ |
 | {✅ ou ⚠️} | Contexto de Negócio | docs/business/ |
 | {✅ ou ⚠️} | Contexto Técnico | docs/tech/ |
@@ -80,6 +82,10 @@ AskUserQuestion({
     multiSelect: false,
     options: [
       {
+        label: "🔎 Analisar projeto existente",
+        description: "Varre o código e gera análise — acelera os próximos passos (recomendado para projetos com código)"
+      },
+      {
         label: "📋 Documentação Business",
         description: "Contexto de negócio — personas, mercado, visão"
       },
@@ -105,6 +111,11 @@ Aguarde a seleção do usuário.
 ---
 
 ## Fase 4 — Executar Seleção
+
+**`🔎 Analisar projeto existente`**
+- Leia e execute `.synapos/core/commands/setup/from-code.md`
+- Ao finalizar, retorne ao menu (Fase 3) com status atualizado
+- O status de "Análise do Codebase" deve aparecer como ✅ no dashboard
 
 **`📋 Documentação Business`**
 - Leia e execute `.synapos/core/commands/setup/build-business.md`

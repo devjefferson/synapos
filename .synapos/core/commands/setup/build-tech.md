@@ -15,14 +15,35 @@ Gerar uma arquitetura completa de contexto técnico seguindo o template em `@com
 
 ## Parâmetros de Entrada
 
-**Argumentos Obrigatórios:**
-Você deve receber links para arquivos, repositórios e outras fontes de materiais para gerar a documentação técnica. Eles serão fornecidos nos seus argumentos. Se não receber nenhum argumento, solicite-os antes de prosseguir.
+**Argumentos opcionais:**
+Se argumentos forem fornecidos (links para arquivos, repositórios, etc.), use-os como fonte adicional.
 
 <arguments>
 #$ARGUMENTS
 </arguments>
 
 ---
+
+## PRÉ-VERIFICAÇÃO — Codebase Analysis
+
+**Antes de iniciar a Fase 1**, verifique se `docs/_memory/codebase-analysis.md` existe.
+
+**Se existir:**
+- Leia o arquivo completo
+- Use as informações já coletadas para pular perguntas já respondidas na Fase 2
+- Anuncie ao usuário:
+  ```
+  📋 Análise de codebase encontrada (docs/_memory/codebase-analysis.md)
+  Stack, arquitetura e entidades já identificados — entrevista será focada apenas no que falta.
+  ```
+- Na Fase 1, foque apenas nos pontos marcados como "lacunas" no codebase-analysis.md — não reanalise o que já foi coletado.
+
+**Se não existir:**
+- Execute a Fase 1 completa normalmente.
+- Informe ao usuário que para projetos com código existente, `/setup:from-code` pode ser executado antes para acelerar este processo.
+
+---
+
 ### Fase 1: Descoberta do Codebase
 
 1. **Análise da Estrutura do Projeto**
@@ -45,6 +66,12 @@ Você deve receber links para arquivos, repositórios e outras fontes de materia
 
 ### Fase 2: Discussão com o Usuário
 
+**Se `codebase-analysis.md` foi lido na pré-verificação:**
+- Use a seção "Para uso por /setup:build-tech" do arquivo para saber quais perguntas já estão respondidas
+- Faça APENAS as perguntas listadas em "Perguntas que AINDA devem ser feitas" + quaisquer lacunas adicionais identificadas na Fase 1
+- Não repita perguntas sobre stack, padrão arquitetural ou entidades que já foram detectados
+
+**Se não há codebase-analysis.md:**
 Após construir um bom entendimento do projeto, você fará ao humano uma série de perguntas para esclarecer dúvidas ou informações faltantes. Planeje fazer pelo menos 10 perguntas que cubram as principais áreas estratégicas da documentação. Seja seletivo nas perguntas e evite questões não relevantes ao projeto.
 
 - Se a stack estiver clara no codebase, não é necessário perguntar sobre ela.

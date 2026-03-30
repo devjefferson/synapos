@@ -74,10 +74,13 @@ Nenhum squad executa sem documentação. O Orchestrator apresenta o menu:
 ```
 O que você quer fazer?
 
+🔎 Analisar projeto existente       /setup:from-code        ← se já tem código
 📋 Criar documentação de negócio   /setup:build-business
 🔧 Criar documentação técnica      /setup:build-tech
 🚀 Configurar documentação completa /setup:start
 ```
+
+**Se o projeto já tem código:** execute `/setup:from-code` primeiro. Ele varre todo o codebase e gera `docs/_memory/codebase-analysis.md` — um documento de análise que o `/setup:build-tech` e o `/setup:build-business` vão consumir automaticamente para pular perguntas que já estão respondidas no código. A entrevista passa de ~10 perguntas para 3–5 perguntas focadas no que o código não revela (visão, público-alvo, concorrentes).
 
 Ao final, `docs/` terá:
 
@@ -139,7 +142,10 @@ Descreva o objetivo do squad (1-2 frases):
 Modo de performance:
 ⚡ Alta Performance   squad completo, revisões aprofundadas
 💰 Econômico          agentes essenciais, execução rápida
+🧑‍💻 Solo              para dev solo — checkpoints de aprovação removidos, execução direta
 ```
+
+**Sobre o modo Solo:** elimina os checkpoints de aprovação intermediários (as pausas onde você aprova o trabalho que você mesmo pediu). Mantém apenas os gates de integridade (GATE-0 e GATE-5). Ideal para dev solo que precisa de resultado rápido sem burocracia de time. O GATE-0 também é mais flexível em modo solo — avisa quando falta documentação em vez de bloquear.
 
 ### 2.4 Squad criado
 
@@ -336,15 +342,19 @@ O que deseja fazer agora?
   [4] Pausar squad
 ```
 
-### 4.3 Memória do squad
+### 4.3 Memória do squad e do projeto
 
-Ao final, o Synapos pergunta:
+Ao final, o Synapos faz duas perguntas:
 
 ```
 Algo que devo lembrar para a próxima execução deste squad?
 ```
+Salvo em `docs/.squads/{slug}/_memory/memories.md` — memória específica do squad.
 
-Respostas são salvas em `docs/.squads/{slug}/_memory/memories.md` e carregadas automaticamente no próximo run. O squad aprende com o tempo.
+```
+Algo que todos os squads deste projeto devem saber?
+```
+Salvo em `docs/_memory/project-learnings.md` — memória transversal carregada por **todos os squads** do projeto. Use para decisões de arquitetura, padrões do time, ou aprendizados que valem para frontend, backend e produto ao mesmo tempo.
 
 ---
 
@@ -374,6 +384,7 @@ Respostas são salvas em `docs/.squads/{slug}/_memory/memories.md` e carregadas 
 
 | Pipeline | Quando usar | Outputs |
 |----------|-------------|---------|
+| `quick-fix` | Mudança pontual e rápida — sem aprovações | quick-fix-output.md, quick-fix-log.md |
 | `feature-development` | Feature nova no frontend | architecture-decision.md, review-notes.md, feature-notes.md |
 | `component-development` | Componente reutilizável | spec, implementação, storybook |
 | `bug-fix` | Correção de bug com diagnóstico | diagnóstico, fix documentado, review |
@@ -458,6 +469,182 @@ O arquivo `memories.md` de cada squad acumula aprendizados entre sessões. Se em
 
 ---
 
+## Para o Dev Solo
+
+O Synapos foi projetado para ser usado solo. Se você é o PM, dev e DevOps do seu projeto ao mesmo tempo, estas configurações eliminam a burocracia de time sem abrir mão da qualidade.
+
+### Configuração recomendada
+
+**No onboarding (`/init`):**
+- Task Tracker: `none` — elimina o step `atualizar-tarefa` de todos os pipelines automaticamente
+
+**Ao criar qualquer squad:**
+- Modo: `Solo` — remove checkpoints de aprovação intermediários
+
+### Quando usar cada pipeline
+
+```
+Mudança rápida e pontual       → quick-fix      (3 steps, sem aprovações)
+Bug com diagnóstico necessário → bug-fix         (4 steps, diagnóstico + fix + review)
+Feature nova                   → feature-development  (completo com arquitetura)
+Spec de produto                → quick-spec      (5 steps, coleta contexto e gera spec)
+```
+
+### Sobre o GATE-0 em modo solo
+
+Em modo solo, o GATE-0 não bloqueia se `docs/` ainda não estiver completo. Ele avisa sobre o que falta e deixa você prosseguir. Isso permite usar o Synapos em projetos novos antes de ter documentação completa — e ir criando a documentação conforme o projeto evolui.
+
+### Task tracker
+
+Se você não usa GitHub Issues, Linear ou Jira, defina `task_tracker: none` em `docs/_memory/preferences.md`. O step `atualizar-tarefa` vai ser ignorado automaticamente em todos os pipelines, sem precisar dispensá-lo manualmente a cada execução.
+
+---
+
+## Usando com Modelos de Capacidade Inferior
+
+O Synapos funciona com qualquer modelo de IA. Se você usa um modelo menos capaz que Sonnet/Opus (ex: Kimi, MiniMax, Llama 3.x, GPT-4o-mini), o **Model Capability Adapter** ajusta automaticamente os prompts para compensar as limitações e manter a qualidade dos outputs.
+
+### Perfis de capacidade
+
+| Perfil | Modelos | O que muda |
+|--------|---------|------------|
+| `high` | Claude Sonnet/Opus, GPT-4o, Gemini 1.5 Pro+ | Nada — comportamento padrão |
+| `standard` | GPT-4o-mini, Gemini Flash, Claude Haiku | CoT obrigatório + templates de estrutura injetados |
+| `lite` | Kimi, MiniMax, Llama 3.x, modelos locais e outros | Persona simplificada + context pruning + CoT + template fill-in-the-blank + scope forcing + self-check |
+
+### Como configurar
+
+O modelo é coletado automaticamente no onboarding (`/init`). O Orchestrator pergunta:
+
+```
+Qual modelo de IA você está usando?
+[Claude Sonnet/Opus / GPT-4o / Gemini Pro / Kimi / MiniMax / Outro]
+```
+
+E salva em `docs/_memory/preferences.md`:
+
+```markdown
+**model_capability:** lite
+**model_name:** Kimi K2
+```
+
+Para alterar manualmente, edite `docs/_memory/preferences.md` diretamente.
+
+### O que o adapter faz em cada modo
+
+**Modo Standard** — dois ajustes pontuais:
+- **S1 — CoT Prefix:** adiciona "Pense passo a passo antes de responder" antes de cada instrução
+- **S2 — Template Injection:** se o step tem `lite_template:`, injeta o template para guiar a estrutura do output
+
+**Modo Lite** — seis mecanismos em cascata:
+
+| Mecanismo | O que faz | Por que funciona |
+|-----------|-----------|-----------------|
+| **L1 — Persona Simplificada** | Substitui a persona completa do agent pela seção `## Modo Lite` | Persona longa em modelo fraco gera outputs genéricos — regras explícitas são mais confiáveis |
+| **L2 — Context Pruning** | Ao invés de expor toda a pasta `docs/`, monta um resumo estruturado de 30 linhas | Contexto longo em modelo fraco dilui a instrução principal |
+| **L3 — Chain-of-Thought** | Força o modelo a raciocinar antes de gerar o output | Modelos fracos "palpitam" sem raciocinar — CoT obrigatório reduz alucinações |
+| **L4 — Template Obrigatório** | Injeta template fill-in-the-blank específico do step | Sem template, modelos fracos inventam estrutura ou omitem seções críticas |
+| **L5 — Scope Forcing** | Se um step gera múltiplos arquivos, serializa em sub-execuções de um arquivo por vez | Modelos fracos com múltiplos outputs tendem a misturar conteúdo ou gerar incompleto |
+| **L6 — Self-Check** | Ao final, o modelo verifica o próprio output contra um checklist de 5 critérios | Simula a etapa de revisão que modelos fracos naturalmente pulam |
+
+### Seção `## Modo Lite` nos agents
+
+Cada agent tem uma seção `## Modo Lite` ao final do arquivo. Ela é ativada pelo L1 e substitui a persona completa quando `model_capability: lite`.
+
+Estrutura:
+```markdown
+## Modo Lite
+
+> Ativado pelo MODEL-ADAPTER quando `model_capability: lite` em preferences.md.
+> Use APENAS esta seção como persona — ignore o restante do arquivo.
+
+Você é [papel em 1–2 frases diretas].
+
+### Regras Obrigatórias
+
+1. [regra explícita e verificável]
+2. [regra explícita e verificável]
+...
+
+### Template de [Entregável Principal]
+
+```markdown
+## [Seção]
+[campo preenchível]
+```
+
+### Não faça
+- [anti-pattern crítico]
+```
+
+**Se um agent não tiver `## Modo Lite`**, o adapter usa a seção `## Quality Criteria` do agent como fallback — convertendo cada linha da tabela em uma regra obrigatória explícita.
+
+### Como adicionar `lite_template:` em um step de pipeline
+
+Para steps que geram documentos críticos, você pode definir um template de fallback diretamente no `pipeline.yaml`:
+
+```yaml
+- id: 03-spec
+  agent: priscila-produto
+  execution: subagent
+  model_tier: powerful
+  output_files: [spec.md]
+  lite_template: |
+    ## Spec: [Título da Feature]
+    **Problema:** [descrição do problema]
+    **Solução:** [descrição da solução proposta]
+    **Escopo IN:** [o que está incluído]
+    **Escopo OUT:** [o que não está incluído]
+    ### Critérios de Aceite
+    - Dado [contexto] Quando [ação] Então [resultado esperado]
+```
+
+O adapter injeta esse template no prompt quando `model_capability` for `standard` ou `lite`. Em modo `high`, o campo é ignorado.
+
+---
+
+## Best Practices
+
+O Synapos inclui um catálogo de boas práticas que os agentes carregam automaticamente quando relevante. Você também pode consultá-las diretamente.
+
+### Catálogo completo
+
+| ID | Arquivo | Quando é carregado | Domínios |
+|----|---------|-------------------|----------|
+| `code-review` | `dev/code-review.md` | Reviews de código em qualquer linguagem | frontend, backend, fullstack, mobile |
+| `testing-strategy` | `dev/testing-strategy.md` | Definição ou execução de estratégia de testes | frontend, backend, fullstack, mobile |
+| `api-design` | `dev/api-design.md` | Projeto ou documentação de APIs REST/GraphQL | backend, fullstack |
+| `git-workflow` | `dev/git-workflow.md` | Branches, commits e PRs | frontend, backend, fullstack, mobile, devops |
+| `product-spec` | `product/product-spec.md` | Escrita de especificações de produto | produto |
+| `user-research` | `product/user-research.md` | Pesquisa de usuário ou mercado | produto |
+| `technical-writing` | `product/technical-writing.md` | ADRs, decisions log, handoff, documentação técnica | produto, backend, frontend |
+| `copywriting` | `content/copywriting.md` | Textos persuasivos para qualquer canal | custom |
+| `linkedin-post` | `content/linkedin-post.md` | Posts para LinkedIn | custom |
+| `blog-post` | `content/blog-post.md` | Artigos para blog | custom |
+
+### Best Practices de Conteúdo (domínio `custom`)
+
+As práticas de conteúdo são usadas por squads customizados voltados para criação de textos e comunicação.
+
+**`copywriting.md`** — para textos persuasivos em qualquer canal:
+- Frameworks AIDA e PAS com exemplos práticos
+- Fórmulas de headline e CTAs por contexto
+- Guia de tom de voz e processo de revisão
+
+**`linkedin-post.md`** — para posts de LinkedIn:
+- Anatomia do post (gancho → corpo → CTA → hashtags)
+- Fórmulas de gancho que param o scroll
+- Formatos por objetivo: storytelling, listicle, hot take
+- Melhores horários e frequência ideal
+
+**`blog-post.md`** — para artigos de blog:
+- 7 tipos de artigo com objetivo e quando usar
+- Estrutura padrão com template em markdown
+- SEO on-page: checklist de keyword, meta description, URL, alt text
+- Comprimento ideal por tipo e checklist de publicação
+
+---
+
 ## Referências
 
 | Arquivo | Descrição |
@@ -465,7 +652,9 @@ O arquivo `memories.md` de cada squad acumula aprendizados entre sessões. Se em
 | `.synapos/core/orchestrator.md` | Protocolo de inicialização e criação de squads |
 | `.synapos/core/pipeline-runner.md` | Engine de execução de steps e outputs |
 | `.synapos/core/gate-system.md` | Definição dos 6 quality gates |
+| `.synapos/core/model-adapter.md` | Protocolo de adaptação para modelos de capacidade inferior |
 | `.synapos/core/skills-engine.md` | Gerenciamento de skills MCP e externas |
+| `.synapos/core/best-practices/_catalog.yaml` | Catálogo de boas práticas — carregue apenas o relevante |
 | `.synapos/squad-templates/{domínio}/template.yaml` | Configuração de cada template de squad |
 | `.synapos/CHANGELOG.md` | Histórico de versões do framework |
 | `.synapos/.manifest.json` | Inventário de versões de todos os componentes |

@@ -57,6 +57,10 @@ pipelines:
       name: "Spec Rápida"
       description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff"
       file: pipelines/quick-spec.yaml
+    - id: quick-fix
+      name: "Quick Fix"
+      description: "Decisão ou ajuste pontual de produto — contexto → decisão → registro"
+      file: pipelines/quick-fix.yaml
 
 performance_modes:
   alta:
@@ -76,3 +80,10 @@ performance_modes:
     docs:
       - docs/specs/{feature-slug}-v1.md
       - docs/CHANGELOG.md             # append
+  solo:
+    description: "Para dev solo — sem checkpoints de aprovação, decisões diretas documentadas"
+    agents:
+      - priscila-produto
+      - tania-tecnica
+    docs:
+      - docs/specs/{feature-slug}-v1.md

@@ -11,6 +11,105 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.7.0] — 2026-03-30
+
+### Adicionado
+
+#### Core — Model Capability Adapter
+- `core/model-adapter.md` v1.0.0 — protocolo de adaptação de prompts para modelos de IA de capacidade inferior
+  - Três perfis: `high` (Sonnet/Opus/GPT-4o), `standard` (GPT-4o-mini/Gemini Flash/Haiku), `lite` (Kimi, MiniMax, Llama 3.x, modelos locais)
+  - Modo Lite: 6 mecanismos — L1 Persona Simplificada, L2 Context Pruning (resumo 30 linhas), L3 Chain-of-Thought Obrigatório, L4 Template Obrigatório, L5 Scope Forcing, L6 Self-Check Checklist
+  - Modo Standard: 2 mecanismos — S1 CoT Prefix, S2 Template Injection
+  - Templates de composição de prompt por perfil
+  - Fallback automático para `## Quality Criteria` quando agent não tem `## Modo Lite`
+- `.manifest.json` — `model_adapter: "1.0.0"` adicionado à seção `core`
+
+#### Agents — Seção `## Modo Lite` (todos os 29 agents)
+Cada agent recebeu uma seção `## Modo Lite` ao final do arquivo com:
+- Persona simplificada em 1–2 frases (substituindo a seção completa de framework)
+- 5 regras obrigatórias explícitas e verificáveis (sem dependência de inferência)
+- Template fill-in-the-blank específico do domínio
+- Lista "Não faça" com anti-patterns críticos
+
+Agents atualizados:
+- **Frontend (6):** `ana-arquitetura-fe`, `rodrigo-react`, `ursula-ui`, `renata-revisao-fe`, `tiago-testes-fe`, `paulo-performance`
+- **Backend (5):** `bruno-base`, `alexandre-api`, `daniela-dados`, `sergio-seguranca`, `roberto-revisao-be`
+- **Produto (6):** `priscila-produto`, `paulo-pesquisa`, `ana-analise`, `tania-tecnica`, `eduardo-estrategia`, `ursula-ux`
+- **Fullstack (1):** `carlos-coordenador`
+- **Mobile (3):** `marina-mobile`, `felipe-feature`, `viviane-visual`
+- **DevOps (4):** `igor-infra`, `claudio-containers`, `patricia-pipeline`, `osvaldo-observabilidade`
+- **IA/Dados (4):** `larissa-llm`, `marco-ml`, `diana-dados`, `nelson-notebook`
+
+### Alterado
+
+#### Core — Orchestrator
+- `core/orchestrator.md` — onboarding agora coleta o modelo de IA do usuário (pergunta 6)
+- `core/orchestrator.md` — tabela de mapeamento modelo → `model_capability` adicionada
+- Template `docs/_memory/preferences.md` atualizado: campos `model_capability` e `model_name` adicionados
+
+#### Core — Pipeline Runner
+- `core/pipeline-runner.md` — seção **1.1b** adicionada: verifica `model_capability` na inicialização e carrega `model-adapter.md` se necessário
+- `core/pipeline-runner.md` — seção **2.3** atualizada: aplica MODEL-ADAPTER sobre o prompt composto antes de enviar ao agent (apenas steps `subagent` e `inline`)
+- Log de ativação do adapter: `🔧 [MODEL-ADAPTER] Modo {standard|lite} ativo — {model_name}`
+
+---
+
+## [1.6.1] — 2026-03-30
+
+### Adicionado
+
+#### Best Practices — Conteúdo
+- `content/copywriting.md` v1.0.0 — guia de copywriting: princípios, estrutura AIDA, PAS, headlines, CTA, tom de voz, checklist de qualidade
+- `content/linkedin-post.md` v1.0.0 — guia de posts para LinkedIn: anatomia do post, ganchos, formatos (storytelling/listicle/hot take), hashtags, checklist
+- `content/blog-post.md` v1.0.0 — guia de artigos para blog: tipos de artigo, estrutura padrão, SEO on-page, intenção de busca, checklist de publicação
+- `.manifest.json` — seção `content` adicionada em `best_practices` com os 3 novos arquivos
+- `.manifest.json` — `model_adapter: "1.0.0"` adicionado à seção `core` (arquivo existia mas não estava indexado)
+
+### Corrigido
+
+#### Core — Inconsistência de versão
+- `core/orchestrator.md` — frontmatter corrigido de `1.0.0` para `1.1.0` (alinhado ao manifest)
+- `core/pipeline-runner.md` — frontmatter corrigido de `1.0.0` para `1.1.0` (alinhado ao manifest)
+- `core/gate-system.md` — frontmatter corrigido de `1.0.0` para `1.1.0` (alinhado ao manifest)
+
+---
+
+## [1.6.0] — 2026-03-29
+
+### Adicionado
+
+#### Core — Modo Solo
+- `core/orchestrator.md` — novo modo de performance `solo`: checkpoints de aprovação intermediários ignorados automaticamente, GATE-0 flexível para projetos sem documentação completa
+- `core/pipeline-runner.md` — comportamento de modo solo: steps `checkpoint` sem `gate:` são pulados com log `⚡ [SOLO]`
+- `core/gate-system.md` — GATE-0 com variante para modo solo: aviso em vez de bloqueio quando `docs/` incompleto
+
+#### Core — Memória Transversal de Projeto
+- `core/pipeline-runner.md` — carrega `docs/_memory/project-learnings.md` no contexto de todos os agents
+- `core/pipeline-runner.md` — FASE 3 agora pergunta sobre aprendizados transversais (além dos aprendizados do squad)
+- `core/orchestrator.md` — cria `docs/_memory/project-learnings.md` na inicialização do squad se não existir
+
+#### Core — Task Tracker Configurável
+- `_memory/preferences.md` — campo `task_tracker: none | github | linear | jira`
+- `core/orchestrator.md` — onboarding agora coleta preferência de task tracker
+- `core/pipeline-runner.md` — step `atualizar-tarefa` ignorado automaticamente quando `task_tracker: none`
+
+#### Pipelines — Quick Fix (7 domínios)
+- Pipeline `quick-fix` adicionado a todos os templates: frontend, backend, produto, fullstack, mobile, devops, ia-dados
+- 3 steps: gate de integridade → contexto rápido (inline) → execução (subagent) → registro (inline)
+- Sem checkpoints de aprovação — fluxo direto para mudanças pontuais bem definidas
+- Step `qf-03-executar.md` específico por domínio com output adaptado ao contexto (frontend, backend, devops, IA, etc.)
+
+#### Templates — Modo Solo
+- Modo `solo` adicionado ao `performance_modes` de todos os 7 templates com conjunto de agents reduzido (sem revisores separados)
+
+### Alterado
+
+#### GUIDE.md
+- Documentação do modo solo, quick-fix pipeline, project-learnings e task tracker
+- Nova seção "Para o Dev Solo" com configuração recomendada e quando usar cada pipeline
+
+---
+
 ## [1.5.0] — 2026-03-25
 
 ### Adicionado

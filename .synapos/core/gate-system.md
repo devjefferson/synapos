@@ -1,6 +1,6 @@
 ---
 name: synapos-gate-system
-version: 1.0.0
+version: 1.1.0
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 
@@ -33,7 +33,7 @@ Use `gate:` nos steps do pipeline.yaml para ativar um gate antes de continuar.
 - [ ] Pasta `docs/` existe na raiz do projeto
 - [ ] `docs/` contém pelo menos um arquivo `.md`
 
-**Se `docs/` não existe ou está vazia:**
+**Se `docs/` não existe ou está vazia — Modo padrão (`alta` / `economico`):**
 ```
 🚫 GATE-0 — Documentação ausente
 
@@ -41,11 +41,28 @@ A pasta docs/ está vazia ou não existe.
 Nenhum agent pode executar sem documentação do projeto.
 
 Execute primeiro o fluxo de documentação:
-  → /docs-commands/build-business-docs   (contexto de negócio)
-  → /docs-commands/build-tech-docs       (contexto técnico, se aplicável)
+  → /setup:build-business   (contexto de negócio)
+  → /setup:build-tech        (contexto técnico, se aplicável)
 
 Após gerar a documentação, execute o pipeline novamente.
 ```
+
+**Se `docs/` não existe ou está vazia — Modo Solo (`mode: solo` em squad.yaml):**
+
+Verifique `docs/_memory/company.md`:
+- Se existe → GATE-0 passa com aviso:
+```
+⚠️  GATE-0 (modo solo) — Documentação de projeto ausente
+docs/ não contém documentação técnica ou de negócio.
+Os agents vão operar com contexto limitado — outputs podem ser menos específicos.
+
+Recomendado (a qualquer momento):
+  → /setup:build-business
+  → /setup:build-tech
+
+Prosseguindo em modo solo com contexto mínimo...
+```
+- Se `company.md` também não existe → bloqueio total (mesmo comportamento do modo padrão).
 
 **Falha de framework:** Liste os arquivos faltantes e pare.
 
