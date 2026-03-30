@@ -11,6 +11,42 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.6.0] — 2026-03-29
+
+### Adicionado
+
+#### Core — Modo Solo
+- `core/orchestrator.md` — novo modo de performance `solo`: checkpoints de aprovação intermediários ignorados automaticamente, GATE-0 flexível para projetos sem documentação completa
+- `core/pipeline-runner.md` — comportamento de modo solo: steps `checkpoint` sem `gate:` são pulados com log `⚡ [SOLO]`
+- `core/gate-system.md` — GATE-0 com variante para modo solo: aviso em vez de bloqueio quando `docs/` incompleto
+
+#### Core — Memória Transversal de Projeto
+- `core/pipeline-runner.md` — carrega `docs/_memory/project-learnings.md` no contexto de todos os agents
+- `core/pipeline-runner.md` — FASE 3 agora pergunta sobre aprendizados transversais (além dos aprendizados do squad)
+- `core/orchestrator.md` — cria `docs/_memory/project-learnings.md` na inicialização do squad se não existir
+
+#### Core — Task Tracker Configurável
+- `_memory/preferences.md` — campo `task_tracker: none | github | linear | jira`
+- `core/orchestrator.md` — onboarding agora coleta preferência de task tracker
+- `core/pipeline-runner.md` — step `atualizar-tarefa` ignorado automaticamente quando `task_tracker: none`
+
+#### Pipelines — Quick Fix (7 domínios)
+- Pipeline `quick-fix` adicionado a todos os templates: frontend, backend, produto, fullstack, mobile, devops, ia-dados
+- 3 steps: gate de integridade → contexto rápido (inline) → execução (subagent) → registro (inline)
+- Sem checkpoints de aprovação — fluxo direto para mudanças pontuais bem definidas
+- Step `qf-03-executar.md` específico por domínio com output adaptado ao contexto (frontend, backend, devops, IA, etc.)
+
+#### Templates — Modo Solo
+- Modo `solo` adicionado ao `performance_modes` de todos os 7 templates com conjunto de agents reduzido (sem revisores separados)
+
+### Alterado
+
+#### GUIDE.md
+- Documentação do modo solo, quick-fix pipeline, project-learnings e task tracker
+- Nova seção "Para o Dev Solo" com configuração recomendada e quando usar cada pipeline
+
+---
+
 ## [1.5.0] — 2026-03-25
 
 ### Adicionado

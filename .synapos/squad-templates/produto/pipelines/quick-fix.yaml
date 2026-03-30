@@ -1,0 +1,40 @@
+name: "Quick Fix"
+description: "Decisão ou ajuste pontual de produto — contexto → decisão → registro. Sem aprovações intermediárias."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: qf-02-contexto
+    name: "Contexto Rápido"
+    execution: inline
+    model_tier: fast
+    file: pipeline/steps/qf-02-contexto.md
+    depends_on: [01-gate-integridade]
+
+  - id: qf-03-executar
+    name: "Decidir e Documentar"
+    agent: priscila-produto
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/qf-03-executar.md
+    depends_on: [qf-02-contexto]
+    output_files:
+      - quick-fix-output.md
+    veto_conditions:
+      - "Decisão sem justificativa ou critérios de aceite mínimos"
+      - "Output vazio ou sem documento concreto"
+
+  - id: qf-04-registrar
+    name: "Registrar Decisão"
+    execution: inline
+    model_tier: fast
+    file: pipeline/steps/qf-04-registrar.md
+    depends_on: [qf-03-executar]
+    output_files:
+      - quick-fix-log.md
+    gate: GATE-5

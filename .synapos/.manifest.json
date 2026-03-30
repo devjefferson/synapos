@@ -1,8 +1,8 @@
 {
   "framework": {
     "name": "synapos",
-    "version": "1.4.0",
-    "released_at": "2026-03-23"
+    "version": "1.6.0",
+    "released_at": "2026-03-29"
   },
   "best_practices": {
     "catalog": "1.1.0",
@@ -19,51 +19,60 @@
     }
   },
   "core": {
-    "orchestrator": "1.0.0",
-    "pipeline_runner": "1.0.0",
-    "gate_system": "1.0.0",
+    "orchestrator": "1.1.0",
+    "pipeline_runner": "1.1.0",
+    "gate_system": "1.1.0",
     "skills_engine": "1.0.0",
     "versioning": "1.0.0"
   },
   "templates": {
-    "frontend": "1.1.0",
-    "backend": "1.1.0",
-    "produto": "2.0.0",
-    "fullstack": "1.0.0",
-    "mobile": "1.0.0",
-    "devops": "1.0.0",
-    "ia-dados": "1.0.0"
+    "frontend": "1.2.0",
+    "backend": "1.2.0",
+    "produto": "2.1.0",
+    "fullstack": "1.1.0",
+    "mobile": "1.1.0",
+    "devops": "1.1.0",
+    "ia-dados": "1.1.0"
   },
   "pipelines": {
     "frontend": {
       "feature-development": "1.0.0",
       "bug-fix": "1.0.0",
-      "component-development": "1.0.0"
+      "component-development": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "backend": {
       "api-development": "1.0.0",
       "database-migration": "1.0.0",
-      "bug-fix": "1.0.0"
+      "bug-fix": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "produto": {
       "discovery-spec-handoff": "1.0.0",
-      "quick-spec": "1.0.0"
+      "quick-spec": "1.0.0",
+      "nova-feature": "1.0.0",
+      "refinar-docs": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "fullstack": {
       "integration-feature": "1.0.0",
-      "bug-fix": "1.0.0"
+      "bug-fix": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "mobile": {
       "feature-development": "1.0.0",
-      "bug-fix": "1.0.0"
+      "bug-fix": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "devops": {
       "ci-cd-setup": "1.0.0",
-      "infra-provision": "1.0.0"
+      "infra-provision": "1.0.0",
+      "quick-fix": "1.0.0"
     },
     "ia-dados": {
       "ml-feature": "1.0.0",
-      "data-pipeline": "1.0.0"
+      "data-pipeline": "1.0.0",
+      "quick-fix": "1.0.0"
     }
   },
   "agents": {

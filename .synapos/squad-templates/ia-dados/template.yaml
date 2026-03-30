@@ -44,6 +44,10 @@ pipelines:
       name: "Pipeline de Dados"
       description: "Design → Implementação → Qualidade → Validação → Deploy"
       file: pipelines/data-pipeline.yaml
+    - id: quick-fix
+      name: "Quick Fix"
+      description: "Ajuste pontual em modelo, prompt ou pipeline — sem aprovações intermediárias"
+      file: pipelines/quick-fix.yaml
 
 performance_modes:
   alta:
@@ -55,3 +59,8 @@ performance_modes:
       - larissa-llm
       - diana-dados
       - nelson-notebook
+  solo:
+    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+    agents:
+      - larissa-llm
+      - diana-dados

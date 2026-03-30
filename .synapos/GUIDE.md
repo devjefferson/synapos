@@ -74,10 +74,13 @@ Nenhum squad executa sem documentação. O Orchestrator apresenta o menu:
 ```
 O que você quer fazer?
 
+🔎 Analisar projeto existente       /setup:from-code        ← se já tem código
 📋 Criar documentação de negócio   /setup:build-business
 🔧 Criar documentação técnica      /setup:build-tech
 🚀 Configurar documentação completa /setup:start
 ```
+
+**Se o projeto já tem código:** execute `/setup:from-code` primeiro. Ele varre todo o codebase e gera `docs/_memory/codebase-analysis.md` — um documento de análise que o `/setup:build-tech` e o `/setup:build-business` vão consumir automaticamente para pular perguntas que já estão respondidas no código. A entrevista passa de ~10 perguntas para 3–5 perguntas focadas no que o código não revela (visão, público-alvo, concorrentes).
 
 Ao final, `docs/` terá:
 
@@ -139,7 +142,10 @@ Descreva o objetivo do squad (1-2 frases):
 Modo de performance:
 ⚡ Alta Performance   squad completo, revisões aprofundadas
 💰 Econômico          agentes essenciais, execução rápida
+🧑‍💻 Solo              para dev solo — checkpoints de aprovação removidos, execução direta
 ```
+
+**Sobre o modo Solo:** elimina os checkpoints de aprovação intermediários (as pausas onde você aprova o trabalho que você mesmo pediu). Mantém apenas os gates de integridade (GATE-0 e GATE-5). Ideal para dev solo que precisa de resultado rápido sem burocracia de time. O GATE-0 também é mais flexível em modo solo — avisa quando falta documentação em vez de bloquear.
 
 ### 2.4 Squad criado
 
@@ -336,15 +342,19 @@ O que deseja fazer agora?
   [4] Pausar squad
 ```
 
-### 4.3 Memória do squad
+### 4.3 Memória do squad e do projeto
 
-Ao final, o Synapos pergunta:
+Ao final, o Synapos faz duas perguntas:
 
 ```
 Algo que devo lembrar para a próxima execução deste squad?
 ```
+Salvo em `docs/.squads/{slug}/_memory/memories.md` — memória específica do squad.
 
-Respostas são salvas em `docs/.squads/{slug}/_memory/memories.md` e carregadas automaticamente no próximo run. O squad aprende com o tempo.
+```
+Algo que todos os squads deste projeto devem saber?
+```
+Salvo em `docs/_memory/project-learnings.md` — memória transversal carregada por **todos os squads** do projeto. Use para decisões de arquitetura, padrões do time, ou aprendizados que valem para frontend, backend e produto ao mesmo tempo.
 
 ---
 
@@ -374,6 +384,7 @@ Respostas são salvas em `docs/.squads/{slug}/_memory/memories.md` e carregadas 
 
 | Pipeline | Quando usar | Outputs |
 |----------|-------------|---------|
+| `quick-fix` | Mudança pontual e rápida — sem aprovações | quick-fix-output.md, quick-fix-log.md |
 | `feature-development` | Feature nova no frontend | architecture-decision.md, review-notes.md, feature-notes.md |
 | `component-development` | Componente reutilizável | spec, implementação, storybook |
 | `bug-fix` | Correção de bug com diagnóstico | diagnóstico, fix documentado, review |
@@ -455,6 +466,37 @@ O arquivo `memories.md` de cada squad acumula aprendizados entre sessões. Se em
 | Handoff checklist gerada pelo Tânia garante entregáveis completos | Dev recebe spec incompleta, abre perguntas no meio da sprint |
 | Memória do squad reduz repetição de contexto | Toda sessão começa explicando o mesmo projeto de novo |
 | `state.json` mantém rastreabilidade | Impossível saber o que foi gerado e quando |
+
+---
+
+## Para o Dev Solo
+
+O Synapos foi projetado para ser usado solo. Se você é o PM, dev e DevOps do seu projeto ao mesmo tempo, estas configurações eliminam a burocracia de time sem abrir mão da qualidade.
+
+### Configuração recomendada
+
+**No onboarding (`/init`):**
+- Task Tracker: `none` — elimina o step `atualizar-tarefa` de todos os pipelines automaticamente
+
+**Ao criar qualquer squad:**
+- Modo: `Solo` — remove checkpoints de aprovação intermediários
+
+### Quando usar cada pipeline
+
+```
+Mudança rápida e pontual       → quick-fix      (3 steps, sem aprovações)
+Bug com diagnóstico necessário → bug-fix         (4 steps, diagnóstico + fix + review)
+Feature nova                   → feature-development  (completo com arquitetura)
+Spec de produto                → quick-spec      (5 steps, coleta contexto e gera spec)
+```
+
+### Sobre o GATE-0 em modo solo
+
+Em modo solo, o GATE-0 não bloqueia se `docs/` ainda não estiver completo. Ele avisa sobre o que falta e deixa você prosseguir. Isso permite usar o Synapos em projetos novos antes de ter documentação completa — e ir criando a documentação conforme o projeto evolui.
+
+### Task tracker
+
+Se você não usa GitHub Issues, Linear ou Jira, defina `task_tracker: none` em `docs/_memory/preferences.md`. O step `atualizar-tarefa` vai ser ignorado automaticamente em todos os pipelines, sem precisar dispensá-lo manualmente a cada execução.
 
 ---
 

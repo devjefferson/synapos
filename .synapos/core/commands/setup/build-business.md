@@ -12,12 +12,36 @@ Gerar uma arquitetura completa de contexto de negócio seguindo o template em `@
 
 ## Parâmetros de Entrada
 
-**Argumentos Obrigatórios:**
-Você deve receber links para arquivos, repositórios e outras fontes de materiais para gerar a documentação de negócio. Eles serão fornecidos nos seus argumentos. Se não receber nenhum argumento, solicite-os antes de prosseguir.
+**Argumentos opcionais:**
+Se argumentos forem fornecidos (links para arquivos, repositórios, materiais de marketing, etc.), use-os como fonte adicional.
 
 <arguments>
 #$ARGUMENTS
 </arguments>
+
+---
+
+## PRÉ-VERIFICAÇÃO — Codebase Analysis
+
+**Antes de iniciar a Fase 1**, verifique se `docs/_memory/codebase-analysis.md` existe.
+
+**Se existir:**
+- Leia o arquivo completo
+- Use as informações da seção "Para uso por /setup:build-business":
+  - **Tipo de produto inferido** → preenche `business-context.md` automaticamente
+  - **Funcionalidades identificadas** → alimenta `features/` diretamente
+  - **Entidades de negócio** → base para personas e jornada do cliente
+- Anuncie ao usuário:
+  ```
+  📋 Análise de codebase encontrada (docs/_memory/codebase-analysis.md)
+  Tipo de produto e funcionalidades já identificados no código.
+  Entrevista será focada em: visão, público-alvo, contexto competitivo e métricas.
+  ```
+- Na Fase 2, faça APENAS as perguntas que o código não consegue responder (listadas em "Informações que NÃO podem ser inferidas do código").
+
+**Se não existir:**
+- Execute normalmente.
+- Considere sugerir `/setup:from-code` caso o projeto tenha código existente.
 
 ---
 
@@ -45,6 +69,17 @@ Você deve receber links para arquivos, repositórios e outras fontes de materia
 
 ## Fase 2 — Discussão com o Usuário
 
+**Se `codebase-analysis.md` foi lido na pré-verificação:**
+Foque a entrevista APENAS no que o código não revela. As perguntas obrigatórias são:
+1. Qual é a visão de longo prazo do produto? (onde quer chegar em 2–3 anos)
+2. Quem é o usuário-alvo principal? (perfil, contexto, nível técnico)
+3. Quais são os 2–3 principais concorrentes e o que diferencia este produto?
+4. Quais são as métricas de sucesso hoje? (DAU, MRR, retenção, etc.)
+5. O que está **fora do escopo** do produto intencionalmente?
+
+Se as funcionalidades detectadas no código precisarem de validação: confirme com o usuário se estão corretas antes de usar como base para os docs.
+
+**Se não há codebase-analysis.md:**
 Após construir um bom entendimento do projeto, você fará ao humano uma série de perguntas para esclarecer dúvidas ou informações faltantes. Planeje fazer pelo menos 10 perguntas que cubram as principais áreas estratégicas da documentação. Seja seletivo nas perguntas e evite questões não relevantes ao projeto.
 
 - Identificar a visão do produto

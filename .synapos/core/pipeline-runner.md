@@ -28,10 +28,11 @@ Execute os passos abaixo na ordem exata.
 
 Leia os seguintes arquivos:
 ```
-.synapos/squads/{slug}/squad.yaml      → configuração do squad
-docs/.squads/{slug}/_memory/memories.md → aprendizados anteriores
-docs/_memory/company.md                → perfil da empresa/usuário
-docs/_memory/preferences.md            → preferências de saída
+.synapos/squads/{slug}/squad.yaml              → configuração do squad
+docs/.squads/{slug}/_memory/memories.md        → aprendizados do squad
+docs/_memory/company.md                        → perfil da empresa/usuário
+docs/_memory/preferences.md                    → preferências de saída
+docs/_memory/project-learnings.md              → aprendizados transversais (se existir)
 ```
 
 ### 1.2 — Resolver pipeline
@@ -147,11 +148,22 @@ on_reject: step-id
 ```
 Aguarde a seleção do usuário. Salve a resposta e continue.
 
+> **Modo Solo** — Se `squad.yaml` tem `mode: solo` E o step checkpoint **não tem** `gate:` definido:
+> → Pule o checkpoint automaticamente, sem aguardar input do usuário.
+> → Log: `⚡ [SOLO] {nome do step} — checkpoint de aprovação ignorado`
+> → Continue para o próximo step imediatamente.
+> Checkpoints com `gate:` definido **sempre** executam, independente do modo.
+
 **`execution: inline`** — agent executa diretamente na conversa:
 - Assuma a persona do agent (lida do .agent.md)
 - Execute as instruções do step
 - Apresente o output formatado
 - Se `output_file` definido → salve o resultado
+
+**Step `atualizar-tarefa`** — Antes de executar qualquer step com id contendo `atualizar-tarefa`, verifique `docs/_memory/preferences.md`:
+- Se `task_tracker: none` ou campo ausente → pule o step automaticamente.
+- Log: `⚡ Task tracker não configurado — step 'atualizar-tarefa' ignorado`
+- Continue para o próximo step.
 
 **`execution: subagent`** — agent executa como subagente:
 - Lance um subagente com:
@@ -219,9 +231,10 @@ Salve cópia de state.json em `docs/.squads/{slug}/output/{run_id}/state.json`.
 
 ### 3.2 — Atualizar memories
 
+**Memória do squad:**
 Pergunte ao usuário:
 ```
-Algo que devo lembrar para a próxima vez? (ENTER para pular)
+Algo que devo lembrar para a próxima vez neste squad? (ENTER para pular)
 ```
 
 Se houver resposta, adicione em `docs/.squads/{slug}/_memory/memories.md`:
@@ -229,6 +242,20 @@ Se houver resposta, adicione em `docs/.squads/{slug}/_memory/memories.md`:
 ## Aprendizado — {YYYY-MM-DD}
 {texto do usuário}
 ```
+
+**Aprendizados transversais do projeto:**
+Pergunte ao usuário:
+```
+Algo que todos os squads deste projeto devem saber? (ENTER para pular)
+```
+
+Se houver resposta, adicione em `docs/_memory/project-learnings.md`:
+```markdown
+## Aprendizado — {YYYY-MM-DD} [{squad-slug}]
+{texto do usuário}
+```
+
+Se `docs/_memory/project-learnings.md` não existir, crie antes de escrever.
 
 ### 3.3 — Apresentar sumário
 
@@ -258,14 +285,15 @@ Ao executar qualquer step, o agent recebe automaticamente:
 1. **Conteúdo do próprio .agent.md** (persona, princípios, framework)
 2. **Contexto do squad** (company.md + objetivo do squad)
 3. **Documentação do projeto** (`docs/` na raiz — **obrigatório**, leia todos os arquivos disponíveis)
-4. **Memória do squad** (memories.md — preferências e aprendizados)
-5. **Outputs anteriores relevantes** (definidos em `depends_on`)
-6. **Instruções do step** (arquivo do step)
-7. **Base path do squad** (caminho absoluto para todas as operações de arquivo)
+4. **Memória do squad** (memories.md — preferências e aprendizados do squad)
+5. **Aprendizados transversais** (`docs/_memory/project-learnings.md` — se existir)
+6. **Outputs anteriores relevantes** (definidos em `depends_on`)
+7. **Instruções do step** (arquivo do step)
+8. **Base path do squad** (caminho absoluto para todas as operações de arquivo)
 
 A ordem de composição sempre é:
 ```
-[Agent Persona] + [Contexto Squad] + [docs/ do projeto] + [Memória] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Agent Persona] + [Contexto Squad] + [docs/ do projeto] + [Memória Squad] + [Project Learnings] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
 ```
 
 > **Regra:** Quando há skills ativas, o agent DEVE usá-las para executar a tarefa. Skills não são sugestões — são o caminho preferencial. Nunca execute manualmente o que uma skill já oferece.

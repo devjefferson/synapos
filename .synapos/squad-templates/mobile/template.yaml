@@ -49,6 +49,10 @@ pipelines:
       name: "Correção de Bug Mobile"
       description: "Diagnóstico → Fix → Testes → Review"
       file: pipelines/bug-fix.yaml
+    - id: quick-fix
+      name: "Quick Fix"
+      description: "Mudança pontual e documentada — sem aprovações intermediárias"
+      file: pipelines/quick-fix.yaml
 
 performance_modes:
   alta:
@@ -60,3 +64,8 @@ performance_modes:
       - marina-mobile
       - felipe-feature
       - renata-revisao-fe
+  solo:
+    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+    agents:
+      - marina-mobile
+      - felipe-feature

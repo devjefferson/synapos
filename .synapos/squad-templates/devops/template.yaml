@@ -44,6 +44,10 @@ pipelines:
       name: "Provisionamento de Infra"
       description: "Design → IaC → Validação → Aprovação → Apply"
       file: pipelines/infra-provision.yaml
+    - id: quick-fix
+      name: "Quick Fix"
+      description: "Ajuste pontual de infra ou CI/CD — sem aprovações intermediárias"
+      file: pipelines/quick-fix.yaml
 
 performance_modes:
   alta:
@@ -51,6 +55,11 @@ performance_modes:
     agents: all
   economico:
     description: "Arquiteto de infra + CI/CD — para configurações focadas"
+    agents:
+      - igor-infra
+      - patricia-pipeline
+  solo:
+    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
     agents:
       - igor-infra
       - patricia-pipeline
