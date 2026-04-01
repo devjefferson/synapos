@@ -11,6 +11,174 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.1.0] — 2026-04-01
+
+### Adicionado
+
+#### GATE-DESIGN — Conformidade com Design System e Acessibilidade
+- Novo gate `GATE-DESIGN` no `gate-system.md` v1.3.0 — verifica antes de qualquer step que gera spec de componente ou fluxo de UI:
+  - Todos os 6 estados de componente especificados (default, hover, focus, disabled, loading, error)
+  - Contraste de texto ≥ 4.5:1 (WCAG 2.1 AA) declarado como valor numérico
+  - Estado vazio (`empty state`) documentado para listas e views de dados
+  - Estado de erro com mensagem e ação de recuperação
+  - Componentes novos verificados no design system antes de propor
+  - Tokens de design usados (sem valores hardcoded)
+  - 3 mensagens de falha distintas: estados incompletos, contraste, componente não justificado
+
+#### Step de Especificação Visual (Visual-Spec)
+- `.synapos/squad-templates/engineer/pipeline/steps/visual-spec.md` — step de especificação visual para pipeline engineer
+- `.synapos/squad-templates/produto/pipelines/steps/06c-visual-spec.md` — step `06c-visual-spec` para pipeline `discovery-spec-handoff` do squad produto
+- Step `pre-05b-visual-spec` adicionado ao `core/pipelines/pre-execution.yaml` — inserido entre arquitetura e checkpoint, com `skip_condition` para squads sem agent de design
+
+#### Novos Comandos
+- `.synapos/core/commands/debug/session.md` v1.0.0 — diagnóstico e recovery de sessions corrompidas ou travadas (state.json inválido, squad stuck em running, checkpoint assíncrono pendente, squad bloqueado por escalation)
+- `.synapos/core/commands/migrate/v1-to-v2.md` v1.0.0 — guia de migração passo a passo de projetos v1.x para v2.0+
+
+#### GETTING_STARTED.md
+- `GETTING_STARTED.md` criado na raiz — guia de onboarding por tipo de projeto (existente, greenfield, task específica, dev solo), tabelas de modo e pipeline, estrutura de session, referências
+
+#### Async Checkpoints para Equipes Distribuídas
+- Campo `async_checkpoints: true` em `squad.yaml` — quando ativo, checkpoints não bloqueiam sincronamente; pipeline suspende em `awaiting_approval`, registra em `pending-approvals.md` e encerra sem erro
+- Orchestrator detecta `status: "awaiting_approval"` ao retomar e apresenta checkpoint para aprovação
+
+#### Protocolo de Escalation de Decisões
+- Seção `PROTOCOLO DE ESCALATION DE DECISÕES` no `orchestrator.md` — para decisões que PM não pode resolver sozinho
+- Arquivo `open-decisions.md` na session — registra decisões pendentes com `escalation_owner` e `status`
+- Status `blocked` no squad — bloqueia execução e orienta retomada após resolução
+
+### Modificado
+
+#### `gate-system.md` v1.2.0 → v1.3.0
+- `GATE-ADR` expandido: novo bloco `GATE-ADR — AUSÊNCIA` detecta decisões arquiteturais sem ADR correspondente (não apenas conflitos com ADRs existentes)
+- `GATE-DECISION` expandido: adicionados exemplos de decisões de design (biblioteca de componentes, desvio de design system, padrão de interação)
+
+#### `pipeline-runner.md` v2.0.0 → v2.1.0
+- Seção 1.4c: proteção e resiliência do `state.json` — leitura com fallback, backup automático em corrupção, escrita com validação JSON antes de sobrescrever
+- Proteção de `output_files` existentes: backup versionado (`{filename}.v{N}.bak`) antes de sobrescrever artefatos quando há trabalho anterior
+- Consolidação periódica de `memories.md`: gatilho automático ao atingir 10 seções, oferece consolidação ao usuário
+- Formato de autoria em `memories.md`: todo append inclui `[{squad-slug} · {agent-id}] — {data}`
+- Verificação de squads paralelos: aviso quando outros squads com `status: running` na mesma feature podem conflitar
+- `model_tier` documentado: tabela `fast`/`powerful`, padrão `powerful`, roteamento multi-model via `preferences.md`
+
+#### `orchestrator.md` v1.2.0 → v1.3.0
+- Guia "qual modo escolher": tabela de 10 cenários → modo recomendado, com regra de desempate
+- Verificação de skills pré-pipeline: detecta skills mencionadas nos steps e avisa se não instaladas
+- Detecção de projetos v1: detecta `docs/sessions/` e `docs/.squads/*/output/*/`, orienta `/migrate:v1-to-v2`
+
+#### `pre-execution.yaml` v1.0.0 → v1.1.0
+- Step `pre-05b-visual-spec` inserido entre arquitetura e checkpoint de arquitetura
+- Comentário de GATE-DESIGN adicionado ao checkpoint
+
+#### `discovery-spec-handoff.yaml` (produto)
+- Step `06c-visual-spec` inserido após checkpoint de requisitos
+- `depends_on` do step de arquitetura atualizado para incluir `06c-visual-spec`
+
+#### `ursula-ui.agent.md` v1.1.0 → v1.2.0
+- Campo `gates_owned: [GATE-DESIGN]` adicionado ao frontmatter
+- Seção `## Autoria e Rastreabilidade` adicionada — define formato obrigatório de cabeçalho nos outputs
+
+#### Quality Criteria — 13 agents (PATCH)
+Todos convertidos para tabela com 3 colunas (Critério / Mínimo Aceitável / Como Verificar):
+- `leo-engenheiro` — de lista para tabela
+- Frontend: `rodrigo-react`, `tiago-testes-fe`, `paulo-performance`, `renata-revisao-fe`
+- Backend: `alexandre-api`, `daniela-dados`, `sergio-seguranca`, `roberto-revisao-be`
+- Produto: `priscila-produto`, `paulo-pesquisa`, `ana-analise`, `eduardo-estrategia`
+
+---
+
+## [2.0.0] — 2026-04-01
+
+### Adicionado
+
+#### Squad Template — Engineer
+- `engineer` squad template v1.0.0 — novo template universal para engenharia de software
+- `leo-engenheiro.agent.md` v1.0.0 — Lead Engineer agent com framework de Investigação → Arquitetura → Planejamento
+- `engineer/pipelines/feature-development.yaml` v1.0.0 — pipeline de 9 steps com 3 checkpoints obrigatórios (investigação, arquitetura, planejamento antes da execução)
+- `leo-engenheiro` adicionado como agent opcional em todos os 7 squad templates existentes
+
+#### Pre-Execution Pipeline Universal
+- `core/pipelines/pre-execution.yaml` v1.0.0 — pipeline universal de preparação (GATE-0 → investigação → arquitetura → planejamento)
+- Campo `pre_pipeline` adicionado em todos os 7 squad templates — qualquer squad pode encadear o pipeline de preparação antes do principal
+- Placeholder `{lead_agent}` resolvido do `squad.yaml → pre_pipeline.agent`
+
+#### Gate System — Novos Gates
+- `GATE-DECISION` — bloqueia decisões autônomas dos agents; exige protocolo `[DECISÃO PENDENTE]` para qualquer escolha fora do escopo do step
+- `GATE-ADR` — bloqueia implementação que conflite com ADRs existentes; exige que o agent liste explicitamente cada ADR como `[RESPEITADA]` ou `[NÃO APLICÁVEL]`
+
+#### Compliance Obrigatório em Todos os Agents
+- Bloco `## Compliance Obrigatório` adicionado em todos os 30 agents existentes
+- Protocolo `[DECISÃO PENDENTE]` — agents devem parar e sinalizar qualquer decisão além do escopo com opções e recomendação
+- Protocolo de Verificação de ADRs — agents lêem todas as ADRs antes de implementar e listam conformidade explicitamente
+
+#### Session Model v2 — Modelo de Output Unificado
+- Nova estrutura `docs/.squads/sessions/{feature-slug}/` — pasta de sessão compartilhada entre todos os squads que trabalham na mesma feature
+- `state.json` multi-squad: rastreamento unificado por feature com histórico de cada squad como chave no dict `squads`
+- Campo `suspended_at` no `state.json` — permite retomada precisa após interrupção de sessão
+- `memories.md` movida para nível de feature (antes era por squad/run)
+- `session_files` declarados nos pipelines (`context.md`, `architecture.md`, `plan.md`) — injetados automaticamente em todos os steps subsequentes
+
+#### Orchestrator — Recuperação de Sessão
+- Detecção de execução interrompida: ao carregar squad existente, `orchestrator.md` verifica `status: "running"` no `state.json` e oferece retomada antes do menu normal
+- Step 6.3 no fluxo de criação de squad: associar feature session (selecionar existente ou criar nova)
+- Campo `feature` e `session` adicionados como obrigatórios no `squad.yaml`
+
+### Modificado
+
+#### `pipeline-runner.md` v1.1.0 → v2.0.0 ⚠️ Breaking
+- Todos os caminhos de output migrados de `docs/.squads/{slug}/output/{run_id}/` para `docs/.squads/sessions/{feature-slug}/`
+- Novo formato `state.json`: squads como dict com chave `{squad-slug}`, campos `started_at`, `completed_at`, `status`, `completed_steps`, `current_step`, `suspended_at`
+- Seção 1.4b: suporte ao encadeamento `pre_pipeline`
+- Seção 2.3: substituição de path agora aponta para `docs/.squads/sessions/{feature-slug}/`
+- Ordem de injeção de contexto atualizada: inclui `[Session Files]` (context → architecture → plan) e `[ADRs existentes]`
+- Novas regras: "Session é compartilhada", "review-notes é append-only", "memories é append-only"
+
+#### `gate-system.md` v1.1.0 → v1.2.0
+- GATE-1: verifica campos `feature` e `session` no `squad.yaml` (obrigatórios no modelo v2)
+- GATE-2: path de `memories.md` atualizado para `docs/.squads/sessions/{feature-slug}/memories.md`
+- GATE-4: verifica arquivos na session folder em vez de caminhos hardcoded antigos
+- GATE-5: verifica `state.squads["{squad-slug}"].completed_steps` no novo formato
+
+#### `orchestrator.md` v1.1.0 → v1.2.0
+- Squad.yaml template atualizado: campos `feature`, `session`, `project_context.session` com path da session
+- Removido campo `squad_memory` (substituído pelo modelo de sessão compartilhada)
+
+#### `skills-engine.md` v1.0.0 → v1.1.0
+- Bloco de injeção de contexto atualizado para nova ordem: `[Session Files: context.md → architecture.md → plan.md]`, `[ADRs existentes]`, `[Memória da Feature: sessions/{feature-slug}/memories.md]`, `[Aprendizados transversais: docs/_memory/project-learnings.md]`
+
+#### `versioning.md` v1.0.0 → v1.1.0
+- Seção "Versionamento de Squads Instanciados" reescrita: substituída referência a `output/{run-id}/` e `_memory/memories.md` pelo novo modelo de `sessions/{feature-slug}/state.json`
+
+#### Squad Templates — todos os 7 templates receberam bump MINOR
+- `frontend` v1.2.0 → v1.3.0
+- `backend` v1.2.0 → v1.3.0
+- `produto` v2.1.0 → v2.2.0
+- `fullstack` v1.1.0 → v1.2.0
+- `mobile` v1.1.0 → v1.2.0
+- `devops` v1.1.0 → v1.2.0
+- `ia-dados` v1.1.0 → v1.2.0
+
+#### Agents — todos os 30 agents receberam bump PATCH (v1.0.0 → v1.1.0)
+- Bloco `## Compliance Obrigatório` adicionado (ADR verification + `[DECISÃO PENDENTE]` protocol)
+- Exceptions: `ana-arquitetura-fe`, `bruno-base`, `tania-tecnica` — já tinham conteúdo de ADR; receberam apenas o protocolo `[DECISÃO PENDENTE]`
+- `leo-engenheiro` — já incluía compliance completo desde a criação
+
+### Corrigido
+
+#### `discover.md` (commands/setup) — CLAUDE.md template seção 4.8
+- `docs/.synapos/sessions/` → `docs/.squads/sessions/`
+- `docs/.synapos/memory.md` → removido (arquivo não existe no novo modelo)
+- `.claude/master/`, `.claude/agents/`, `.claude/commands/` → `.synapos/core/`, `.synapos/squads/`, `.synapos/core/commands/`
+- `docs/tech-context/` → `docs/tech/`
+- `docs/business-context/` → `docs/business/`
+- `docs/tech-context/briefing/adrs-summary.md` → `docs/tech/adr/`
+- Adicionada entrada `docs/_memory/` na tabela do framework
+
+### Removido
+- Modelo de output por run (`docs/.squads/{slug}/output/{run_id}/`) — substituído por sessions compartilhadas
+- Campo `squad_memory` no `squad.yaml` — substituído por `session` apontando para `docs/.squads/sessions/{feature-slug}/`
+
+---
+
 ## [1.7.0] — 2026-03-30
 
 ### Adicionado
@@ -40,7 +208,7 @@ Agents atualizados:
 - **DevOps (4):** `igor-infra`, `claudio-containers`, `patricia-pipeline`, `osvaldo-observabilidade`
 - **IA/Dados (4):** `larissa-llm`, `marco-ml`, `diana-dados`, `nelson-notebook`
 
-### Alterado
+### Modificado
 
 #### Core — Orchestrator
 - `core/orchestrator.md` — onboarding agora coleta o modelo de IA do usuário (pergunta 6)
@@ -102,7 +270,7 @@ Agents atualizados:
 #### Templates — Modo Solo
 - Modo `solo` adicionado ao `performance_modes` de todos os 7 templates com conjunto de agents reduzido (sem revisores separados)
 
-### Alterado
+### Modificado
 
 #### GUIDE.md
 - Documentação do modo solo, quick-fix pipeline, project-learnings e task tracker

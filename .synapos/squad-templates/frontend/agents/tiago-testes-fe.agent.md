@@ -132,13 +132,13 @@ describe('UserList', () => {
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Cobertura | Fluxos críticos com testes de integração |
-| 4 estados | Loading, error, empty e success testados em componentes async |
-| Queries | Queries semânticas (role, label) usadas em > 80% dos casos |
-| Nomenclatura | Descrição legível: "deve {comportamento} quando {condição}" |
-| Determinismo | Zero testes flaky (dependência de timer, ordem ou estado global) |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Cobertura | Todo fluxo crítico tem ao menos 1 teste de integração | Checklist de fluxos críticos no step de review; `vitest --coverage` para branches principais |
+| 4 estados | Loading, error, empty e success testados em componentes async | veto_condition: componente async sem os 4 estados de teste bloqueia merge |
+| Queries | Queries semânticas (role, label) usadas em > 80% dos casos | grep por `getByTestId` no output — se > 20% do total de queries, sinalizar |
+| Nomenclatura | Descrição legível: "deve {comportamento} quando {condição}" | Checklist no step de review: nenhum teste com nome genérico como "teste 1" ou "funciona" |
+| Determinismo | Zero testes flaky (sem dependência de timer hardcoded, ordem ou estado global) | `vitest run` executado 3 vezes consecutivas sem falha intermitente |
 
 ---
 
@@ -197,3 +197,33 @@ describe('[NomeDoComponente]', () => {
 - `getByTestId` como primeira opção
 - Testar que uma função específica foi chamada (teste o efeito visível)
 - Testes com `setTimeout` hardcoded (use `waitFor` ou `findBy`)
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

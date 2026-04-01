@@ -22,6 +22,11 @@ agents:
       icon: "🎨"
       role: "UX Mobile"
   optional:
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
     - id: tiago-testes-fe
       file: ../frontend/agents/tiago-testes-fe.agent.md
       displayName: "Tiago Testes"
@@ -37,6 +42,11 @@ agents:
       displayName: "Renata Revisão"
       icon: "🔍"
       role: "Reviewer Mobile"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: marina-mobile
 
 pipelines:
   default: feature-development

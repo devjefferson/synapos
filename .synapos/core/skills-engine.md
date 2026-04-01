@@ -1,6 +1,6 @@
 ---
 name: synapos-skills-engine
-version: 1.0.0
+version: 1.1.0
 description: Engine de gerenciamento de skills — MCP, scripts e instruções de comportamento
 ---
 
@@ -119,7 +119,11 @@ Quando um step tem skills, o pipeline-runner injeta no contexto do agent:
 ```
 [Agent Persona]
 [Contexto do Squad]
-[Memória do Squad]
+[docs/ do projeto]
+[Session Files: context.md → architecture.md → plan.md]
+[ADRs existentes]
+[Memória da Feature: sessions/{feature-slug}/memories.md]
+[Aprendizados transversais: docs/_memory/project-learnings.md]
 [Outputs Anteriores]
 [Instrução do Step]
 --- SKILLS ATIVAS ---
@@ -127,7 +131,7 @@ Quando um step tem skills, o pipeline-runner injeta no contexto do agent:
 [Instruções da Skill 2]
 ```
 
-A ordem de injeção é: agent → step → skills (na ordem declarada).
+A ordem de injeção é: agent → contexto completo → step → skills (na ordem declarada).
 
 ---
 

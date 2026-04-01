@@ -32,6 +32,16 @@ agents:
       displayName: "Sérgio Segurança"
       icon: "🔒"
       role: "Engenheiro de Segurança"
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: bruno-base
 
 pipelines:
   default: api-development

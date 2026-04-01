@@ -32,6 +32,11 @@ agents:
       icon: "⚙️"
       role: "Dev Backend"
   optional:
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
     - id: ursula-ui
       file: ../frontend/agents/ursula-ui.agent.md
       displayName: "Úrsula UI"
@@ -57,6 +62,11 @@ agents:
       displayName: "Roberto Revisão"
       icon: "🔎"
       role: "Reviewer Backend"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: carlos-coordenador
 
 pipelines:
   default: integration-feature

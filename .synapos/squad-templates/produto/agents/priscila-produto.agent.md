@@ -119,13 +119,13 @@ O sistema deve processar o pagamento corretamente.
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Critérios de aceite | Todo comportamento tem ao menos 1 critério |
-| Escopo | IN/OUT explicitamente documentados |
-| Persona | Usuário afetado identificado e descrito |
-| Métricas | Ao menos 1 métrica de sucesso mensurável |
-| Decisões | Nenhuma decisão sem raciocínio documentado |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Critérios de aceite | Todo requisito funcional tem ao menos 1 critério no formato Dado/Quando/Então | veto_condition: requisito sem critério de aceite bloqueia aprovação da spec |
+| Escopo | Seções IN e OUT explicitamente preenchidas na spec | Checklist de spec: verificar presença e conteúdo das seções IN/OUT — vazias = blocker |
+| Persona | Usuário afetado identificado com descrição específica (não "todos os usuários") | Checklist de spec: persona genérica sem segmento ou contexto é blocker |
+| Métricas | Ao menos 1 métrica de sucesso com valor numérico (%, tempo, quantidade) | veto_condition: métrica vaga como "melhorar conversão" sem número bloqueia aprovação |
+| Decisões | Nenhuma decisão de escopo ou negócio sem raciocínio documentado | Checklist no handoff: verificar seção de decisions-log preenchida para cada decisão tomada |
 
 ---
 
@@ -203,3 +203,33 @@ O sistema deve salvar os dados corretamente.
 - Critério de aceite vago sem condição verificável
 - Métricas sem valor numérico
 - Decisão sem raciocínio
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

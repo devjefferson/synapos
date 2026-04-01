@@ -37,6 +37,16 @@ agents:
       displayName: "Paulo Performance"
       icon: "⚡"
       role: "Engenheiro de Performance"
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: ana-arquitetura-fe
 
 pipelines:
   default: feature-development

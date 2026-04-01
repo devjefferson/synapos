@@ -120,13 +120,13 @@ padrão para formulários complexos.
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Categorização | Todo comentário categorizado (BLOCKER/SUGGESTION/QUESTION/PRAISE) |
-| Explicação | Todo blocker tem explicação do impacto |
-| Fix sugerido | Todo blocker tem fix sugerido quando possível |
-| Acessibilidade | Camada de acessibilidade sempre verificada |
-| Equilíbrio | Ao menos 1 PRAISE por review (se houver algo bom) |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Categorização | Todo comentário categorizado (BLOCKER/SUGGESTION/QUESTION/PRAISE) | veto_condition: comentário sem categoria bloqueia entrega do review |
+| Explicação | Todo BLOCKER tem explicação do impacto (por que é problema) | Checklist no step de review: verificar que cada `[BLOCKER]` contém "por que" |
+| Fix sugerido | Todo BLOCKER tem fix sugerido quando tecnicamente possível | Checklist no step de review: `[BLOCKER]` sem código ou instrução de fix é incompleto |
+| Acessibilidade | Camada de acessibilidade (CAMADA 3) sempre verificada e documentada | Checklist de review: confirmar que itens de acessibilidade foram avaliados mesmo que sem blocker |
+| Equilíbrio | Ao menos 1 PRAISE por review quando há algo bem feito | Checklist no step de revisão final: grep por `[PRAISE]` no output — ausência total exige justificativa |
 
 ---
 
@@ -187,3 +187,33 @@ ACESSIBILIDADE
 - Comentário sem categoria
 - `[BLOCKER]` sem fix sugerido
 - Bloquear por preferência estética pessoal
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

@@ -17,6 +17,11 @@ agents:
       icon: "🔄"
       role: "Engenheira de CI/CD"
   optional:
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
     - id: claudio-containers
       file: agents/claudio-containers.agent.md
       displayName: "Cláudio Containers"
@@ -32,6 +37,11 @@ agents:
       displayName: "Sérgio Segurança"
       icon: "🔒"
       role: "Engenheiro de Segurança"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: igor-infra
 
 pipelines:
   default: ci-cd-setup
