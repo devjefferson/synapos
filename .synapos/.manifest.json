@@ -99,7 +99,7 @@
     "frontend": {
       "ana-arquitetura-fe": "1.1.0",
       "rodrigo-react": "1.1.0",
-      "ursula-ui": "1.1.0",
+      "ursula-ui": "1.2.0",
       "renata-revisao-fe": "1.1.0",
       "tiago-testes-fe": "1.1.0",
       "paulo-performance": "1.1.0"
@@ -141,9 +141,6 @@
     "engineer": {
       "leo-engenheiro": "1.0.0"
     },
-    "frontend_updated": {
-      "ursula-ui": "1.2.0"
-    }
   },
   "skills": {
     "brave-search": "1.0.0",
