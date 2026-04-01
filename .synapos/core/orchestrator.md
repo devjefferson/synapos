@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.1.0
+version: 1.3.0
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -43,6 +43,25 @@ Verifique se `docs/_memory/company.md` existe.
 
 **Se NÃO existe** → execute o **PROTOCOLO DE ONBOARDING** abaixo.
 **Se existe** → leia `docs/_memory/company.md` e `docs/_memory/preferences.md`, continue para PASSO 2.
+
+### Detecção de Projetos v1 (migração automática)
+
+Verifique se existe a estrutura antiga de sessions (v1.x):
+- `docs/sessions/` existe como diretório?
+- `docs/.squads/*/output/*/` tem arquivos?
+
+Se sim, avise:
+```
+📦 Projeto com estrutura v1 detectada.
+
+Para usar squads com a versão atual (v2.0+), é necessário migrar.
+  → Execute /migrate:v1-to-v2 para migração guiada
+
+Enquanto isso, você pode continuar criando novos squads.
+Sessions v1 existentes não serão afetadas.
+```
+
+Se não: nenhuma ação necessária.
 
 ---
 
@@ -220,22 +239,65 @@ Aguarde a seleção do usuário.
 
 > **Modo Solo:** Registre `mode: solo` no `squad.yaml`. O pipeline runner vai ignorar automaticamente todos os checkpoints de aprovação intermediários (mantendo apenas os gates de integridade). O GATE-0 também opera em modo flexível quando `docs/` ainda não tem documentação completa.
 
-### 6.3 — Contexto do squad
+### Guia rápido — qual modo escolher?
+
+| Cenário | Modo recomendado |
+|---------|-----------------|
+| Nova feature crítica para produção | Alta Performance |
+| Feature estratégica com risco de negócio | Alta Performance |
+| Hotfix ou bugfix simples | Econômico |
+| Feature incremental com contexto já mapeado | Econômico |
+| Quick spec para feature bem definida | Econômico |
+| Prototipação ou exploração sem compromisso | Solo |
+| Dev solo sem prazo definido | Solo |
+| Refatoração sem mudança de comportamento | Econômico |
+| Equipe com revisão obrigatória de segurança | Alta Performance |
+| Mudança pontual de UI (ajuste visual, texto) | Solo |
+
+**Regra geral:** Em caso de dúvida entre Econômico e Alta Performance, prefira Econômico — você pode reexecutar em Alta depois.
+
+### 6.3 — Associar Feature Session
+
+Todo squad trabalha dentro de uma feature session. Pergunte:
 
 ```
-Descreva o objetivo deste squad (1-2 frases):
-Ex: "Construir o sistema de autenticação do app mobile"
-    "Criar spec completa para o módulo de pagamentos"
+Qual feature este squad vai trabalhar?
+
+- 📂 Selecionar session existente
+- ✨ Criar nova session
 ```
 
-### 6.4 — Nome / slug (opcional)
+**Se selecionar existente:**
+- Liste as pastas em `docs/.squads/sessions/` (ignorar `.gitkeep`)
+- Para cada uma, mostre: slug + squads que já trabalharam (de state.json)
+- Aguarde seleção
+
+**Se criar nova:**
 
 ```
-Nome curto para identificar (deixe em branco para auto-gerar):
-Ex: "auth-mobile", "pagamentos-v2"
+Nome da feature ou slug da branch:
+Ex: "auth-module", "feat/pagamentos-v2", "dashboard-redesign"
 ```
 
-Auto-geração de slug: `{domínio}-{NNN}` → frontend-001, produto-002
+O `{feature-slug}` é derivado do input: lowercase, espaços → hífens, sem caracteres especiais.
+A pasta `docs/.squads/sessions/{feature-slug}/` será criada pelo pipeline-runner na primeira execução.
+
+### 6.4 — Contexto do squad
+
+```
+Descreva o objetivo deste squad nesta feature (1-2 frases):
+Ex: "Implementar os endpoints de autenticação"
+    "Criar os componentes de UI do módulo de pagamentos"
+```
+
+### 6.5 — Nome / slug do squad (opcional)
+
+```
+Nome curto para identificar o squad (deixe em branco para auto-gerar):
+Ex: "auth-backend", "pagamentos-ui"
+```
+
+Auto-geração de slug: `{domínio}-{NNN}` → backend-001, frontend-002
 
 ---
 
@@ -246,7 +308,7 @@ Auto-geração de slug: `{domínio}-{NNN}` → frontend-001, produto-002
 Crie exatamente esta estrutura:
 
 ```
-.synapos/squads/{slug}/          ← configuração do squad
+.synapos/squads/{squad-slug}/          ← configuração do squad (framework)
 ├── squad.yaml
 ├── agents/
 │   └── (copiar os .agent.md selecionados do template)
@@ -254,22 +316,29 @@ Crie exatamente esta estrutura:
     ├── pipeline.yaml
     └── steps/
 
-docs/.squads/{slug}/             ← dados de runtime do projeto
-├── _memory/
-│   └── memories.md
-└── output/                      (histórico de execuções — inicia vazio)
+docs/.squads/sessions/{feature-slug}/  ← session da feature (criada pelo pipeline-runner)
+├── context.md        (gerado na pré-execução)
+├── architecture.md   (gerado na pré-execução)
+├── plan.md           (gerado na pré-execução)
+├── memories.md       (inicializado pelo runner)
+├── review-notes.md   (inicializado pelo runner)
+└── state.json        (inicializado pelo runner)
 ```
+
+> A pasta `docs/.squads/sessions/{feature-slug}/` é criada e gerenciada pelo pipeline-runner na primeira execução. O orchestrator não cria esta pasta.
 
 ### 7.2 — Gerar squad.yaml
 
 ```yaml
-name: {slug}
+name: {squad-slug}
 domain: {domínio}
 displayName: "{displayName do template}"
-description: "{contexto fornecido pelo usuário}"
+description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
 created_at: {YYYY-MM-DD}
+feature: {feature-slug}
+session: docs/.squads/sessions/{feature-slug}/
 agents:
   - {id do agent 1}
   - {id do agent 2}
@@ -282,7 +351,7 @@ project_context:
   docs_business: docs/business/
   docs_tech: docs/tech/
   docs_context: docs/tech-context/
-  squad_memory: docs/.squads/{slug}/_memory/memories.md
+  session: docs/.squads/sessions/{feature-slug}/
 ```
 
 ### 7.3 — Inicializar project-learnings.md (se não existir)
@@ -295,25 +364,6 @@ Verifique se `docs/_memory/project-learnings.md` existe. Se não existir, crie:
 > Aprendizados transversais compartilhados por todos os squads deste projeto.
 > Atualizado automaticamente ao final de cada pipeline.
 
-(preenchido durante execuções)
-```
-
-### 7.4 — Inicializar memories.md
-
-```markdown
-# Memória do Squad {slug}
-
-**Domínio:** {domain}
-**Criado em:** {YYYY-MM-DD}
-**Modo:** {Alta Performance | Econômico}
-
-## Preferências Aprovadas
-(preenchido durante execuções)
-
-## Padrões Rejeitados
-(preenchido durante execuções)
-
-## Aprendizados
 (preenchido durante execuções)
 ```
 
@@ -338,6 +388,30 @@ Pipeline: {nome do pipeline padrão}
 Iniciando...
 ```
 
+### Verificação de Skills Necessárias
+
+Antes de iniciar o pipeline:
+1. Leia os arquivos de steps do pipeline (arquivos `.md` referenciados em `file:` de cada step)
+2. Busque por menções a skills nos steps (texto que menciona `skill:` ou nomes de skills conhecidas: `brave-search`, `playwright-browser`, `github`, `fetch-url`, `filesystem`)
+3. Para cada skill mencionada, verifique se `.synapos/skills/{skill-name}/SKILL.md` existe (diretório ou symlink)
+
+Se alguma skill referenciada não está instalada:
+```
+⚠️  Skills mencionadas no pipeline não instaladas:
+   ✗ {skill-name-1}
+   ✗ {skill-name-2}
+
+Estas skills melhoram a qualidade dos outputs mas não são obrigatórias.
+
+  [1] Continuar sem as skills (outputs podem ser menos específicos)
+  [2] Cancelar e instalar primeiro
+```
+
+Se todas as skills estão instaladas:
+```
+✅ Skills verificadas: {lista de skills disponíveis}
+```
+
 Leia e siga `.synapos/core/pipeline-runner.md` passando como contexto:
 - Squad recém-criado
 - Pipeline padrão do template
@@ -345,24 +419,102 @@ Leia e siga `.synapos/core/pipeline-runner.md` passando como contexto:
 
 ---
 
+## PROTOCOLO DE ESCALATION DE DECISÕES
+
+Use quando um PM, agent ou usuário encontra uma decisão que não pode resolver sozinho.
+
+**Gatilhos para escalation:**
+- Decisão impacta mais de 1 squad ativo na mesma feature
+- ADR proposta contradiz ADR existente com status `Aceito` ou `Ativo`
+- Decisão técnica requer aprovação de stakeholder externo (CEO, CTO, cliente)
+- Decisão com risco de negócio (mudança de modelo de preços, breaking change de API pública)
+
+**Protocolo:**
+1. Crie `[DECISÃO PENDENTE]` com id sequencial global (formato: `[DECISÃO PENDENTE] {feature-slug}-{N}`)
+2. Registre em `docs/.squads/sessions/{feature-slug}/open-decisions.md`:
+   ```markdown
+   ## [DECISÃO PENDENTE] {feature-slug}-{N} — {YYYY-MM-DD}
+   
+   Contexto: {por que essa decisão é necessária}
+   Opções:
+     A) {opção A} — {prós/contras}
+     B) {opção B} — {prós/contras}
+   Recomendação: {opção e justificativa}
+   
+   requires_escalation: true
+   escalation_owner: {A DEFINIR — preencha com o responsável}
+   status: pending
+   ```
+3. Bloqueie o squad: `status → "blocked"`
+4. Informe:
+   ```
+   ⏸ SQUAD BLOQUEADO — Escalation necessário
+   
+   Decisão pendente: {feature-slug}-{N}
+   Arquivo: docs/.squads/sessions/{feature-slug}/open-decisions.md
+   
+   Preencha `escalation_owner` e resolva a decisão.
+   Retome com /init → selecionar squad → "Retomar de onde parou".
+   ```
+
+**Ao retomar squad com status "blocked":**
+1. Verifique `open-decisions.md`
+2. Liste decisões com `status: pending`
+3. Para cada uma: peça resolução ao usuário
+4. Ao resolver: atualize `status: resolved` + registre a decisão tomada
+5. Mude squad para `status: running` e retome
+
+---
+
 ## CARREGAR SQUAD EXISTENTE
 
 Quando o usuário escolhe um squad ativo (PASSO 3):
 
-1. Leia `.synapos/squads/{squad}/squad.yaml`
-2. Leia `docs/.squads/{squad}/_memory/memories.md`
-3. Liste os últimos outputs em `docs/.squads/{squad}/output/` (se existirem)
-4. Apresente resumo:
+1. Leia `.synapos/squads/{squad-slug}/squad.yaml`
+2. Extraia `feature` e `session` do squad.yaml
+3. Leia `docs/.squads/sessions/{feature-slug}/state.json` (se existir)
+4. Leia `docs/.squads/sessions/{feature-slug}/memories.md` (se existir)
+
+### PASSO OBRIGATÓRIO — DETECTAR EXECUÇÃO INTERROMPIDA
+
+No `state.json`, verifique `state.squads["{squad-slug}"]`:
+
+**Se existe e tem `"status": "running"`** — sessão interrompida deste squad. Apresente ESTE menu primeiro:
 
 ```
-Squad {slug} carregado.
-Último output: {data} — {arquivo mais recente, se houver}
+⚠️  Execução anterior interrompida detectada
+
+Squad:    {squad-slug}
+Feature:  {feature-slug}
+Último step ativo:  {suspended_at}
+Steps concluídos:   {completed_steps}
 
 O que você quer fazer?
 
-- ▶️ Continuar de onde parou
-- 🔄 Nova execução (manter contexto)
-- 🧠 Ver memória do squad
+- ▶️ Retomar de onde parou  (continua a partir de {suspended_at})
+- 🔄 Descartar e iniciar nova execução deste squad
+```
+
+Aguarde a seleção do usuário. **Nunca avance sem esta confirmação.**
+
+- Se **Retomar**: passe `resume_from: {suspended_at}` para o pipeline-runner e execute.
+- Se **Descartar**: atualize `state.squads["{squad-slug}"].status = "discarded"` e continue abaixo.
+
+**Se `status` é `"completed"`, `"discarded"` ou não existe entrada para este squad** → menu padrão:
+
+```
+Squad {squad-slug} carregado.
+Feature: {feature-slug}
+Session: docs/.squads/sessions/{feature-slug}/
+
+Squads que já trabalharam nesta feature:
+  {lista de state.squads com status e completed_at}
+
+O que você quer fazer?
+
+- 🔄 Nova execução deste squad (manter contexto da session)
+- 🧠 Ver memória da feature
+- 📂 Ver arquivos da session
 - ⏸️ Pausar / arquivar squad
 ```
 

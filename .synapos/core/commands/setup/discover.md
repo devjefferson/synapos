@@ -308,21 +308,21 @@ Substituir todos os placeholders `<...>` com valores reais do projeto.
 
 ## Regras Críticas do Projeto
 
-> Extraídas de `docs/tech-context/briefing/critical-rules.md`
+> Extraídas de `docs/tech/architecture.md`
 
 <listar as top 3-5 regras críticas identificadas no projeto — uma por linha, formato: `- **Regra:** descrição`>
 
-Para a lista completa: `docs/tech-context/briefing/critical-rules.md`
+Para a lista completa: `docs/tech/architecture.md`
 
 ---
 
 ## ADRs Ativas
 
-> <adr_count> ADRs registradas em `docs/tech-context/briefing/adrs-summary.md`
+> <adr_count> ADRs registradas em `docs/tech/adr/`
 
 <listar ADRs com impacto alto, formato: `- **ADR-NNN** — Título (categoria)`>
 
-<Se nenhuma ADR: "Nenhuma ADR definida. Consulte docs/tech-context/briefing/adrs-summary.md">
+<Se nenhuma ADR: "Nenhuma ADR definida. Consulte docs/tech/adr/">
 
 ---
 
@@ -330,20 +330,14 @@ Para a lista completa: `docs/tech-context/briefing/critical-rules.md`
 
 | Diretório | Conteúdo |
 |---|---|
-| `.claude/master/` | Protocolos genéricos do Framework SynapOs |
-| `.claude/agents/` | Agentes especializados |
-| `.claude/commands/` | Comandos de ativação dos modos |
-| `docs/tech-context/` | Stack, ADRs e regras críticas do projeto |
-| `docs/business-context/` | Estratégia, personas e backlog |
-| `docs/.synapos/sessions/` | Estado das features em desenvolvimento |
+| `.synapos/core/` | Protocolos core do Framework Synapos |
+| `.synapos/squads/` | Squads instanciados e seus agents |
+| `.synapos/core/commands/` | Comandos de ativação dos modos |
+| `docs/tech/` | Stack, ADRs e documentação técnica do projeto |
+| `docs/business/` | Estratégia, personas e contexto de negócio |
+| `docs/.squads/sessions/` | Estado das features em desenvolvimento |
+| `docs/_memory/` | Configuração e memória do projeto (company, preferences) |
 
-
-## Memória Persistente
-
-O Boot lê e atualiza `MEMORY.md` automaticamente a cada inicialização.
-
-- `docs/.synapos/memory.md` — resumo de estado gerado pelo Boot a cada sessão
-- `docs/` — fonte de verdade completa (stack, ADRs, regras, sessions)
 ```
 
 **Regras de preenchimento:**

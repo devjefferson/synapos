@@ -172,13 +172,13 @@ function useUserProfile(userId: string) {
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Estados | Loading, error, empty e data tratados em todo componente async |
-| Acessibilidade | `alt` em imagens, `aria-label` em ações sem texto visível, navegação por teclado |
-| Tipagem | Props e retornos tipados, zero `any` não justificado |
-| Hooks | Lógica complexa extraída em hook customizado |
-| Nomes | Nomes descritivos, sem abreviações obscuras |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Estados | Loading, error, empty e data tratados em todo componente async | veto_condition: componente async sem os 4 estados bloqueia merge |
+| Acessibilidade | `alt` em imagens, `aria-label` em ações sem texto visível, navegação por teclado | Checklist de acessibilidade no step de review; validação com axe-core |
+| Tipagem | Props e retornos tipados, zero `any` não justificado | `tsc --noEmit` sem erros; grep por `any` sem comentário de justificativa |
+| Hooks | Lógica complexa extraída em hook customizado (> 10 linhas de lógica no componente) | Checklist no step de review: verificar componentes com > 50 linhas totais |
+| Nomes | Nomes descritivos, sem abreviações obscuras | Checklist no step de review: nenhuma variável de 1 letra exceto iteradores |
 
 ---
 
@@ -229,3 +229,33 @@ export function [NomeDoComponente]({ [props] }: [NomeDoComponente]Props) {
 - Props sem `interface` TypeScript
 - `any` sem comentário `// justificativa: ...`
 - `key={index}` em listas que mudam de ordem ou tamanho
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

@@ -22,6 +22,11 @@ agents:
       icon: "✍️"
       role: "Tech Writer"
   optional:
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
     - id: paulo-pesquisa
       file: agents/paulo-pesquisa.agent.md
       displayName: "Paulo Pesquisa"
@@ -37,6 +42,11 @@ agents:
       displayName: "Úrsula UX"
       icon: "🎨"
       role: "UX Researcher"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: priscila-produto
 
 pipelines:
   default: nova-feature

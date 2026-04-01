@@ -168,13 +168,13 @@ app.use(cors({
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| IDOR | Todo endpoint com ID valida propriedade do recurso |
-| Secrets | Nenhum secret em código ou log |
-| Rate Limiting | Endpoints de auth protegidos |
-| Senhas | bcrypt/argon2, nunca MD5/SHA1 |
-| Headers | helmet.js ou equivalente configurado |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| IDOR | Todo endpoint com ID de recurso valida que o recurso pertence ao usuário autenticado | veto_condition: endpoint com `req.params.id` sem verificação de `userId` é blocker Critical |
+| Secrets | Nenhum secret (API key, senha, token) em código-fonte, logs ou response | grep por padrões de secrets no código; `git-secrets` ou `trufflehog` no pipeline |
+| Rate Limiting | Endpoints de auth (login, cadastro, reset de senha) com rate limit configurado | Verificação manual: checar middleware de rate limit em rotas `/auth/*` |
+| Senhas | Hash com bcrypt (custo ≥ 10) ou argon2; nunca MD5, SHA1 ou texto plano | grep por `md5`/`sha1`/`sha256` em contexto de senha; verificar custo do bcrypt |
+| Headers | helmet.js ou equivalente configurado com HSTS, CSP e X-Frame-Options | `curl -I` no endpoint e verificar headers de segurança presentes na resposta |
 
 ---
 
@@ -234,3 +234,33 @@ LOW
 - Usar MD5 ou SHA1 para senhas
 - `*` no CORS em produção
 - Stack trace ou query SQL no response
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

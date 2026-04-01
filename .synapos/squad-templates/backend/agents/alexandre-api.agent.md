@@ -150,13 +150,13 @@ logger.info('User created', {
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Validação | Todo input externo validado com schema |
-| Erros | Todos os erros esperados tratados explicitamente |
-| Log | Toda operação crítica logada com correlation ID |
-| Segurança | Nenhuma query SQL por concatenação, senhas sempre hasheadas |
-| Transações | Operações atômicas dentro de transação de banco |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Validação | Todo input externo validado com schema (Zod ou equivalente) antes de qualquer lógica | veto_condition: endpoint sem `safeParse`/`parse` no início do handler bloqueia merge |
+| Erros | Todos os erros de domínio esperados tratados com status HTTP correto e código semântico | Checklist no step de review: verificar que `catch` não é vazio nem apenas `console.log` |
+| Log | Toda operação crítica logada com `correlationId`, userId e duração | grep por `logger.info`/`logger.error` nos use cases — ausência em operação crítica é blocker |
+| Segurança | Nenhuma query SQL por concatenação de string; senhas sempre com bcrypt/argon2 | grep por template literals em queries SQL; grep por `md5`/`sha1` em hashing |
+| Transações | Operações que precisam ser atômicas usam transação de banco | Checklist no step de review: identificar operações multi-tabela sem `BEGIN/COMMIT` |
 
 ---
 
@@ -211,3 +211,33 @@ try {
 - Lógica de negócio no controller
 - Stack trace ou query SQL exposta no response
 - `SELECT * FROM tabela WHERE campo = '${input}'` (SQL injection)
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

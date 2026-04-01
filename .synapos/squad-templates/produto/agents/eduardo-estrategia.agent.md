@@ -151,13 +151,13 @@ Hipótese: clínicas médicas têm mesmo problema com fluxo diferente
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Visão | Product vision preenchida nos 7 campos |
-| Métricas | North Star definida + ao menos 2 supporting metrics |
-| Roadmap | 3 horizontes com tema e métrica de validação |
-| Riscos | Ao menos 3 riscos com probabilidade, impacto e mitigação |
-| Alinhamento | Iniciativa conectada a objetivo de negócio explícito |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Visão | Product vision preenchida nos 7 campos do template (Para / Que / O / É um / Que / Diferente de / Nossa solução) | Checklist de campos: verificar que nenhum dos 7 campos está vazio ou com placeholder |
+| Métricas | North Star definida + ao menos 2 supporting metrics + 1 counter metric — todas com valor numérico mensurável | veto_condition: North Star sem valor mensurável ou que a empresa não controla bloqueia aprovação |
+| Roadmap | 3 horizontes (Agora / Depois / Mais tarde) com tema estratégico e métrica de validação em cada um | Checklist de roadmap: verificar presença dos 3 horizontes com tema e métrica — horizonte vago = blocker |
+| Riscos | Ao menos 3 riscos documentados com probabilidade (Alta/Média/Baixa), impacto e mitigação | Checklist de riscos: contar riscos na tabela — menos de 3 ou risco sem mitigação = blocker |
+| Alinhamento | Toda iniciativa do roadmap conectada a objetivo de negócio explícito (OKR ou estratégia declarada) | Checklist de alinhamento: verificar que cada item do roadmap referencia o objetivo de negócio que serve |
 
 ---
 
@@ -226,3 +226,33 @@ Hipótese: [...]
 - North Star que a empresa não controla
 - OKR com Key Results de output ("entregar feature X")
 - Risco sem mitigação
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

@@ -127,13 +127,13 @@ em vez de lançar exceção. Torna o contrato do use case explícito.
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Categorização | Todo comentário com categoria |
-| Segurança | Camada de segurança sempre verificada |
-| Fix proposto | Todo BLOCKER com fix sugerido |
-| Proporção | Review com blockers tem ao menos um PRAISE se algo está bom |
-| Escopo | Distinção clara entre o que bloqueia e o que é sugestão |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Categorização | Todo comentário tem categoria: BLOCKER, BLOCKER/SECURITY, SUGGESTION, QUESTION ou PRAISE | veto_condition: comentário sem categoria no output bloqueia entrega do review |
+| Segurança | CAMADA 2 (segurança) sempre verificada e documentada mesmo que sem blocker | Checklist de review: confirmar que todos os itens de segurança foram avaliados explicitamente |
+| Fix proposto | Todo BLOCKER tem fix concreto (código ou instrução específica) | Checklist no step de revisão: `[BLOCKER]` sem código/instrução de fix é incompleto |
+| Proporção | Review com blockers inclui ao menos 1 PRAISE se há algo bem feito | Checklist no step de revisão final: ausência total de PRAISE exige justificativa explícita |
+| Escopo | Distinção clara: blockers têm impacto documentado; suggestions não travam merge | Checklist: verificar que nenhum item de SUGGESTION está marcado como BLOCKER por preferência |
 
 ---
 
@@ -187,3 +187,33 @@ Fix:
 - Comentário sem categoria
 - `[BLOCKER]` sem fix sugerido
 - Aprovar com blocker de segurança para "não atrasar"
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

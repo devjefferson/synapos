@@ -22,6 +22,11 @@ agents:
       icon: "📊"
       role: "Analista de Dados"
   optional:
+    - id: leo-engenheiro
+      file: ../engineer/agents/leo-engenheiro.agent.md
+      displayName: "Leo Engenheiro"
+      icon: "🧠"
+      role: "Lead Engineer — Investigação e Arquitetura"
     - id: marco-ml
       file: agents/marco-ml.agent.md
       displayName: "Marco ML"
@@ -32,6 +37,11 @@ agents:
       displayName: "Tânia Técnica"
       icon: "📝"
       role: "Tech Writer"
+
+pre_pipeline:
+  available: true
+  file: ../../core/pipelines/pre-execution.yaml
+  agent: larissa-llm
 
 pipelines:
   default: ml-feature

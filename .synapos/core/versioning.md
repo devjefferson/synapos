@@ -1,6 +1,6 @@
 ---
 name: synapos-versioning
-version: 1.0.0
+version: 1.1.0
 description: Protocolo de versionamento semântico do Synapos Framework
 ---
 
@@ -173,14 +173,18 @@ Se divergirem: avise que o manifest está desatualizado e execute o bump.
 
 ## VERSIONAMENTO DE SQUADS INSTANCIADOS
 
-Squads em `.synapos/squads/{slug}/` **não têm versão semver** — eles têm **histórico de runs**.
+Squads em `.synapos/squads/{squad-slug}/` **não têm versão semver** — o rastreamento é feito via session da feature.
 
-O versionamento de um squad é feito por:
-- `output/{run-id}/` → cada execução é um snapshot imutável
-- `output/{run-id}/state.json` → estado completo daquela execução
-- `_memory/memories.md` → aprendizados cumulativos (não versionado, é vivo)
+O estado de um squad é registrado em:
+- `docs/.squads/sessions/{feature-slug}/state.json` → estado completo, atualizado por cada squad que trabalha na feature
+- `docs/.squads/sessions/{feature-slug}/memories.md` → aprendizados cumulativos da feature (não versionado, é vivo)
 
-Para "versionar" o estado de um squad: gere um run e ele fica permanente em `output/`.
+O campo `state.squads["{squad-slug}"]` dentro do `state.json` contém o histórico daquele squad na feature:
+- `status`: `running` | `completed` | `discarded`
+- `completed_steps`: steps concluídos
+- `started_at` / `completed_at`: timestamps
+
+Para rastrear o histórico de trabalho em uma feature: leia `docs/.squads/sessions/{feature-slug}/state.json`.
 
 ---
 

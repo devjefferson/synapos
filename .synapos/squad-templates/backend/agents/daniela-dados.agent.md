@@ -175,13 +175,13 @@ Resultado: Query time de 2.3s → 12ms. Índice ocupa 8MB (aceitável).
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Constraints | FKs, CHECK e NOT NULL definidos no banco |
-| Índices | Apenas índices justificados com a query que servem |
-| Migrations | UP e DOWN documentados e testados |
-| Soft delete | Tabelas de dados críticos usam deleted_at |
-| Performance | Queries críticas validadas com EXPLAIN ANALYZE |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Constraints | FKs, CHECK e NOT NULL definidos diretamente no banco, não apenas na aplicação | veto_condition: FK sem `REFERENCES` ou coluna obrigatória sem `NOT NULL` bloqueia migration |
+| Índices | Cada índice criado tem comentário com a query que serve como justificativa | Checklist no step de review: índice sem comentário de justificativa é blocker |
+| Migrations | Toda migration tem seção UP e DOWN funcional e testada | Verificação manual: executar DOWN + UP em ambiente de staging antes de produção |
+| Soft delete | Tabelas de dados críticos (usuários, pedidos, pagamentos) têm coluna `deleted_at TIMESTAMPTZ` | Checklist de schema: verificar presença de `deleted_at` nas tabelas críticas identificadas |
+| Performance | Queries críticas (> 100ms ou em tabelas > 10k linhas) validadas com EXPLAIN ANALYZE | EXPLAIN ANALYZE com resultado documentado no PR; `Seq Scan` em tabela grande = blocker |
 
 ---
 
@@ -235,3 +235,33 @@ CREATE INDEX idx_[tabela]_[coluna] ON [tabela]([coluna]);
 - Índice em toda coluna "por precaução"
 - Migration sem rollback documentado
 - `SELECT *` em queries de produção
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

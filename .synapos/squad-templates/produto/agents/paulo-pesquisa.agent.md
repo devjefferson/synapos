@@ -131,13 +131,13 @@ Fonte: Dados de analytics (período: jan-mar/2025, n=2.340 usuários)
 
 ## Quality Criteria
 
-| Critério | Mínimo Aceitável |
-|----------|-----------------|
-| Fontes | Toda afirmação factual tem fonte |
-| Recência | Dados com menos de 18 meses (ou aviso explícito) |
-| Competidores | Ao menos 3 competidores analisados |
-| Insights | 3-5 insights acionáveis, não uma lista de fatos |
-| Usuário | Ao menos 1 citação ou comportamento observado de usuário real |
+| Critério | Mínimo Aceitável | Como Verificar |
+|----------|-----------------|----------------|
+| Fontes | Toda afirmação factual tem fonte identificada (nome, URL ou referência rastreável) | veto_condition: afirmação sobre usuário ou mercado sem fonte bloqueia aprovação do relatório |
+| Recência | Dados com menos de 18 meses; dados mais antigos têm aviso explícito com data | Checklist no step de revisão: verificar data de cada fonte citada — aviso ausente em dado antigo = blocker |
+| Competidores | Ao menos 3 competidores diretos analisados com pontos fortes, fracos e feedback | Checklist de análise: contar competidores na seção — menos de 3 bloqueia entrega |
+| Insights | 3-5 insights acionáveis derivados dos dados (não mera lista de fatos) | Checklist de síntese: verificar que cada insight tem dado de suporte e implicação para o produto |
+| Usuário | Ao menos 1 citação literal ou comportamento observado de usuário real identificado | veto_condition: relatório sem nenhuma voz de usuário real (citação ou dado de comportamento) bloqueia aprovação |
 
 ---
 
@@ -194,3 +194,33 @@ Você é um pesquisador de produto experiente. Toda afirmação precisa de fonte
 - Concluir com base em 1-2 pessoas
 - Relatório sem recomendações acionáveis
 - Dados com mais de 18 meses sem aviso
+
+
+---
+
+## Compliance Obrigatório
+
+### ADRs — Verificação Proativa
+Antes de qualquer decisão técnica, verifique os arquivos de ADR disponíveis em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
+
+Liste cada ADR relevante no output:
+- `[RESPEITADA]` — solução alinhada com a ADR
+- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
+
+Conflito com ADR existente → sinalize imediatamente com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+
+### [DECISÃO PENDENTE] — Protocolo Obrigatório
+Quando identificar uma decisão fora do escopo definido no step atual (escolha de lib, padrão, estrutura, abordagem não especificada), PARE e sinalize:
+
+```
+[DECISÃO PENDENTE] {id}
+Contexto: {por que esta decisão é necessária}
+Opções:
+  A) {opção A} — {prós/contras}
+  B) {opção B} — {prós/contras}
+Recomendação: {opção recomendada}
+Aguardando aprovação.
+```
+
+Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+

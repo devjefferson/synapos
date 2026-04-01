@@ -98,13 +98,30 @@ steps:
     file: pipeline/steps/06b-checkpoint-requisitos.md
     depends_on: [06-requisitos]
 
+  - id: 06c-visual-spec
+    name: "Especificação Visual e Design System"
+    agent: ursula-ui
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/06c-visual-spec.md
+    depends_on: [06b-checkpoint-requisitos]
+    output_files:
+      - visual-spec.md
+    veto_conditions:
+      - "visual-spec.md sem seção de Verificação GATE-DESIGN"
+      - "Componente interativo sem estado focus ou error"
+      - "Contraste não declarado para nenhum componente com texto"
+      - "Estado vazio ausente em lista ou view de dados"
+    gate: GATE-DESIGN
+    skip_condition: "ursula-ui não está incluída nos agents do squad"
+
   - id: 07-arquitetura
     name: "Decisões de Arquitetura e ADRs"
     agent: tania-tecnica
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/07-arquitetura.md
-    depends_on: [06b-checkpoint-requisitos]
+    depends_on: [06c-visual-spec]
     output_files:
       - architecture.md
       - roadmap.md
