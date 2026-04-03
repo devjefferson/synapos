@@ -71,15 +71,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Arquitetura detalhada, implementação completa, testes, docs e review de performance"
-    agents: all
   economico:
     description: "Implementação direta + review — ideal para tasks bem definidas"
-    agents:
-      - ana-arquitetura-fe
-      - rodrigo-react
-      - renata-revisao-fe
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
-    agents:
-      - ana-arquitetura-fe
-      - rodrigo-react

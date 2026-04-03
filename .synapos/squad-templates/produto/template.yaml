@@ -75,7 +75,6 @@ pipelines:
 performance_modes:
   alta:
     description: "Verificação aprofundada de restrições, spec completa com todos os campos, handoff detalhado"
-    agents: all
     docs:
       - docs/specs/{feature-slug}-v1.md
       - docs/specs/{feature-slug}-handoff.md
@@ -83,17 +82,10 @@ performance_modes:
       - docs/CHANGELOG.md             # append
   economico:
     description: "Spec essencial com RFs, critérios de aceite e handoff mínimo"
-    agents:
-      - priscila-produto
-      - ana-analise
-      - tania-tecnica
     docs:
       - docs/specs/{feature-slug}-v1.md
       - docs/CHANGELOG.md             # append
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, decisões diretas documentadas"
-    agents:
-      - priscila-produto
-      - tania-tecnica
     docs:
       - docs/specs/{feature-slug}-v1.md

@@ -87,17 +87,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Coordenação completa, frontend e backend em paralelo, segurança, testes e review duplo"
-    agents: all
   economico:
     description: "Coordenador + dev frontend + dev backend + review — ideal para features pequenas"
-    agents:
-      - carlos-coordenador
-      - rodrigo-react
-      - alexandre-api
-      - renata-revisao-fe
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
-    agents:
-      - carlos-coordenador
-      - rodrigo-react
-      - alexandre-api

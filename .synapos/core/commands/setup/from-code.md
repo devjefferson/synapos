@@ -5,22 +5,49 @@ description: Analisa projeto existente e gera bootstrap para build-tech e build-
 # Setup: From Code — Synapos
 
 > Analisa o codebase existente e gera `docs/_memory/codebase-analysis.md` — um documento estruturado que serve de pré-contexto para `/setup:build-tech` e `/setup:build-business`.
->
-> **Este comando não gera documentação final.** Ele alimenta os outros comandos para que as entrevistas sejam curtas e os docs gerados sejam específicos do projeto, não genéricos.
+
+---
+
+# REGRAS ABSOLUTAS
+
+## Regra 1: ANÁLISE SILENCIOSA — SEM PERGUNTAS
+
+A **Fase 1 é 100% silenciosa.** Apenas leia arquivos e extraia informações. NÃO pergunte nada ao usuário.
+
+## Regra 2: SÓ DETECTAR — NÃO INTERPRETAR
+
+Você PODE detectar:
+- Tecnologias (package.json, requirements.txt)
+- Estrutura de pastas
+- Endpoints de API (rotas no código)
+- Entidades/Models
+- Configurações (Docker, CI/CD)
+- Padrões de nomenclatura
+
+Você NÃO PODE detectar (nunca invente):
+- Justificativa para escolhas
+- Intenções do time
+- Problemas ou dívida técnica
+- Roadmap
+- Decisões arquiteturais não-óbvias
+
+## Regra 3: VALIDAR COM ASKUSERQUESTION APÓS ANÁLISE
+
+Após analisar tudo, use AskUserQuestion para mostrar os resultados e pedir confirmação.
 
 ---
 
 ## QUANDO USAR
 
 - Projeto já existe com código, mas `docs/` está vazio ou ausente
-- Antes de rodar `/setup:build-tech` ou `/setup:build-business` num projeto existente
-- Quando você quer que a documentação reflita o que está no código, não só o que você descreve
+- Antes de rodar `/setup:build-tech` ou `/setup:build-business`
+- Quando você quer que a documentação reflita o que está no código
 
 ---
 
-## FASE 1 — VARREDURA DO PROJETO
+## FASE 1 — VARREDURA DO PROJETO (SILENCIOSA)
 
-Execute silenciosamente. Não pergunte nada ao usuário nesta fase.
+Execute SEM perguntar nada.
 
 ### 1.1 — Estrutura raiz
 
@@ -33,160 +60,230 @@ Identifique e registre:
 
 ### 1.2 — Detectar stack tecnológica
 
-Para cada arquivo de dependências encontrado, leia e extraia as bibliotecas principais:
+Para cada arquivo de dependências encontrado, leia e extraia:
 
 | Arquivo | O que extrair |
 |---|---|
-| `package.json` | framework (React/Vue/Next/Express/NestJS/etc), ORM, banco, testes, build tool |
-| `pyproject.toml` / `requirements.txt` | framework (FastAPI/Django/Flask), ORM, testes |
-| `Cargo.toml` | crates principais (actix, tokio, sqlx, etc) |
+| `package.json` | framework, ORM, banco, testes, build tool |
+| `pyproject.toml` / `requirements.txt` | framework, ORM, testes |
+| `Cargo.toml` | crates principais |
 | `go.mod` | módulos principais |
-| `pom.xml` / `build.gradle` | Spring, Hibernate, etc |
-| `Dockerfile` / `docker-compose.yml` | serviços, banco de dados, portas expostas |
-| `.env.example` / `.env.template` | variáveis de ambiente (não os valores — só os nomes das keys) |
+| `pom.xml` / `build.gradle` | frameworks e bibliotecas |
+| `Dockerfile` / `docker-compose.yml` | serviços, banco, portas |
+| `.env.example` | variáveis de ambiente (só os nomes) |
 
 Se monorepo: leia o `package.json` de cada `apps/*` ou `packages/*`.
 
 ### 1.3 — Detectar arquitetura backend
 
-Procure pelas seguintes pastas (adaptando para a linguagem detectada):
+Procure pastas e extraia o padrão:
 
 ```
 src/
-├── controllers/ ou routes/     → HTTP handlers / rotas
+├── controllers/ ou routes/     → HTTP handlers
 ├── services/                   → lógica de negócio
 ├── repositories/ ou dal/       → acesso a dados
 ├── models/ ou entities/        → modelos de domínio
 ├── middlewares/                 → middlewares
-├── schemas/ ou dtos/            → validação / contratos
+├── schemas/ ou dtos/            → validação
 ├── shared/ ou common/           → tipos, enums, utils
 └── tests/                       → testes
 ```
 
-Para cada pasta encontrada:
-- Leia 2–3 arquivos representativos
-- Extraia: padrão de nomenclatura (kebab, camelCase, PascalCase), sufixos usados (`.service.ts`, `.controller.ts`, etc.), padrão arquitetural predominante (MVC, Clean, Hexagonal, etc.)
-
 ### 1.4 — Extrair entidades de domínio
 
-Procure por modelos, schemas e tipos que representam o domínio do negócio:
-
+Procure por modelos e tipos:
 - `*.model.ts`, `*.entity.ts`, `*.schema.ts`, `*.dto.ts`
 - Pastas `models/`, `entities/`, `domain/`, `types/`
-- Em Python: classes com `BaseModel` (Pydantic), `Model` (Django ORM)
-- Em Go: structs com tags json/db
+- Python: classes com `BaseModel`, `Model`
+- Go: structs com tags json/db
 
-Para cada entidade encontrada:
-- Registre o nome
-- Registre os campos principais (sem valores — só nomes e tipos)
-- Infira o que representa no negócio (ex: `User`, `Order`, `Product`, `Payment`)
+Liste os nomes das entidades encontradas.
 
 ### 1.5 — Mapear APIs e endpoints
 
-Procure por definição de rotas:
-
+Procure por rotas:
 - Express/Fastify: `router.get(`, `app.post(`, `@Get(`, `@Post(`
 - FastAPI: `@app.get(`, `@router.post(`
 - Django: `urlpatterns`, `path(`
 - Rails: `routes.rb`
 
-Liste os endpoints encontrados agrupados por recurso (ex: `/users`, `/orders`, `/products`).
-
-Não precisa de documentação completa — apenas o mapeamento de quais recursos existem.
+Agrupe endpoints por recurso (ex: `/users`, `/orders`, `/products`).
 
 ### 1.6 — Detectar frontend (se existir)
 
-Procure por pastas: `frontend/`, `web/`, `client/`, `apps/web/`, `apps/frontend/`
+Procure: `frontend/`, `web/`, `client/`, `apps/web/`, `apps/frontend/`
 
 Se encontrado:
-- Framework: React, Vue, Angular, Svelte, Next.js, Nuxt, outro
-- Pastas de componentes, páginas, stores
-- Presença de design system (shadcn/ui, MUI, Chakra, Tailwind, etc.)
-- Roteamento: React Router, Next.js App Router, etc.
+- Framework: React, Vue, Angular, Svelte, Next.js, Nuxt
+- Pastas: components, pages, stores
+- Design system: shadcn/ui, MUI, Chakra, Tailwind
+- Roteamento: React Router, Next.js App Router
 
 ### 1.7 — Detectar mobile (se existir)
 
-Procure por: `mobile/`, `apps/mobile/`, `ios/`, `android/`, arquivos `*.xcodeproj`, `AndroidManifest.xml`, `app.json` (Expo)
+Procure: `mobile/`, `apps/mobile/`, `ios/`, `android/`, `*.xcodeproj`, `AndroidManifest.xml`, `app.json`
 
-Se encontrado: framework (React Native, Flutter, nativo), versão mínima de OS se disponível.
+Identifique framework: React Native, Flutter, nativo
 
 ### 1.8 — Detectar CI/CD e infra
 
 Leia se existirem:
-- `.github/workflows/*.yml` → pipeline de CI/CD
-- `Dockerfile`, `docker-compose.yml` → containerização
-- `terraform/`, `pulumi/`, `cdk/` → IaC
-- `k8s/`, `helm/` → Kubernetes
+- `.github/workflows/*.yml`
+- `Dockerfile`, `docker-compose.yml`
+- `terraform/`, `pulumi/`, `cdk/`
+- `k8s/`, `helm/`
 
-Registre apenas: o que existe e qual plataforma de deploy parece ser o alvo (Vercel, AWS, GCP, Railway, etc.)
+Registre: o que existe e plataforma de deploy
 
 ### 1.9 — Ler README
 
-Leia `README.md` (raiz) se existir. Extraia:
-- Descrição do projeto (1–3 frases)
-- Instruções de setup/run
-- Links mencionados (documentação, demo, etc.)
-
-Se não existir: registre como ausente.
+Se existir: extraia descrição e instruções.
 
 ### 1.10 — Detectar testes
 
-Procure por pastas `tests/`, `__tests__/`, `spec/`, arquivos `*.test.ts`, `*.spec.ts`, `*_test.go`, `test_*.py`.
+Procure: `tests/`, `__tests__/`, `spec/`, `*.test.ts`, `*.spec.ts`, `*_test.go`, `test_*.py`
 
-Registre: framework de testes, tipos presentes (unitários, integração, e2e).
+Registre: framework de testes, tipos (unitários, integração, e2e)
 
 ---
 
-## FASE 2 — INFERIR CONTEXTO DE NEGÓCIO DO CÓDIGO
+## FASE 2 — APRESENTAR RESULTADOS (VALIDAÇÃO)
 
-Com base no que foi encontrado na Fase 1, infira (sem perguntar ao usuário):
+### Regra: Use AskUserQuestion
 
-### 2.1 — Tipo de produto
+NÃO prossiga sem validar com o usuário.
 
-Com base nas entidades, endpoints e estrutura, classifique:
-- **SaaS** (tem users, subscriptions, tenants, billing)
-- **E-commerce** (tem products, orders, cart, payment)
-- **Marketplace** (tem buyers, sellers, listings)
-- **Ferramenta interna** (sem auth pública, sem billing)
-- **API/SDK** (só backend, sem UI)
-- **App mobile** (tem mobile com backend)
-- **Outro**: descreva
+### 2.1 — Validar Projeto Detectado
 
-### 2.2 — Funcionalidades implícitas
+```
+AskUserQuestion({
+  question: "Analisei o projeto e encontrei o seguinte. Confirme:",
+  options: [
+    { label: "Correto", description: "Prosseguir com análise" },
+    { label: "Preciso corrigir", description: "Vou informar o que está errado" }
+  ]
+})
+```
 
-Liste as funcionalidades que consegue inferir das entidades e rotas:
+Se "Preciso corrigir", use:
 
-Exemplo:
-- Autenticação (tem `User`, `/auth/login`, `/auth/register`)
-- Gerenciamento de pedidos (tem `Order`, `/orders`)
-- Notificações (tem `Notification`, `EmailService`)
+```
+AskUserQuestion({
+  question: "O que está incorreto?",
+  options: [
+    { label: "Nome do projeto", description: "Vou informar o nome correto" },
+    { label: "Tipo de repositório", description: "Vou informar o tipo correto" },
+    { label: "Stack tecnológica", description: "Vou informar a stack correta" },
+    { label: "Tudo incorreto", description: "Vou informar tudo do zero" }
+  ]
+})
+```
 
-### 2.3 — Regras de negócio implícitas
+### 2.2 — Validar Stack Detectada
 
-Procure por:
-- Validações em schemas/DTOs (campos obrigatórios, formatos, limites)
-- Condições em services (lógica `if/else` que representa regra de negócio)
-- Enums que representam estados (ex: `OrderStatus`, `UserRole`, `PaymentStatus`)
+```
+AskUserQuestion({
+  question: "Detectei a seguinte stack. Confirme:",
+  options: [
+    { label: "Stack Correta", description: "Prosseguir" },
+    { label: "Corrigir stack", description: "Vou informar a stack correta" }
+  ]
+})
+```
 
-Liste as principais regras encontradas em linguagem simples.
+Se "Corrigir", pergunte item por item:
 
-### 2.4 — Decisões técnicas aparentes
+```
+AskUserQuestion({
+  question: "Qual é o framework web principal?",
+  options: [
+    { label: "Express.js", description: "Express.js" },
+    { label: "Fastify", description: "Fastify" },
+    { label: "NestJS", description: "NestJS" },
+    { label: "Next.js", description: "Next.js" },
+    { label: "FastAPI", description: "FastAPI (Python)" },
+    { label: "Django", description: "Django (Python)" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
 
-Com base no código, liste decisões que parecem ter sido tomadas:
-- "Usa repository pattern — serviços não acessam banco diretamente"
-- "Validação centralizada com Zod no controller"
-- "Autenticação via JWT, não session"
-- "Banco relacional (PostgreSQL via Prisma)"
+```
+AskUserQuestion({
+  question: "Qual é o banco de dados?",
+  options: [
+    { label: "PostgreSQL", description: "PostgreSQL" },
+    { label: "MySQL", description: "MySQL" },
+    { label: "MongoDB", description: "MongoDB" },
+    { label: "SQLite", description: "SQLite" },
+    { label: "Redis", description: "Redis" },
+    { label: "Não sei", description: "Não tenho certeza" }
+  ]
+})
+```
 
-Estas vão virar ADRs inferidas no `/setup:build-tech`.
+### 2.3 — Validar Entidades Detectadas
+
+```
+AskUserQuestion({
+  question: "Encontrei as seguintes entidades de domínio. Confirmar?",
+  options: [
+    { label: "Corretas", description: "Prosseguir" },
+    { label: "Faltam entidades", description: "Vou informar as que faltam" },
+    { label: "Entidades erradas", description: "Vou corrigir" }
+  ]
+})
+```
+
+### 2.4 — Validar Estrutura de Pastas
+
+```
+AskUserQuestion({
+  question: "A estrutura de pastas está correta?",
+  options: [
+    { label: "Sim, correta", description: "Prosseguir" },
+    { label: "Não, preciso corrigir", description: "Vou informar a estrutura correta" }
+  ]
+})
+```
+
+### 2.5 — Confirmar para Gerar
+
+```
+AskUserQuestion({
+  question: "Pronto para gerar análise do codebase. Confirma?",
+  options: [
+    { label: "Sim, gerar", description: "Gerar codebase-analysis.md" },
+    { label: "Preciso corrigir mais", description: "Voltar e corrigir" }
+  ]
+})
+```
 
 ---
 
 ## FASE 3 — GERAR CODEBASE-ANALYSIS.MD
 
-Salve tudo em `docs/_memory/codebase-analysis.md`.
+**SÓ execute após validação completa.**
 
-Use o template abaixo. Preencha apenas o que foi encontrado — use `"não detectado"` para campos ausentes. **Nunca invente informações.**
+Salve em `docs/_memory/codebase-analysis.md`.
+
+### Regras de Conteúdo
+
+**Você PODE incluir:**
+- Tecnologias detectadas (validadas)
+- Estrutura de pastas (validada)
+- Entidades encontradas (validadas)
+- Endpoints detectados
+- Configurações encontradas
+
+**Você NÃO PODE incluir:**
+- Justificativas para escolhas tecnológicas
+- "Decisões arquiteturais" não-validadas
+- Problemas ou dívida técnica não-discutidos
+- Lacunas inventadas
+
+### Template de Saída
 
 ```markdown
 ---
@@ -199,7 +296,6 @@ versao: 1.0.0
 
 > Documento gerado automaticamente por varredura do código.
 > Serve como pré-contexto para /setup:build-tech e /setup:build-business.
-> NÃO é documentação final — é insumo para os comandos de documentação.
 
 ---
 
@@ -207,14 +303,9 @@ versao: 1.0.0
 
 | Campo | Valor |
 |---|---|
-| Nome | {nome do projeto} |
-| Tipo de repositório | {monorepo \| aplicação única \| biblioteca \| CLI} |
-| Tipo de produto inferido | {SaaS \| E-commerce \| Ferramenta interna \| API \| outro} |
-| README presente | {sim \| não} |
-
-{SE README EXISTIR}
-**Descrição (do README):**
-> {trecho da descrição do projeto}
+| Nome | {nome.validado} |
+| Tipo de repositório | {tipo.validado} |
+| README presente | {sim | não} |
 
 ---
 
@@ -223,173 +314,94 @@ versao: 1.0.0
 ### Backend
 | Camada | Tecnologia |
 |---|---|
-| Linguagem | {linguagem + versão} |
-| Framework | {framework} |
-| Banco de dados | {banco} |
-| ORM / Query Builder | {ORM} |
-| Validação | {biblioteca} |
-| Testes | {framework} |
-| Runtime | {Node.js versão \| Python versão \| etc} |
+| Linguagem | {detectado} |
+| Framework | {detectado} |
+| Banco de dados | {detectado} |
+| ORM | {detectado} |
+| Testes | {detectado} |
 
 ### Frontend (se existir)
 | Camada | Tecnologia |
 |---|---|
-| Framework | {React \| Vue \| Next.js \| não detectado} |
-| UI Library | {shadcn \| MUI \| Tailwind \| não detectado} |
-| Roteamento | {React Router \| Next.js App Router \| não detectado} |
-
-### Mobile (se existir)
-| Campo | Valor |
-|---|---|
-| Framework | {React Native \| Flutter \| nativo \| não detectado} |
-| Plataformas | {iOS \| Android \| ambos} |
-
-### Infra / Deploy
-| Campo | Valor |
-|---|---|
-| Containerização | {Docker \| não detectado} |
-| CI/CD | {GitHub Actions \| GitLab CI \| não detectado} |
-| IaC | {Terraform \| CDK \| não detectado} |
-| Deploy target inferido | {Vercel \| AWS \| Railway \| não identificado} |
+| Framework | {detectado} |
+| UI Library | {detectado} |
 
 ---
 
 ## Arquitetura
 
-**Padrão identificado:** {MVC \| Clean Architecture \| Hexagonal \| Layered \| não identificado}
-
-**Estrutura de pastas (backend):**
-```
-{árvore ASCII das pastas principais}
-```
-
-**Convenções detectadas:**
-- Nomenclatura de arquivos: {kebab-case \| camelCase \| PascalCase}
-- Sufixos usados: {.service.ts, .controller.ts, .repository.ts, etc}
-- Separação de responsabilidades: {descrição em 1 linha}
+**Padrão identificado:** {padrão.detectado}
+**Estrutura:** {árvore.validada}
 
 ---
 
 ## Entidades de Domínio
 
-| Entidade | Campos principais | O que representa |
-|---|---|---|
-| {NomeDaEntidade} | {campo1: tipo, campo2: tipo} | {descrição em 1 linha} |
+| Entidade | Campos |
+|---|---|
+| {nome.validado} | {campos.detectados} |
 
 ---
 
 ## APIs e Recursos
 
-| Recurso | Métodos detectados | Descrição inferida |
-|---|---|---|
-| /users | GET, POST, PUT, DELETE | Gerenciamento de usuários |
-| {recurso} | {métodos} | {descrição} |
-
----
-
-## Funcionalidades Implícitas
-
-{lista de funcionalidades inferidas das entidades e rotas}
-- {funcionalidade 1} — baseado em {evidência no código}
-- {funcionalidade 2} — baseado em {evidência no código}
-
----
-
-## Regras de Negócio Implícitas
-
-{lista de regras inferidas de validações, condições e enums}
-- {regra 1}
-- {regra 2}
-
----
-
-## Decisões Técnicas Aparentes (futuras ADRs)
-
-{lista de decisões que parecem ter sido feitas}
-- {decisão 1}
-- {decisão 2}
+| Recurso | Métodos |
+|---|---|
+| {recurso.detectado} | {métodos} |
 
 ---
 
 ## Lacunas Identificadas
 
-> O que não foi possível inferir do código e precisará ser respondido nas entrevistas de documentação.
+> O que NÃO pode ser detectado pelo código e PRECISA ser validado pelo usuário nas entrevistas.
 
-- [ ] {lacuna 1 — ex: "Objetivo de negócio e público-alvo não identificáveis pelo código"}
-- [ ] {lacuna 2 — ex: "Estratégia de deploy não confirmada"}
-- [ ] {lacuna 3}
+### Para /setup:build-tech:
+- Justificativa para escolhas de tecnologia
+- Decisões arquiteturais não-óbvias
+- Desafios técnicos do projeto
+- Processos de desenvolvimento
 
----
-
-## Para uso por /setup:build-tech
-
-Perguntas que NÃO precisam ser feitas (já respondidas):
-- Stack tecnológica: {resumo}
-- Padrão arquitetural: {resumo}
-- Entidades de domínio: {resumo}
-
-Perguntas que AINDA devem ser feitas:
-- {questão restante 1}
-- {questão restante 2}
-
----
-
-## Para uso por /setup:build-business
-
-Inferências disponíveis:
-- Tipo de produto: {tipo}
-- Funcionalidades identificadas: {lista resumida}
-- Entidades de negócio: {lista resumida}
-
-Informações que NÃO podem ser inferidas do código (obrigatório perguntar):
+### Para /setup:build-business:
 - Visão e missão do produto
-- Público-alvo e personas reais
-- Contexto competitivo
-- Métricas de sucesso definidas pelo negócio
+- Público-alvo e personas
+- Concorrentes e diferenciação
+- Métricas de sucesso
 ```
 
 ---
 
 ## FASE 4 — APRESENTAR RESULTADO
 
-Após salvar o arquivo, informe ao usuário:
-
 ```
 ✅ Análise do codebase concluída!
 
 Arquivo gerado: docs/_memory/codebase-analysis.md
 
-📊 O que foi encontrado:
-  Stack:       {resumo em 1 linha}
-  Arquitetura: {padrão detectado}
-  Entidades:   {N entidades de domínio}
-  Endpoints:   {N recursos de API}
+📊 O que foi detectado (validado):
+  Stack:       {resumo}
+  Arquitetura: {padrão}
+  Entidades:   {N entidades}
+  Endpoints:   {N recursos}
   Frontend:    {framework ou "não detectado"}
 
-📋 Lacunas (precisarão ser respondidas nas entrevistas):
-  {lista das lacunas identificadas}
+📋 O que PRECISA ser validado nas entrevistas:
+  {lista de lacunas}
 
 🚀 Próximos passos:
-
   /setup:build-tech      → documentação técnica
-                           (entrevista já pré-preenchida com o que foi encontrado)
-
   /setup:build-business  → documentação de negócio
-                           (entrevista focada apenas no que o código não revela)
-
-  /setup:start           → menu completo de documentação
 ```
 
-**Pare aqui.** Não execute nenhum outro comando automaticamente. Aguarde o usuário decidir o próximo passo.
+⛔ **IMPORTANTE: Após finalizar, AGUARDE. NÃO encadeie outros comandos automaticamente.**
 
 ---
 
-## REGRAS
+## REGRAS DE OURO
 
 | Regra | Descrição |
 |---|---|
-| **Nunca invente** | Se não encontrou, registre "não detectado" — nunca assuma |
-| **Não pergunte na Fase 1** | Varredura é 100% autônoma |
-| **Não gere docs finais** | A saída é APENAS `codebase-analysis.md` |
-| **Lacunas são valiosas** | Identificar o que falta é tão importante quanto o que foi encontrado |
-| **Pare no final** | Não encadeie outros comandos automaticamente |
+| **Fase 1 silenciosa** | Não pergunte nada ao usuário |
+| **Só detectar** | Não interprete, não invente justificativas |
+| **Validar após** | Use AskUserQuestion para cada item |
+| **NÃO invente** | Se não detectar, marque "não detectado" |
+| **Pare no fim** | Aguarde o usuário decidir o próximo passo |

@@ -67,15 +67,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Arquitetura, UX mobile, implementação, testes e review de performance"
-    agents: all
   economico:
     description: "Arquiteta + dev + review — para tasks bem definidas"
-    agents:
-      - marina-mobile
-      - felipe-feature
-      - renata-revisao-fe
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
-    agents:
-      - marina-mobile
-      - felipe-feature

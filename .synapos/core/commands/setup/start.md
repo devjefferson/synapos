@@ -19,9 +19,64 @@ Verifique se os arquivos existem e leia-os:
 - `docs/_memory/preferences.md` → IDE principal, preferências
 
 Se `docs/_memory/company.md` **não existir**:
-- Informe que o framework não foi inicializado
-- Oriente: `execute /init primeiro para configurar o Synapos`
-- **Pare aqui**
+- Execute o **PROTOCOLO DE ONBOARDING** abaixo para criar os arquivos
+- Depois continue para a verificação da documentação
+
+### PROTOCOLO DE ONBOARDING (primeira vez)
+
+Apresente ao usuário:
+
+```
+Olá! Sou o Synapos — framework de orquestração de agents.
+Antes de começar, preciso de algumas informações rápidas:
+
+1. Seu nome ou nome da empresa:
+2. Setor / tipo de projeto principal:
+3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
+4. IDE principal: [Claude Code / outro]
+5. Você usa algum task tracker? [GitHub Issues / Linear / Jira / Não uso]
+6. Qual modelo de IA você está usando? [Claude Sonnet/Opus / GPT-4o / Gemini Pro / Kimi / MiniMax / Outro]
+```
+
+Após as respostas, mapeie o modelo informado para o perfil de capacidade:
+
+| Modelo | model_capability |
+|---|---|
+| Claude Opus/Sonnet, GPT-4o, Gemini 1.5 Pro+ | `high` |
+| GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
+| Kimi, MiniMax, Llama 3.x, modelos locais, outros não listados | `lite` |
+
+Se o usuário não souber ou pular a pergunta, assuma `high`.
+
+Crie os arquivos abaixo e continue para verificação da documentação:
+
+**`docs/_memory/company.md`:**
+```markdown
+---
+atualizado: {YYYY-MM-DD}
+---
+# Perfil
+
+**Nome:** {resposta}
+**Setor:** {resposta}
+**Linguagem de saída:** {resposta}
+```
+
+**`docs/_memory/preferences.md`:**
+```markdown
+---
+atualizado: {YYYY-MM-DD}
+---
+# Preferências
+
+**IDE Principal:** {resposta}
+**Formato de data:** YYYY-MM-DD
+**Task Tracker:** {github | linear | jira | none}
+**model_capability:** {high | standard | lite}
+**model_name:** {nome do modelo informado}
+```
+
+**Pare aqui até que o onboarding esteja completo.**
 
 ### 1.2 — Verificar documentação existente
 
@@ -133,7 +188,7 @@ Aguarde a seleção do usuário.
 - Verifique se `docs/business` tem pelo menos um arquivo `.md`
 - Verifique se `docs/tech` tem pelo menos um arquivo `.md`
 - Verifique se `docs/tech-context` tem pelo menos um arquivo `.md`
-- Se **sim** → informe que GATE-0 será aprovado e oriente: `execute /init`
+- Se **sim** → informe que GATE-0 será aprovado e redirecione para `.synapos/core/orchestrator.md`
 - Se **não** → avise que documentação é obrigatória e retorne ao menu
 
 ---
