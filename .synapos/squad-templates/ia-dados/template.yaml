@@ -62,15 +62,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Exploração completa, ML engineering, pipelines de dados, documentação e análise"
-    agents: all
   economico:
     description: "LLM specialist + dados + análise — para features de IA focadas"
-    agents:
-      - larissa-llm
-      - diana-dados
-      - nelson-notebook
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
-    agents:
-      - larissa-llm
-      - diana-dados

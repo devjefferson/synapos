@@ -67,31 +67,80 @@ Se não: nenhuma ação necessária.
 
 ### PROTOCOLO DE ONBOARDING (primeira vez)
 
-Apresente ao usuário:
+**Use AskUserQuestion para cada pergunta.**
 
 ```
-Olá! Sou o Synapos — framework de orquestração de agents.
-Antes de começar, preciso de algumas informações rápidas:
-
-1. Seu nome ou nome da empresa:
-2. Setor / tipo de projeto principal:
-3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
-4. IDE principal: Claude Code
-5. Você usa algum task tracker? [GitHub Issues / Linear / Jira / Não uso]
-6. Qual modelo de IA você está usando? [Claude Sonnet/Opus / GPT-4o / Gemini Pro / Kimi / MiniMax / Outro]
+AskUserQuestion({
+  question: "Olá! Sou o Synapos — framework de orquestração de agents.\n\nAntes de começar, qual é o nome da empresa ou projeto?",
+  options: [
+    { label: "Vou informar", description: "Informar nome" }
+  ]
+})
 ```
 
-Após as respostas, mapeie o modelo informado para o perfil de capacidade:
+```
+AskUserQuestion({
+  question: "Qual é o setor ou tipo de projeto?",
+  options: [
+    { label: "SaaS / Software", description: "Produto de software como serviço" },
+    { label: "E-commerce", description: "Loja virtual / marketplace" },
+    { label: "Aplicativo Mobile", description: "App para celulares" },
+    { label: "API / Backend", description: "Apenas backend/API" },
+    { label: "Ferramenta Interna", description: "Software para uso interno" },
+    { label: "Open Source", description: "Projeto open source" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
+
+```
+AskUserQuestion({
+  question: "Qual linguagem de saída preferida?",
+  options: [
+    { label: "Português (PT-BR)", description: "Documentação em português" },
+    { label: "English (EN-US)", description: "Documentação em inglês" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
+
+```
+AskUserQuestion({
+  question: "Qual task tracker você usa?",
+  options: [
+    { label: "GitHub Issues", description: "Issues do GitHub" },
+    { label: "Linear", description: "Linear" },
+    { label: "Jira", description: "Jira" },
+    { label: "Não uso", description: "Sem task tracker" }
+  ]
+})
+```
+
+```
+AskUserQuestion({
+  question: "Qual modelo de IA você está usando?",
+  options: [
+    { label: "Claude Opus/Sonnet", description: "Anthropic Claude premium" },
+    { label: "GPT-4o", description: "OpenAI GPT-4o" },
+    { label: "Gemini Pro", description: "Google Gemini Pro" },
+    { label: "Kimi", description: "Kimi AI" },
+    { label: "MiniMax", description: "MiniMax" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
+
+Após as respostas, mapeie o modelo para `model_capability`:
 
 | Modelo | model_capability |
 |---|---|
 | Claude Opus/Sonnet, GPT-4o, Gemini 1.5 Pro+ | `high` |
 | GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
-| Kimi, MiniMax, Llama 3.x, modelos locais, outros não listados | `lite` |
+| Kimi, MiniMax, Llama 3.x, modelos locais | `lite` |
 
-Se o usuário não souber ou pular a pergunta, assuma `high`.
+Se o usuário não souber, assuma `high`.
 
-Crie os arquivos abaixo e continue para PASSO 2:
+Crie os arquivos e continue para PASSO 2:
 
 **`docs/_memory/company.md`:**
 ```markdown
@@ -128,18 +177,17 @@ Verifique se a pasta `docs/` existe na raiz do projeto e contém pelo menos um a
 **Se `docs/` não existe ou está vazia:**
 
 ```
-⚠️  Documentação não encontrada
-
-Nenhum squad pode ser executado sem documentação do projeto em docs/.
-
-O que você quer fazer?
-
-- 📋 Criar documentação de negócio   (/setup:build-business)
-- 🔧 Criar documentação técnica      (/setup:build-tech)
-- 🚀 Configurar documentação completa (/setup:start)
+AskUserQuestion({
+  question: "⚠️ Documentação não encontrada\n\nNenhum squad pode ser executado sem documentação.\n\nO que você quer fazer?",
+  options: [
+    { label: "📋 Criar docs de negócio", description: "Iniciar /setup:build-business" },
+    { label: "🔧 Criar docs técnicos", description: "Iniciar /setup:build-tech" },
+    { label: "🚀 Configurar tudo", description: "Iniciar /setup:start" }
+  ]
+})
 ```
 
-Aguarde a seleção do usuário. Se escolher criar documentação, execute o comando correspondente e **não continue** para os próximos passos até que `docs/` tenha conteúdo.
+Aguarde seleção. Se escolher criar documentação, execute o comando correspondente e **não continue** até que `docs/` tenha conteúdo.
 
 **Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
 
@@ -158,17 +206,18 @@ Construa a lista interna de squads ativos.
 
 ## PASSO 4 — MENU PRINCIPAL
 
-**Se existem squads**, apresente um menu interativo:
+**Se existem squads**, use AskUserQuestion:
 
 ```
-Olá, {nome do usuário}! Qual squad você quer trabalhar?
-
-- 🟢 {slug} · {domain} · {description}   (ativo)
-- 🟡 {slug} · {domain} · {description}   (pausado)
-- ✨ Criar novo squad
+AskUserQuestion({
+  question: "Olá, {nome do usuário}! Qual squad você quer trabalhar?",
+  options: [
+    { label: "🟢 {slug}", description: "{domain} · {description} (ativo)" },
+    { label: "🟡 {slug}", description: "{domain} · {description} (pausado)" },
+    { label: "✨ Criar novo squad", description: "Montar um novo squad do zero" }
+  ]
+})
 ```
-
-Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 **Status visual:**
 - 🟢 active — squad em andamento
@@ -181,22 +230,31 @@ Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 ## PASSO 5 — SELEÇÃO DE DOMÍNIO
 
-Liste os subdiretórios presentes em `.synapos/squad-templates/` (ignorar `.gitkeep`).
-Para cada diretório encontrado, leia o `template.yaml` e extraia `name`, `displayName`, `icon`, `description`.
+Liste os subdiretórios em `.synapos/squad-templates/` e leia `template.yaml` para cada um.
 
-Monte o menu interativo **apenas com os squads instalados**:
+Monte as opções para AskUserQuestion:
 
 ```
-Qual domínio você quer trabalhar?
-
-- {icon} {displayName} — {description}
-- {icon} {displayName} — {description}
-- ✨ Customizado — Monte seu próprio squad
+AskUserQuestion({
+  question: "Qual domínio você quer trabalhar?",
+  options: [
+    { label: "{icon} {displayName}", description: "{description}" },
+    { label: "{icon} {displayName}", description: "{description}" },
+    { label: "✨ Customizado", description: "Monte seu próprio squad" }
+  ]
+})
 ```
 
-Aguarde o usuário selecionar. Não prossiga sem seleção.
+**Se nenhum template for encontrado:** use AskUserQuestion para informar:
 
-**Se nenhum template for encontrado:** informe que nenhum squad está instalado e oriente o usuário a rodar `npx synapos` para instalar.
+```
+AskUserQuestion({
+  question: "Nenhum squad template instalado.\n\nInstale templates com: npx synapos",
+  options: [
+    { label: "Voltar", description: "Voltar ao menu" }
+  ]
+})
+```
 
 ---
 
@@ -204,100 +262,129 @@ Aguarde o usuário selecionar. Não prossiga sem seleção.
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
 
-### 6.1 — Apresentar agents disponíveis
+### 6.1 — Agents disponíveis (SELEÇÃO INTERATIVA)
 
-Apresente os agents BASE como já incluídos e os OPCIONAIS como seleção interativa:
-
-```
-Squad: {displayName}
-
-Agents base (sempre incluídos):
-  ✅ {icon} {displayName} — {role}
-  ✅ {icon} {displayName} — {role}
-
-Quais agents opcionais você quer adicionar? (selecione um ou mais)
-
-- {icon} {displayName} — {role}
-- {icon} {displayName} — {role}
-- {icon} {displayName} — {role}
-- Nenhum — usar apenas os agents base
-```
-
-Aguarde a seleção do usuário antes de continuar.
-
-### 6.2 — Modo de performance
+**Use AskUserQuestion para apresentar os agents.**
 
 ```
-Qual modo de operação você prefere?
-
-- ⚡ Alta Performance — squad completo, documentação máxima, revisões aprofundadas
-- 💰 Econômico — agentes essenciais, documentação core, execução rápida
-- 🧑‍💻 Solo — para dev solo: checkpoints de aprovação removidos, execução direta sem interrupções
+AskUserQuestion({
+  question: "Squad: {displayName}\n\nAgents base (sempre incluídos):\n  ✅ {icon} {displayName} — {role}\n  ✅ {icon} {displayName} — {role}\n\nQuais agents opcionais você quer adicionar?",
+  multiSelect: true,
+  options: [
+    { label: "{icon} {displayName}", description: "{role}" },
+    { label: "{icon} {displayName}", description: "{role}" },
+    { label: "{icon} {displayName}", description: "{role}" },
+    { label: "Nenhum adicional", description: "Usar apenas agents base" }
+  ]
+})
 ```
 
-Aguarde a seleção do usuário.
+Aguarde a seleção. Agents base são sempre incluídos.
 
-> **Modo Solo:** Registre `mode: solo` no `squad.yaml`. O pipeline runner vai ignorar automaticamente todos os checkpoints de aprovação intermediários (mantendo apenas os gates de integridade). O GATE-0 também opera em modo flexível quando `docs/` ainda não tem documentação completa.
+### 6.2 — Modo de performance (SELEÇÃO INTERATIVA)
 
-### Guia rápido — qual modo escolher?
-
-| Cenário | Modo recomendado |
-|---------|-----------------|
-| Nova feature crítica para produção | Alta Performance |
-| Feature estratégica com risco de negócio | Alta Performance |
-| Hotfix ou bugfix simples | Econômico |
-| Feature incremental com contexto já mapeado | Econômico |
-| Quick spec para feature bem definida | Econômico |
-| Prototipação ou exploração sem compromisso | Solo |
-| Dev solo sem prazo definido | Solo |
-| Refatoração sem mudança de comportamento | Econômico |
-| Equipe com revisão obrigatória de segurança | Alta Performance |
-| Mudança pontual de UI (ajuste visual, texto) | Solo |
-
-**Regra geral:** Em caso de dúvida entre Econômico e Alta Performance, prefira Econômico — você pode reexecutar em Alta depois.
-
-### 6.3 — Associar Feature Session
-
-Todo squad trabalha dentro de uma feature session. Pergunte:
+**Use AskUserQuestion:**
 
 ```
-Qual feature este squad vai trabalhar?
-
-- 📂 Selecionar session existente
-- ✨ Criar nova session
+AskUserQuestion({
+  question: "Qual modo de operação você prefere?",
+  options: [
+    {
+      label: "⚡ Alta Performance",
+      description: "Squad completo, documentação máxima, revisões aprofundadas — para features críticas"
+    },
+    {
+      label: "💰 Econômico",
+      description: "Docs core, execução rápida, menos checkpoints — para tasks bem definidas"
+    },
+    {
+      label: "🧑‍💻 Solo",
+      description: "Para dev solo: sem checkpoints de aprovação, execução direta — para quick fixes"
+    }
+  ]
+})
 ```
 
-**Se selecionar existente:**
-- Liste as pastas em `docs/.squads/sessions/` (ignorar `.gitkeep`)
-- Para cada uma, mostre: slug + squads que já trabalharam (de state.json)
-- Aguarde seleção
+> **Importante:** O modo de performance NÃO afeta quais agents são instalados.
+> - Agents base → sempre incluídos
+> - Agents opcionais selecionados → sempre incluídos
+>
+> O modo afeta apenas:
+> - Quantidade de etapas de documentação/revisão
+> - Exigência de aprovação em checkpoints intermediários
+> - Nível de detalhamento dos outputs
 
-**Se criar nova:**
+> **Modo Solo:** Registre `mode: solo` no `squad.yaml`. O pipeline runner ignora checkpoints de aprovação intermediários (mantendo gates de integridade).
 
-```
-Nome da feature ou slug da branch:
-Ex: "auth-module", "feat/pagamentos-v2", "dashboard-redesign"
-```
+### 6.3 — Nome / slug do squad (SELEÇÃO OU INPUT)
 
-O `{feature-slug}` é derivado do input: lowercase, espaços → hífens, sem caracteres especiais.
-A pasta `docs/.squads/sessions/{feature-slug}/` será criada pelo pipeline-runner na primeira execução.
-
-### 6.4 — Contexto do squad
+**Use AskUserQuestion com opção de input:**
 
 ```
-Descreva o objetivo deste squad nesta feature (1-2 frases):
-Ex: "Implementar os endpoints de autenticação"
-    "Criar os componentes de UI do módulo de pagamentos"
+AskUserQuestion({
+  question: "Qual nome para identificar este squad?",
+  options: [
+    { label: "Auto-gerar", description: "Gerar: {domínio}-001" },
+    { label: "Definir nome", description: "Vou informar o nome" }
+  ]
+})
 ```
 
-### 6.5 — Nome / slug do squad (opcional)
+Se "Definir nome": peça input livre.
+Auto-geração: `{domínio}-{NNN}` → backend-001, frontend-002
+
+### 6.4 — Contexto do squad (INPUT LIVRE)
+
+**Use AskUserQuestion com input:**
 
 ```
-Nome curto para identificar o squad (deixe em branco para auto-gerar):
-Ex: "auth-backend", "pagamentos-ui"
+AskUserQuestion({
+  question: "Descreva o objetivo deste squad (1-2 frases):",
+  options: [
+    { label: "Vou describir", description: "Ex: Implementar endpoints de autenticação" }
+  ]
+})
 ```
 
-Auto-geração de slug: `{domínio}-{NNN}` → backend-001, frontend-002
+Seção 6.5 — Feature Session (SELEÇÃO INTERATIVA)
+
+**Use AskUserQuestion:**
+
+```
+AskUserQuestion({
+  question: "Este squad trabalha em qual feature?",
+  options: [
+    { label: "📂 Session existente", description: "Selecionar feature já criada" },
+    { label: "✨ Nova feature", description: "Criar nova feature session" }
+  ]
+})
+```
+
+**Se "Session existente":**
+Liste as pastas em `docs/.squads/sessions/` com AskUserQuestion:
+
+```
+AskUserQuestion({
+  question: "Selecione a feature session:",
+  options: [
+    { label: "{feature-slug}", description: "{descrição do state.json}" },
+    { label: "{feature-slug}", description: "{descrição}" }
+  ]
+})
+```
+
+**Se "Nova feature":**
+
+```
+AskUserQuestion({
+  question: "Qual é o nome/slug da nova feature?",
+  options: [
+    { label: "Vou informar", description: "Ex: auth-module, feat/pagamentos" }
+  ]
+})
+```
+
+`{feature-slug}` = lowercase, espaços → hífens, sem caracteres especiais.
 
 ---
 
@@ -371,40 +458,37 @@ Verifique se `docs/_memory/project-learnings.md` existe. Se não existir, crie:
 
 ## PASSO 8 — ATIVAR SQUAD
 
-Anuncie o squad criado:
+### 8.1 — Resumo e Confirmação
+
+**Use AskUserQuestion antes de iniciar:**
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Squad {slug} criado e pronto! 🚀
-
-Agents:
-  {icon} {displayName} — {role}
-  {icon} {displayName} — {role}
-  ...
-
-Modo: {Alta Performance | Econômico}
-Pipeline: {nome do pipeline padrão}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Iniciando...
+AskUserQuestion({
+  question: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSquad {slug} criado e pronto! 🚀\n\nAgents:\n  {icon} {displayName} — {role}\n  {icon} {displayName} — {role}\n\nModo: {Alta Performance | Econômico}\nPipeline: {nome do pipeline padrão}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  options: [
+    { label: "▶️ Iniciar Squad", description: "Executar o pipeline agora" },
+    { label: "Revisar Squad", description: "Verificar configurações antes de iniciar" },
+    { label: "Cancelar", description: "Voltar sem iniciar" }
+  ]
+})
 ```
 
-### Verificação de Skills Necessárias
+### 8.2 — Verificação de Skills
 
 Antes de iniciar o pipeline:
-1. Leia os arquivos de steps do pipeline (arquivos `.md` referenciados em `file:` de cada step)
-2. Busque por menções a skills nos steps (texto que menciona `skill:` ou nomes de skills conhecidas: `brave-search`, `playwright-browser`, `github`, `fetch-url`, `filesystem`)
-3. Para cada skill mencionada, verifique se `.synapos/skills/{skill-name}/SKILL.md` existe (diretório ou symlink)
+1. Leia os arquivos de steps do pipeline
+2. Busque por menções a skills nos steps
+3. Para cada skill, verifique se `.synapos/skills/{skill-name}/SKILL.md` existe
 
-Se alguma skill referenciada não está instalada:
+Se alguma skill não está instalada:
 ```
-⚠️  Skills mencionadas no pipeline não instaladas:
-   ✗ {skill-name-1}
-   ✗ {skill-name-2}
-
-Estas skills melhoram a qualidade dos outputs mas não são obrigatórias.
-
-  [1] Continuar sem as skills (outputs podem ser menos específicos)
-  [2] Cancelar e instalar primeiro
+AskUserQuestion({
+  question: "⚠️ Skills não instaladas detectadas no pipeline:\n  ✗ {skill-name-1}\n  ✗ {skill-name-2}\n\nEstas skills melhoram a qualidade dos outputs mas não são obrigatórias.",
+  options: [
+    { label: "Continuar sem skills", description: "Prosseguir mesmo sem as skills" },
+    { label: "Instalar skills primeiro", description: "Cancelar e instalar as skills" }
+  ]
+})
 ```
 
 Se todas as skills estão instaladas:
@@ -412,7 +496,9 @@ Se todas as skills estão instaladas:
 ✅ Skills verificadas: {lista de skills disponíveis}
 ```
 
-Leia e siga `.synapos/core/pipeline-runner.md` passando como contexto:
+### 8.3 — Iniciar Pipeline
+
+Após confirmação, leia e siga `.synapos/core/pipeline-runner.md` passando:
 - Squad recém-criado
 - Pipeline padrão do template
 - Agents selecionados
@@ -475,30 +561,40 @@ Quando o usuário escolhe um squad ativo (PASSO 3):
 3. Leia `docs/.squads/sessions/{feature-slug}/state.json` (se existir)
 4. Leia `docs/.squads/sessions/{feature-slug}/memories.md` (se existir)
 
-### PASSO OBRIGATÓRIO — DETECTAR EXECUÇÃO INTERROMPIDA
+### DETECTAR EXECUÇÃO INTERROMPIDA
 
 No `state.json`, verifique `state.squads["{squad-slug}"]`:
 
-**Se existe e tem `"status": "running"`** — sessão interrompida deste squad. Apresente ESTE menu primeiro:
+**Se existe e tem `"status": "running"`** — sessão interrompida. Use AskUserQuestion:
 
 ```
-⚠️  Execução anterior interrompida detectada
-
-Squad:    {squad-slug}
-Feature:  {feature-slug}
-Último step ativo:  {suspended_at}
-Steps concluídos:   {completed_steps}
-
-O que você quer fazer?
-
-- ▶️ Retomar de onde parou  (continua a partir de {suspended_at})
-- 🔄 Descartar e iniciar nova execução deste squad
+AskUserQuestion({
+  question: "⚠️ Execução anterior interrompida detectada\n\nSquad: {squad-slug}\nFeature: {feature-slug}\nÚltimo step: {suspended_at}\n\nO que você quer fazer?",
+  options: [
+    { label: "▶️ Retomar", description: "Continuar de onde parou ({suspended_at})" },
+    { label: "🔄 Descartar", description: "Iniciar nova execução deste squad" }
+  ]
+})
 ```
-
-Aguarde a seleção do usuário. **Nunca avance sem esta confirmação.**
 
 - Se **Retomar**: passe `resume_from: {suspended_at}` para o pipeline-runner e execute.
-- Se **Descartar**: atualize `state.squads["{squad-slug}"].status = "discarded"` e continue abaixo.
+- Se **Descartar**: atualize `state.squads["{squad-slug}"].status = "discarded"` e continue.
+
+**Se `status` é `"completed"`, `"discarded"` ou não existe** → menu padrão:
+
+```
+AskUserQuestion({
+  question: "Squad {squad-slug} carregado.\nFeature: {feature-slug}\n\nSquads que já trabalharam: {lista}\n\nO que você quer fazer?",
+  options: [
+    { label: "🔄 Nova execução", description: "Executar novamente (manter contexto)" },
+    { label: "🧠 Ver memória", description: "Abrir memories.md da feature" },
+    { label: "📂 Ver arquivos", description: "Ver arquivos da session" },
+    { label: "⏸️ Pausar", description: "Pausar/arquivar squad" }
+  ]
+})
+```
+
+Aguarde a seleção do usuário.
 
 **Se `status` é `"completed"`, `"discarded"` ou não existe entrada para este squad** → menu padrão:
 
@@ -524,16 +620,43 @@ Aguarde a seleção do usuário.
 
 ---
 
-## SQUAD CUSTOMIZADO (opção 8)
+## SQUAD CUSTOMIZADO
 
 Quando o usuário escolhe squad customizado:
 
-1. Pergunte o domínio/objetivo em linguagem livre
-2. Leia `.synapos/squad-templates/` e liste todos os templates disponíveis
-3. Apresente agents disponíveis de todos os templates que sejam relevantes
-4. Deixe o usuário montar livremente
-5. Pergunte se quer usar um pipeline existente ou descrever um novo fluxo
-6. Crie o squad.yaml com `domain: custom`
+1. **Pergunte o domínio/objetivo com AskUserQuestion:**
+
+```
+AskUserQuestion({
+  question: "Qual é o objetivo deste squad customizado?",
+  options: [
+    { label: "Backend API", description: "Foco em endpoints e lógica de servidor" },
+    { label: "Frontend Web", description: "Foco em UI e experiência do usuário" },
+    { label: "Fullstack", description: "Frontend + Backend juntos" },
+    { label: "Mobile", description: "App iOS/Android" },
+    { label: "DevOps/Infra", description: "Infraestrutura e pipelines" },
+    { label: "Outro", description: "Vou descrever o objetivo" }
+  ]
+})
+```
+
+2. Leia `.synapos/squad-templates/` e liste todos os agents disponíveis com AskUserQuestion (multi-select)
+
+3. **Seleção de pipeline:**
+
+```
+AskUserQuestion({
+  question: "Qual pipeline usar?",
+  options: [
+    { label: "Feature Development", description: "Discovery → Arquitetura → Implementação → Review" },
+    { label: "Bug Fix", description: "Diagnóstico → Fix → Testes → Review" },
+    { label: "Quick Fix", description: "Mudança rápida sem aprovações" },
+    { label: "Customizado", description: "Descrever um novo fluxo" }
+  ]
+})
+```
+
+4. Crie o squad.yaml com `domain: custom`
 
 ---
 
@@ -541,6 +664,7 @@ Quando o usuário escolhe squad customizado:
 
 | Regra | Descrição |
 |-------|-----------|
+| **SEMPRE use AskUserQuestion** | Qualquer interação com usuário deve usar janela interativa |
 | **Nunca pule o PASSO 1** | Contexto de empresa/usuário é obrigatório |
 | **Agents BASE são fixos** | Nunca remova sem confirmação explícita |
 | **Memória persiste** | Sempre carregue memories.md em toda sessão |

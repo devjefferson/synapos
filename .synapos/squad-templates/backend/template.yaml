@@ -66,15 +66,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Arquitetura detalhada, implementação completa, auditoria de segurança, testes e docs"
-    agents: all
   economico:
     description: "Implementação direta + review — ideal para endpoints simples"
-    agents:
-      - bruno-base
-      - alexandre-api
-      - roberto-revisao-be
   solo:
     description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
-    agents:
-      - bruno-base
-      - alexandre-api

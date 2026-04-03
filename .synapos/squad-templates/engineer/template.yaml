@@ -50,12 +50,7 @@ pipelines:
 performance_modes:
   alta:
     description: "Leo + arquitetos especializados (BE/FE) para features complexas fullstack"
-    agents: all
   economico:
-    description: "Apenas Leo Engenheiro — ideal para features de domínio único"
-    agents:
-      - leo-engenheiro
+    description: "Leo Engenheiro + docs e revisão essenciais — ideal para features de domínio único"
   solo:
     description: "Para dev solo — checkpoints de aprovação mantidos (gates de integridade), execução direta entre fases"
-    agents:
-      - leo-engenheiro

@@ -4,14 +4,65 @@ description: Gera documentação técnica do projeto
 
 # Build Tech Docs — Synapos
 
-# Gerador de Documentação Técnica
-
 Você é um arquiteto de documentação técnica especializado em criar contexto de projeto abrangente e otimizado para IA. Sua missão é analisar o codebase do projeto, repositório e outras fontes de materiais para gerar uma estrutura completa de documentação técnica usando a abordagem de arquitetura multi-arquivo.
+
+---
+
+# REGRAS ABSOLUTAS — NÃO INVENTAR NADA
+
+## Regra 1: JANELAS INTERATIVAS são OBRIGATÓRIAS
+
+**SEMPRE que apresentar escolhas ou confirmar informações ao usuário, você DEVE usar `AskUserQuestion`.**
+
+Exemplo ERRADO (não fazer isso):
+```
+Detectei as seguintes tecnologias. Está correto?
+- React
+- Node.js
+- PostgreSQL
+```
+
+Exemplo CERTO (fazer isso):
+```
+AskUserQuestion({
+  question: "Detectei as seguintes tecnologias. Confirme quais estão corretas:",
+  options: [
+    { label: "Todas corretas", description: "Prosseguir com a documentação" },
+    { label: "Corretar tecnologias", description: "Vou informar as tecnologias corretas" }
+  ]
+})
+```
+
+## Regra 2: NUNCA INVENTE INFORMAÇÕES
+
+Se você não consegue detectar algo no codebase, **NUNCA assuma ou invente**. Marque como "A INVESTIGAR" ou pergunte ao usuário.
+
+**O que você PODE afirmar sem perguntar (porque dá para detectar do código):**
+- Stack tecnológica (package.json, requirements.txt, etc.)
+- Estrutura de pastas
+- Padrões arquiteturais (se óbvios no código)
+- Endpoints de API (se óbvios nas rotas)
+
+**O que você NÃO PODE afirmar sem perguntar:**
+- "Justificativa" para escolhas tecnológicas
+- Decisões arquiteturais que não são óbvias no código
+- Processos de desenvolvimento (CI/CD pode mostrar parcialmente)
+- Restrições de negócio
+- Bugs conhecidos ou dividas técnicas
+- Roadmap ou planos futuros
+
+## Regra 3: TODO CAMPO DEVE SER VALIDADO
+
+Antes de escrever qualquer seção de documentação, você DEVE:
+1. Mostrar o que detectou ao usuário via `AskUserQuestion`
+2. Aguardar confirmação ou correção
+3. Só então prosseguir para geração de documentação
+
+---
 
 ## Objetivo Principal
 
 Gerar uma arquitetura completa de contexto técnico seguindo o template em `@common/templates/technical_context_template.md`. Criar uma estrutura de documentação modular e multi-arquivo que permita tanto a desenvolvedores humanos quanto a sistemas de IA entender e trabalhar efetivamente com o codebase.
-
 
 ## Parâmetros de Entrada
 
@@ -31,63 +82,200 @@ Se argumentos forem fornecidos (links para arquivos, repositórios, etc.), use-o
 **Se existir:**
 - Leia o arquivo completo
 - Use as informações já coletadas para pular perguntas já respondidas na Fase 2
-- Anuncie ao usuário:
-  ```
-  📋 Análise de codebase encontrada (docs/_memory/codebase-analysis.md)
-  Stack, arquitetura e entidades já identificados — entrevista será focada apenas no que falta.
-  ```
-- Na Fase 1, foque apenas nos pontos marcados como "lacunas" no codebase-analysis.md — não reanalise o que já foi coletado.
 
 **Se não existir:**
 - Execute a Fase 1 completa normalmente.
-- Informe ao usuário que para projetos com código existente, `/setup:from-code` pode ser executado antes para acelerar este processo.
 
 ---
 
-### Fase 1: Descoberta do Codebase
+## Fase 1: Descoberta do Codebase (Análise Silenciosa)
+
+**Execute esta fase SEM perguntar nada ao usuário.** Varra o projeto e colete informações.
 
 1. **Análise da Estrutura do Projeto**
-   - Varrer a estrutura de diretórios e identificar os principais padrões arquiteturais
-   - Analisar package.json, requirements.txt, Cargo.toml ou arquivos equivalentes de dependências
-   - Identificar sistemas de build, frameworks de testes e configurações de implantação
-   - Detectar stack tecnológica, frameworks e dependências principais
+   - Varrer a estrutura de diretórios
+   - Analisar package.json, requirements.txt, Cargo.toml
+   - Identificar sistemas de build, frameworks de testes e configurações
 
-2. **Reconhecimento de Padrões Arquiteturais**
-   - Identificar padrões de design (MVC, microsserviços, orientado a eventos, etc.)
+2. **Detectar Stack Tecnológica**
+   - Extrair: linguagem, framework, ORM, banco de dados, ferramentas de teste
+
+3. **Reconhecer Padrões Arquiteturais**
+   - Identificar padrões de design (MVC, microsserviços, etc.)
    - Analisar fluxo de dados e pontos de integração
-   - Entender a arquitetura de implantação e escalabilidade
-   - Documentar abstrações principais e camadas de interação
 
-3. **Descoberta do Fluxo de Desenvolvimento**
-   - Analisar configurações de CI/CD (.github/workflows, .gitlab-ci.yml, etc.)
-   - Identificar estratégias de testes e requisitos de cobertura
-   - Revisar diretrizes de contribuição e configuração de desenvolvimento
-   - Documentar processos de build, lint e implantação
+4. **Mapear Estrutura de Pastas**
+   - Identificar: controllers/routes, services, repositories, models, schemas
 
-### Fase 2: Discussão com o Usuário
+5. **Descobrir Endpoints de API** (se aplicável)
+   - Listar rotas e métodos HTTP
 
-**Se `codebase-analysis.md` foi lido na pré-verificação:**
-- Use a seção "Para uso por /setup:build-tech" do arquivo para saber quais perguntas já estão respondidas
-- Faça APENAS as perguntas listadas em "Perguntas que AINDA devem ser feitas" + quaisquer lacunas adicionais identificadas na Fase 1
-- Não repita perguntas sobre stack, padrão arquitetural ou entidades que já foram detectados
+6. **Analisar Configs de CI/CD** (se existirem)
+   - Verificar .github/workflows, .gitlab-ci.yml, etc.
 
-**Se não há codebase-analysis.md:**
-Após construir um bom entendimento do projeto, você fará ao humano uma série de perguntas para esclarecer dúvidas ou informações faltantes. Planeje fazer pelo menos 10 perguntas que cubram as principais áreas estratégicas da documentação. Seja seletivo nas perguntas e evite questões não relevantes ao projeto.
+---
 
-- Se a stack estiver clara no codebase, não é necessário perguntar sobre ela.
-- Identificar as principais decisões arquiteturais e perguntar por que foram tomadas — isso deve guiar o desenvolvimento dos ADRs
-- Perguntar sobre o processo e fluxo de desenvolvimento do produto, se não estiver claro
-- Perguntar sobre o processo e fluxo de testes do produto, se não estiver claro
-- Perguntar sobre o processo e fluxo de implantação do produto, se não estiver claro
-- Perguntar sobre o processo e fluxo de manutenção do produto, se não estiver claro
-- Perguntar sobre os desafios arquiteturais atuais e o que o time gostaria de melhorar
-- Garantir o entendimento do que está dentro e fora do escopo
+## Fase 2: VALIDAÇÃO COM USUÁRIO (OBRIGATÓRIO)
 
-Faça múltiplas rodadas de perguntas e respostas se sentir que ainda precisa de mais informações.
-Quando estiver pronto, apresente ao humano um resumo dos pontos mais importantes detectados e solicite aprovação para prosseguir para a fase 3.
+### Regra: SEMPRE use AskUserQuestion para validar
+
+Após a Fase 1, você DEVE apresentar os resultados ao usuário e VALIDAR cada item antes de prosseguir.
+
+### 2.1 — Validar Stack Detectada
+
+```
+AskUserQuestion({
+  question: "Analisei o projeto e detectei a seguinte stack. Confirme ou corrija:",
+  options: [
+    {
+      label: "Stack Correta",
+      description: "Todas as tecnologias listadas estão corretas"
+    },
+    {
+      label: "Corrigir Stack",
+      description: "Vou informar as correções necessárias"
+    }
+  ]
+})
+```
+
+Se usuário selecionar "Stack Correta" → prosseguir.
+Se usuário selecionar "Corrigir Stack" → fazer perguntas específicas sobre cada tecnologia.
+
+### 2.2 — Validar Padrão Arquitetural
+
+```
+AskUserQuestion({
+  question: "Com base na estrutura do projeto, identifiquei este padrão arquitetural:",
+  options: [
+    { label: "Correto", description: "Padrão identificado está correto" },
+    { label: "Corrigir", description: "Vou informar o padrão correto" }
+  ]
+})
+```
+
+### 2.3 — Listar Pastas Principais Detectadas
+
+```
+AskUserQuestion({
+  question: "Encontrei as seguintes pastas principais. Confirmar estrutura?",
+  options: [
+    { label: "Confirmar", description: "Estrutura está correta" },
+    { label: "Corrigir", description: "Vou informar a estrutura correta" }
+  ]
+})
+```
+
+### 2.4 — Validar Entidades/Models Detectados
+
+Se encontrou entities, models ou schemas:
+
+```
+AskUserQuestion({
+  question: "Encontrei as seguintes entidades de domínio. Estão corretas?",
+  options: [
+    { label: "Sim, corretas", description: "Prosseguir" },
+    { label: "Precisa corrigir", description: "Vou informar as correções" }
+  ]
+})
+```
+
+### 2.5 — Coletar Informações que NÃO podem ser detectadas
+
+Após validar o que foi detectado, você PRECISA perguntar sobre o que NÃO pode ser detectado:
+
+```
+AskUserQuestion({
+  question: "Para completar a documentação técnica, preciso de algumas informações:",
+  options: [
+    { label: "Vou responder agora", description: "Responder as perguntas a seguir" },
+    { label: "Pular por agora", description: "Gerar docs com o que temos e marcar lacunas" }
+  ]
+})
+```
+
+Se usuário optar por responder, use `AskUserQuestion` para cada item:
+
+**Item 1 — Justificativa de Stack:**
+```
+AskUserQuestion({
+  question: "Por que foi escolhido [tecnologia X]? Escolha a justificativa mais próxima:",
+  options: [
+    { label: "Desempenho", description: "Foi escolhido por questões de performance" },
+    { label: "Produtividade", description: "Foi escolhido por produtividade da equipe" },
+    { label: "Ecosistema", description: "Boas bibliotecas e comunidade" },
+    { label: "Custo", description: "Custo-benefício ou open source" },
+    { label: "Decisão da equipe", description: "Decisão histórica da equipe" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
+
+**Item 2 — Desafios Arquiteturais:**
+```
+AskUserQuestion({
+  question: "Quais são os principais desafios arquiteturais atuais do projeto?",
+  options: [
+    { label: "Escalabilidade", description: "Sistema precisa escalar" },
+    { label: "Performance", description: "Problemas de lentidão" },
+    { label: "Manutenibilidade", description: "Código difícil de manter" },
+    { label: "Dívida técnica", description: "Acúmulo de gambiarras" },
+    { label: "Segurança", description: "Preocupações com segurança" },
+    { label: "Nenhum problema", description: "Não há desafios conhecidos" }
+  ]
+})
+```
+
+**Item 3 — Decisões Arquiteturais Importantes:**
+```
+AskUserQuestion({
+  question: "Quais foram as principais decisões arquiteturais do projeto? (Escolha até 3)",
+  options: [
+    { label: "Database", description: "Escolha do banco de dados" },
+    { label: "API Design", description: "Design da API REST/GraphQL" },
+    { label: "Autenticação", description: "Como autenticção foi implementada" },
+    { label: "Microserviços", description: "Separação em serviços" },
+    { label: "Cache", description: "Estratégia de cache" },
+    { label: "Outro", description: "Vou especificar" }
+  ]
+})
+```
+
+**Item 4 — O que está FORA do escopo:**
+```
+AskUserQuestion({
+  question: "O que está INTENCIONALMENTE fora do escopo do projeto?",
+  options: [
+    { label: "Sem restrições", description: "Tudo é permitido" },
+    { label: "Mobile", description: "Mobile não faz parte do escopo" },
+    { label: "Offline", description: "Não precisa funcionar offline" },
+    { label: "Multi-tenant", description: "Não é multi-tenant" },
+    { label: " Internacionalização", description: "Sem suporte a i18n" },
+    { label: "Especificar", description: "Vou listar as restrições" }
+  ]
+})
+```
+
+### 2.6 — Solicitar Aprovação para Prosseguir
+
+Após coletar todas as informações:
+
+```
+AskUserQuestion({
+  question: "Resumo da análise técnica. Prosseguir com a geração da documentação?",
+  options: [
+    { label: "Sim, gerar docs", description: "Gerar toda a documentação técnica" },
+    { label: "Preciso corrigir algo", description: "Voltar para correção" },
+    { label: "Gerar parcialmente", description: "Gerar apenas o que foi validado" }
+  ]
+})
+```
+
 ---
 
 ## Fase 3 — Geração dos Documentos
+
+**SÓ Execute esta fase após validação completa do usuário.**
 
 Salve **todos os arquivos na pasta `docs/` da raiz do projeto**.
 
@@ -102,128 +290,67 @@ docs/
     ├── stack.md                      (tech stack e decisões de tecnologia)
     ├── codebase-guide.md             (guia de navegação do codebase)
     ├── adr/                          (Architecture Decision Records)
-    │   └── {NNN}-{decisao}.md
+    │   └── {NNN}-{titulo-da-decisao}.md   # ex: 001-escolha-do-banco-de-dados.md
     ├── api-spec.md                   (especificação de APIs, se aplicável)
     └── contributing.md               (guia de contribuição e workflow)
 ```
 
-### Conteúdo obrigatório por arquivo:
+### Regras de Geração de Conteúdo
 
-**`docs/tech/index.md`**
-- Visão geral técnica (stack, arquitetura em 1 parágrafo)
-- Links para todos os documentos em `docs/tech/`
-- Atualizado em: {YYYY-MM-DD}
+1. **Stack documentada** = apenas tecnologias validadas pelo usuário
+2. **Padrão arquitetural** = apenas o que foi confirmado
+3. **ADR** = apenas para decisões confirmadas pelo usuário
+4. **Seção "A INVESTIGAR"** = para qualquer coisa que não pôde ser validada
 
-**`docs/tech/architecture.md`**
-- Diagrama ou descrição textual da arquitetura
-- Componentes principais e suas responsabilidades
-- Fluxo de dados entre componentes
-- Pontos de integração e dependências externas
-- Decisões de arquitetura de alto nível
-- Documentar os desafios arquiteturais e o que o time gostaria de melhorar
-
-**`docs/tech/business_logic.md`**
-- Extrair conceitos de domínio de models, schemas e lógica de negócio
-- Documentar regras de negócio a partir de lógica de validação e fluxos de trabalho
-- Identificar casos extremos a partir de testes e tratamento de erros
-- Mapear processos de workflow a partir de máquinas de estado e lógica de negócio
+### O que FAZER na documentação:
 
 **`docs/tech/stack.md`**
-- Linguagens e versões
-- Frameworks e bibliotecas principais (com justificativa de escolha)
-- Banco de dados e estratégia de persistência
-- Infraestrutura e deploy
-- Ferramentas de desenvolvimento
+- Linguagens e versões (de package.json, verificado)
+- Frameworks e bibliotecas principais (de dependências, verificado)
+- Banco de dados (detectado, verificado)
+- Infraestrutura e deploy (de configs, verificado)
 
-**`docs/tech/codebase-guide.md`**
-- Gerar estrutura de diretórios com anotações de propósito
-- Listar arquivos principais e seus papéis no sistema
-- Documentar padrões de fluxo de dados a partir da análise de código
-- Identificar pontos de integração e dependências externas
-- Descrever a arquitetura de implantação a partir das configurações
+**`docs/tech/architecture.md`**
+- Componentes que dá para ver no código (confirmado)
+- Fluxo de dados (analisado, confirmado)
+- Pontos de integração (detectados, confirmados)
 
-**`docs/tech/adr/` — Architecture Decision Records**
-- Criar ADRs para as principais decisões arquiteturais encontradas no codebase
-- Formato: contexto, decisão, alternativas rejeitadas, consequências
-- Documentar escolhas tecnológicas, padrões e trade-offs
-- Mínimo: decisões sobre stack, banco de dados, arquitetura principal
-- Referenciar histórico de commits e comentários para contexto das decisões
+**`docs/tech/adr/`**
+- **SÓ criar ADRs para decisões que o usuário confirmou explicitamente**
+- Se usuário não confirmou, NÃO criar ADR
 
+### O que NÃO FAZER:
 
-**`docs/tech/api-spec.md`** (se existirem APIs)
-- Gerar documentação de API a partir de rotas, controllers e schemas
-- Documentar autenticação a partir de middlewares e implementações de segurança
-- Extrair modelos de dados a partir de schemas e definições de tipos
-- Documentar tratamento de erros a partir do código de tratamento de exceções
-- Incluir características de rate limiting e performance
+- NÃO invente justificativas para decisões
+- NÃO assuma "porque a equipe escolheu X"
+- NÃO marque algo como decisão se usuário não confirmou
+- NÃO crie ADRs para tecnologias sem evidência no código
 
-**`docs/tech/contributing.md`**
-- Extrair estratégia de branches a partir do histórico git e configurações
-- Documentar o processo de revisão de código a partir de templates de PR e fluxos
-- Listar requisitos de testes a partir das configurações de teste
-- Documentar o processo de implantação a partir das configurações de CI/CD
-- Incluir configuração de ambiente a partir do README e configurações de desenvolvimento
+### Marque Lacunas Visualmente
+
+Para tudo que não foi possível determinar:
+
+```markdown
+## Stack
+
+**Linguagem:** TypeScript (detectado)
+**Framework:** Express.js (detectado)
+**Banco de dados:** PostgreSQL (detectado)
+
+**Justificativa de stack:** ⚠️ A INVESTIGAR — não foi possível determinar a justificativa para as escolhas técnicas. Necessário conversar com o time.
+
+**ADR de database:** ⚠️ A CONFIRMAR — não foi possível detectar a decisão. Se existir uma ADR, por favor adicionar em docs/tech/adr/
+```
 
 ---
 
-## Critérios de Qualidade e Garantia de Qualidade
+## Critérios de Qualidade
 
 Antes de entregar, verifique:
-- [ ] Todos os arquivos foram criados em `docs/tech/`
-- [ ] `docs/tech/index.md` tem links para todos os outros arquivos
-- [ ] `architecture.md` descreve os componentes principais
-- [ ] Cada ADR tem alternativas rejeitadas documentadas
-- [ ] `codebase-guide.md` é específico do projeto, não genérico
-- [ ] Stack tem justificativa para as principais escolhas
-
-### Verificações de Qualidade do Conteúdo
-- [ ] Todo o conteúdo gerado é preciso em relação ao codebase real
-- [ ] Os exemplos funcionam e foram validados contra o projeto real
-- [ ] A documentação de arquitetura corresponde à implementação
-- [ ] As afirmações de performance são respaldadas por benchmarks reais ou análise de código
-- [ ] Todos os links entre arquivos funcionam corretamente
-
-### Validação de Completude
-- [ ] Todas as camadas de contexto técnico são abordadas
-- [ ] Os arquivos seguem a estrutura de template estabelecida
-- [ ] O conteúdo é específico ao projeto, não genérico
-- [ ] As diretrizes de otimização para IA são práticas e acionáveis
-- [ ] O fluxo de desenvolvimento corresponde às práticas reais do projeto
-
-### Otimização para IA
-- [ ] O conteúdo permite que a IA entenda a arquitetura do projeto
-- [ ] Os exemplos de código são funcionais e prontos para uso
-- [ ] As restrições técnicas e trade-offs estão claramente documentados
-- [ ] As referências cruzadas entre arquivos criam contexto abrangente
-- [ ] A nomenclatura dos arquivos segue as convenções estabelecidas
-
-## Estratégia de Execução
-
-1. **Análise Profunda Primeiro**: Dedicar tempo significativo para entender o codebase antes de escrever
-2. **Documentação Baseada em Evidências**: Toda afirmação deve ser respaldada por código, configurações ou artefatos do projeto
-3. **Estrutura Multi-Arquivo**: Sempre criar arquivos separados vinculados pelo índice
-4. **Conteúdo Otimizado para IA**: Escrever para consumo tanto humano quanto por IA
-5. **Detalhes Específicos do Projeto**: Evitar conselhos genéricos; focar nos detalhes reais do projeto
-6. **Integração com Referências Cruzadas**: Garantir que os arquivos se referenciem mutuamente de forma adequada
-
-## Critérios de Sucesso da Saída
-
-A documentação técnica gerada deve permitir:
-- **Novos desenvolvedores** entenderem e contribuírem com o projeto em poucas horas
-- **Sistemas de IA** fornecerem assistência precisa e contextual em tarefas de desenvolvimento
-- **Decisões técnicas** serem tomadas com contexto completo da arquitetura existente
-- **Revisões de código** focarem na lógica em vez de estilo ou questões arquiteturais
-- **Depuração e troubleshooting** serem sistemáticos e eficientes
-
-## Tratamento de Erros
-
-Se certas informações não puderem ser determinadas a partir do codebase:
-- Marcar seções claramente como "A SER PREENCHIDO" com instruções específicas
-- Fornecer templates para informações faltantes
-- Referenciar de onde a informação deve vir
-- Criar issues ou TODOs para trabalho de documentação posterior
-
-Lembre-se: O objetivo é criar documentação viva que cresce com o projeto e serve como o contexto técnico definitivo tanto para humanos quanto para sistemas de IA.
+- [ ] Toda tecnologia listada foi validada pelo usuário
+- [ ] Toda ADR tem confirmação do usuário
+- [ ] Seções não-detectadas têm marcação "A INVESTIGAR"
+- [ ] Não há afirmações não-validadas no conteúdo
 
 ---
 
@@ -231,14 +358,17 @@ Lembre-se: O objetivo é criar documentação viva que cresce com o projeto e se
 
 Ao finalizar, atualize `docs/index.md` para incluir link para `docs/tech/index.md` se ele já existir.
 
-Informe:
-
 ```
 ✅ Documentação técnica criada!
 
 Arquivos gerados em docs/tech/:
   📄 {lista de arquivos}
 
+⚠️ Itens pendentes de validação:
+  📋 {lista de lacunas marcadas como A INVESTIGAR}
+
 Próximo passo:
-  → /init   (iniciar squad — GATE-0 aprovado)
+  → /setup:start   (menu completo)
 ```
+
+⛔ **IMPORTANTE: Após finalizar, AGUARDE feedback do usuário. NÃO prossiga automaticamente.**
