@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.3.0
+version: 1.5.0
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -170,26 +170,133 @@ atualizado: {YYYY-MM-DD}
 
 ---
 
-## PASSO 2 — VERIFICAR DOCUMENTAÇÃO DO PROJETO
+## PASSO 2 — MODE DECISION SYSTEM
 
-Verifique se a pasta `docs/` existe na raiz do projeto e contém pelo menos um arquivo `.md`.
+O orquestrador determina automaticamente o modo de execução cruzando dois fatores: **score de documentação** e **complexidade da tarefa**. Nunca bloqueia — sempre encontra um caminho de execução.
 
-**Se `docs/` não existe ou está vazia:**
+---
+
+### 2.1 — Calcular Score de Documentação
+
+Verifique a existência de cada item e some os pontos:
+
+| Item | Pontos |
+|------|--------|
+| `docs/_memory/company.md` existe | +30 |
+| `docs/tech/` existe com ≥ 1 arquivo `.md` | +20 |
+| `docs/business/` existe com ≥ 1 arquivo `.md` | +20 |
+| `docs/tech-context/` existe com ≥ 1 arquivo `.md` | +15 |
+| Total de arquivos `.md` em `docs/` ≥ 5 | +15 |
+
+**Score total possível: 100**
+
+Armazene como `[DOC_SCORE]` (0–100).
+
+---
+
+### 2.2 — Inferir Complexidade da Tarefa
+
+Pergunte ao usuário o que ele quer fazer. Se já houver contexto da mensagem inicial, use-o diretamente.
 
 ```
 AskUserQuestion({
-  question: "⚠️ Documentação não encontrada\n\nNenhum squad pode ser executado sem documentação.\n\nO que você quer fazer?",
+  question: "O que você quer fazer?",
   options: [
-    { label: "📋 Criar docs de negócio", description: "Iniciar /setup:build-business" },
-    { label: "🔧 Criar docs técnicos", description: "Iniciar /setup:build-tech" },
-    { label: "🚀 Configurar tudo", description: "Iniciar /setup:start" }
+    { label: "Vou descrever", description: "Ex: corrigir bug no login, criar endpoint de pagamento..." }
   ]
 })
 ```
 
-Aguarde seleção. Se escolher criar documentação, execute o comando correspondente e **não continue** até que `docs/` tenha conteúdo.
+Com base na descrição, classifique a complexidade:
 
-**Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
+| Complexidade | Palavras-chave e sinais |
+|---|---|
+| **LOW** | fix, typo, ajuste, quick, bug simples, texto, estilo, cor, label, tradução |
+| **MEDIUM** | feature, endpoint, component, tela, módulo, integração, API, CRUD |
+| **HIGH** | arquitetura, refactor, sistema, infra, migração, redesign, segurança, performance |
+
+Se não for possível classificar → assuma `MEDIUM`.
+
+Armazene como `[COMPLEXITY]` (LOW / MEDIUM / HIGH).
+
+---
+
+### 2.3 — Determinar Execution Mode
+
+Aplique as regras na ordem exata:
+
+| Condição | Execution Mode |
+|---|---|
+| `company.md` não existe e `[DOC_SCORE]` = 0 | **BOOTSTRAP** |
+| `[COMPLEXITY]` = LOW | **BOOTSTRAP** |
+| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` < 40 | **BOOTSTRAP** |
+| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` ≥ 40 | **STANDARD** |
+| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` < 70 | **STANDARD** |
+| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` ≥ 70 | **STRICT** |
+
+Armazene como `[EXECUTION_MODE]` (BOOTSTRAP / STANDARD / STRICT).
+
+---
+
+### 2.4 — Reagir ao Modo
+
+**Se `[EXECUTION_MODE]` = BOOTSTRAP:**
+
+Informe sem bloquear:
+```
+⚡ Bootstrap Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Executando com contexto mínimo.
+   Pipelines disponíveis: quick-fix, bug-fix
+
+   Para desbloquear mais pipelines:
+   → /setup:build-tech      (+35 pontos)
+   → /setup:build-business  (+40 pontos)
+```
+
+Continue para PASSO 3.
+
+**Se `[EXECUTION_MODE]` = STANDARD:**
+
+Informe e continue:
+```
+🟡 Standard Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Contexto parcial disponível. Gates ativos: GATE-0, GATE-ADR, GATE-DECISION.
+```
+
+Continue para PASSO 3.
+
+**Se `[EXECUTION_MODE]` = STRICT:**
+
+Informe e continue:
+```
+🔴 Strict Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Contexto completo disponível. Todos os gates ativos. Máxima qualidade.
+```
+
+Continue para PASSO 3.
+
+---
+
+### 2.5 — Sugestão de upgrade (STANDARD e STRICT)
+
+Se `[DOC_SCORE]` < 100, exiba ao final qual documentação faltante aumentaria o score:
+
+```
+💡 Documentação disponível pode melhorar o modo:
+   {item ausente} → +{pontos} pontos
+   Score atual: {DOC_SCORE}/100 → precisaria de {threshold} para {próximo modo}
+```
+
+Exiba apenas como informação — nunca bloqueie.
 
 ---
 
@@ -261,6 +368,17 @@ AskUserQuestion({
 ## PASSO 6 — CONFIGURAR SQUAD
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
+
+> **Restrições por `[EXECUTION_MODE]` — aplique antes de qualquer pergunta:**
+>
+> | | BOOTSTRAP | STANDARD | STRICT |
+> |---|---|---|---|
+> | **Pipelines disponíveis** | quick-fix, bug-fix | todos | todos |
+> | **Agents opcionais** | não apresenta | apresenta | apresenta |
+> | **Modo de performance** | fixado em `solo` | apresenta opções | apresenta opções |
+> | **squad.yaml `execution_mode`** | `bootstrap` | `standard` | `strict` |
+>
+> Em **BOOTSTRAP**: se o template não tiver `quick-fix` nem `bug-fix`, ofereça `quick-fix` como opção genérica.
 
 ### 6.1 — Agents disponíveis (SELEÇÃO INTERATIVA)
 
@@ -423,6 +541,8 @@ displayName: "{displayName do template}"
 description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
+execution_mode: {bootstrap | standard | strict}   # determinado pelo Mode Decision System no PASSO 2
+doc_score: {0-100}                                # score de documentação no momento da criação
 created_at: {YYYY-MM-DD}
 feature: {feature-slug}
 session: docs/.squads/sessions/{feature-slug}/

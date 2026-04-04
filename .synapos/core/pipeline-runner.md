@@ -60,6 +60,27 @@ docs/_memory/preferences.md                                    → preferências
 docs/_memory/project-learnings.md                              → aprendizados transversais (se existir)
 ```
 
+Leia `execution_mode` e `doc_score` do `squad.yaml` e configure o runner:
+
+| `execution_mode` | Contexto injetado | Gates ativos |
+|---|---|---|
+| `bootstrap` | `company.md` + session files apenas | GATE-1, GATE-DECISION |
+| `standard` | `company.md` + docs parciais + session files + ADRs | GATE-0,1, GATE-ADR, GATE-DECISION, GATE-3, GATE-5 |
+| `strict` | Tudo — docs completas + session files + ADRs | Todos os gates |
+
+Log ao iniciar:
+```
+⚙️  [MODE] {BOOTSTRAP | STANDARD | STRICT} — doc_score: {score}/100
+   Gates ativos: {lista}
+```
+
+**Se `execution_mode: bootstrap`:**
+- Não tente ler `docs/`, `docs/business/`, `docs/tech/` nem `docs/tech-context/`
+- Injete apenas: `company.md` (se existir) + session files + step instructions
+- Log adicional: `⚡ [BOOTSTRAP] Contexto mínimo — ADRs e docs de projeto não injetados`
+
+**Se `execution_mode: standard` ou `strict`:**
+
 Adicionalmente, **pré-carregue os ADRs do projeto uma única vez**:
 - Leia todos os arquivos em `docs/` cujo nome contenha `ADR`, `adr`, `decisions` ou `architecture-decision`
 - Armazene o conteúdo em memória como `[ADRS_CARREGADOS]`
@@ -466,7 +487,9 @@ async_checkpoints: true   # padrão: false
 
 ### 2.5 — Aplicar gates automáticos pós-execução
 
-**GATE-DECISION (sempre, automático):**
+> Antes de aplicar qualquer gate, verifique `execution_mode` do squad.yaml e a tabela de gates ativos em `.synapos/core/gate-system.md`. Gates marcados como desativados para o modo atual são ignorados silenciosamente — sem log, sem falha.
+
+**GATE-DECISION (universal — ativo em todos os modos):**
 
 Antes de aceitar qualquer output de step `inline` ou `subagent`, verifique:
 
@@ -639,6 +662,24 @@ Se houver resposta, acrescente em `docs/_memory/project-learnings.md`:
 ## Aprendizado — {YYYY-MM-DD} [{squad-slug} / {feature-slug}]
 {texto do usuário}
 ```
+
+### 3.2b — Evolução de modo (verificar após execução)
+
+Recalcule o score de documentação usando a mesma fórmula do Mode Decision System (PASSO 2 do orchestrator):
+- `company.md` +30, `docs/tech/` +20, `docs/business/` +20, `docs/tech-context/` +15, ≥5 arquivos +15
+
+Se o novo score ultrapassar o threshold do próximo modo, exiba:
+
+```
+📈 [MODE UPGRADE DISPONÍVEL]
+   Score atual: {novo_score}/100 (era {score_anterior}/100)
+   Modo atual: {BOOTSTRAP | STANDARD}
+
+   Com /setup:build-{tech|business} você chegaria em {próximo_modo}.
+   Execute /init novamente para ativar automaticamente.
+```
+
+Nunca faça upgrade automático sem novo `/init` — deixe o usuário decidir.
 
 ### 3.3 — Apresentar sumário
 

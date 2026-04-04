@@ -1,6 +1,18 @@
 # Synapos — Getting Started
 
-> Guia rápido para começar a usar o Synapos Framework v2.0+
+> Guia rápido para começar a usar o Synapos Framework v2.2+
+
+---
+
+## Começo rápido (sem documentação)
+
+Quer rodar agora sem configurar nada?
+
+```
+/init → "Começar agora" → domínio → quick-fix
+```
+
+O **Bootstrap Mode** ativa automaticamente quando `docs/` não existe. Você já executa um quick-fix ou bug-fix com contexto mínimo. Ao final, o framework recomenda criar a documentação para resultados mais completos.
 
 ---
 
@@ -8,12 +20,20 @@
 
 Escolha o cenário que melhor descreve sua situação:
 
+### Quero testar agora (sem setup)
+
+1. Execute `/init`
+2. Quando perguntado sobre documentação → escolha **"Começar agora"**
+3. Selecione um domínio e escolha `quick-fix` ou `bug-fix`
+4. O squad executa com contexto mínimo (Bootstrap Mode)
+5. Ao final: siga a recomendação de criar docs para resultados melhores
+
 ### Tenho um projeto existente com código
 
 1. Execute `/init` no Claude Code — responda as perguntas de onboarding (empresa, IDE, modelo, task tracker)
 2. Execute `/setup:build-tech` → analisa o codebase e gera `docs/tech/` (stack, ADRs, arquitetura)
 3. Execute `/setup:build-business` → entrevista sobre o produto e gera `docs/business/`
-4. Execute `/init` novamente → GATE-0 vai passar
+4. Execute `/init` novamente → GATE-0 vai passar com contexto completo
 5. Escolha seu squad:
    - Backend API → Squad `engineer` ou `backend`
    - Frontend UI → Squad `frontend`
