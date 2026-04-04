@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.6.0
+version: 1.6.1
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -381,6 +381,11 @@ AskUserQuestion({
 })
 ```
 
+**Roteamento obrigatório — execute apenas UM dos caminhos abaixo:**
+
+- Se o usuário selecionou um template existente → **vá para PASSO 6**. Não execute SQUAD CUSTOMIZADO.
+- Se o usuário selecionou "✨ Customizado" → **vá para SQUAD CUSTOMIZADO**. Não execute PASSO 6.
+
 ---
 
 ## PASSO 6 — CONFIGURAR SQUAD
@@ -745,51 +750,17 @@ AskUserQuestion({
 
 Aguarde a seleção do usuário.
 
-**Se `status` é `"completed"`, `"discarded"` ou não existe entrada para este squad** → menu padrão:
-
-```
-Squad {squad-slug} carregado.
-Feature: {feature-slug}
-Session: docs/.squads/sessions/{feature-slug}/
-
-Squads que já trabalharam nesta feature:
-  {lista de state.squads com status e completed_at}
-
-O que você quer fazer?
-
-- 🔄 Nova execução deste squad (manter contexto da session)
-- 🧠 Ver memória da feature
-- 📂 Ver arquivos da session
-- ⏸️ Pausar / arquivar squad
-```
-
-Aguarde a seleção do usuário.
-
 5. Siga a escolha do usuário e execute via `.synapos/core/pipeline-runner.md`.
 
 ---
 
 ## SQUAD CUSTOMIZADO
 
-Quando o usuário escolhe squad customizado:
+Quando o usuário escolhe "✨ Customizado" no PASSO 5.
 
-1. **Pergunte o domínio/objetivo com AskUserQuestion:**
+> O domínio já foi identificado como "customizado" — não pergunte novamente. Siga diretamente para a configuração abaixo.
 
-```
-AskUserQuestion({
-  question: "Qual é o objetivo deste squad customizado?",
-  options: [
-    { label: "Backend API", description: "Foco em endpoints e lógica de servidor" },
-    { label: "Frontend Web", description: "Foco em UI e experiência do usuário" },
-    { label: "Fullstack", description: "Frontend + Backend juntos" },
-    { label: "Mobile", description: "App iOS/Android" },
-    { label: "DevOps/Infra", description: "Infraestrutura e pipelines" },
-    { label: "Outro", description: "Vou descrever o objetivo" }
-  ]
-})
-```
-
-2. Leia `.synapos/squad-templates/` e liste todos os agents disponíveis com AskUserQuestion (multi-select)
+1. Leia `.synapos/squad-templates/` e liste todos os agents disponíveis com AskUserQuestion (multi-select)
 
 3. **Seleção de pipeline:**
 

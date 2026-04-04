@@ -11,6 +11,16 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.6.1] — 2026-04-03
+
+### Corrigido
+
+- `orchestrator` v1.6.1 — roteamento explícito no PASSO 5: template selecionado vai para PASSO 6, "Customizado" vai para SQUAD CUSTOMIZADO — impede que os dois caminhos sejam executados em sequência
+- `orchestrator` v1.6.1 — removida pergunta de domínio duplicada em SQUAD CUSTOMIZADO (já respondida no PASSO 5)
+- `orchestrator` v1.6.1 — removido bloco duplicado de menu "status completed/discarded" em CARREGAR SQUAD EXISTENTE
+
+---
+
 ## [2.6.0] — 2026-04-03
 
 ### Modificado
