@@ -60,6 +60,15 @@ docs/_memory/preferences.md                                    → preferências
 docs/_memory/project-learnings.md                              → aprendizados transversais (se existir)
 ```
 
+**Se `squad.yaml` tem `bootstrap: true`:**
+- Não tente ler `docs/`, `docs/business/`, `docs/tech/` nem `docs/tech-context/` — esses diretórios não existem
+- GATE-ADR é desativado automaticamente — não há ADRs para verificar
+- GATE-2 é desativado automaticamente — não há contexto de projeto para validar
+- Injete apenas: `company.md` (se existir) + session files + step instructions
+- Log: `⚡ [BOOTSTRAP] Executando sem documentação de projeto — contexto limitado`
+
+**Se `bootstrap: false` ou ausente (modo normal):**
+
 Adicionalmente, **pré-carregue os ADRs do projeto uma única vez**:
 - Leia todos os arquivos em `docs/` cujo nome contenha `ADR`, `adr`, `decisions` ou `architecture-decision`
 - Armazene o conteúdo em memória como `[ADRS_CARREGADOS]`

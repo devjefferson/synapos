@@ -1,10 +1,10 @@
 ---
 name: synapos-gate-system
-version: 1.3.0
+version: 1.4.0
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 
-# SYNAPOS GATE SYSTEM v1.3.0
+# SYNAPOS GATE SYSTEM v1.4.0
 
 > Gates são pontos de validação obrigatórios. Falha em um gate bloqueia o avanço.
 > Princípio: **Fail Loud, Never Silent** — nunca ignore uma falha de gate.
@@ -33,7 +33,18 @@ Use `gate:` nos steps do pipeline.yaml para ativar um gate antes de continuar.
 - [ ] Pasta `docs/` existe na raiz do projeto
 - [ ] `docs/` contém pelo menos um arquivo `.md`
 
-**Se `docs/` não existe ou está vazia — Modo padrão (`alta` / `economico`):**
+**Se `docs/` não existe ou está vazia — avalie o modo do squad:**
+
+Leia `squad.yaml` e verifique `mode` e `bootstrap`:
+
+| Condição | Comportamento |
+|---|---|
+| `bootstrap: true` | Passa com aviso — ver abaixo |
+| `mode: solo` E `company.md` existe | Passa com aviso — ver abaixo |
+| `mode: solo` E `company.md` ausente | Bloqueio total |
+| `mode: alta` ou `economico` | Bloqueio total |
+
+**Modo padrão — bloqueio (`alta` / `economico` sem bootstrap):**
 ```
 🚫 GATE-0 — Documentação ausente
 
@@ -47,10 +58,26 @@ Execute primeiro o fluxo de documentação:
 Após gerar a documentação, execute o pipeline novamente.
 ```
 
-**Se `docs/` não existe ou está vazia — Modo Solo (`mode: solo` em squad.yaml):**
+**Bootstrap Mode (`bootstrap: true` em squad.yaml):**
 
-Verifique `docs/_memory/company.md`:
-- Se existe → GATE-0 passa com aviso:
+GATE-0 passa com aviso:
+```
+⚡ GATE-0 (Bootstrap Mode) — Sem documentação de projeto
+docs/ não encontrada. Executando com contexto mínimo.
+
+Pipelines disponíveis: quick-fix e bug-fix
+Outputs são funcionais, mas sem conhecimento dos seus padrões e arquitetura.
+
+Para resultados melhores:
+  → /setup:build-tech       (stack, padrões, ADRs)
+  → /setup:build-business   (produto, personas, contexto)
+
+Prosseguindo...
+```
+
+ADR enforcement e GATE-2 são desativados automaticamente em Bootstrap Mode — agents não tentam ler docs/ que não existe.
+
+**Modo Solo sem bootstrap (`mode: solo` e `company.md` existe):**
 ```
 ⚠️  GATE-0 (modo solo) — Documentação de projeto ausente
 docs/ não contém documentação técnica ou de negócio.
@@ -62,7 +89,6 @@ Recomendado (a qualquer momento):
 
 Prosseguindo em modo solo com contexto mínimo...
 ```
-- Se `company.md` também não existe → bloqueio total (mesmo comportamento do modo padrão).
 
 **Falha de framework:** Liste os arquivos faltantes e pare.
 

@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.3.0
+version: 1.4.0
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -174,22 +174,62 @@ atualizado: {YYYY-MM-DD}
 
 Verifique se a pasta `docs/` existe na raiz do projeto e contém pelo menos um arquivo `.md`.
 
-**Se `docs/` não existe ou está vazia:**
+**Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
+
+---
+
+**Se `docs/` não existe ou está vazia — Bootstrap Mode:**
+
+Não bloqueie. Ofereça duas rotas:
 
 ```
 AskUserQuestion({
-  question: "⚠️ Documentação não encontrada\n\nNenhum squad pode ser executado sem documentação.\n\nO que você quer fazer?",
+  question: "Documentação do projeto não encontrada.\n\nVocê pode começar agora mesmo — ou criar a documentação primeiro para resultados mais precisos.",
   options: [
-    { label: "📋 Criar docs de negócio", description: "Iniciar /setup:build-business" },
-    { label: "🔧 Criar docs técnicos", description: "Iniciar /setup:build-tech" },
-    { label: "🚀 Configurar tudo", description: "Iniciar /setup:start" }
+    {
+      label: "⚡ Começar agora",
+      description: "Bootstrap Mode — quick-fix e bug-fix disponíveis sem documentação"
+    },
+    {
+      label: "📚 Criar documentação primeiro",
+      description: "Recomendado — agents com contexto completo do projeto"
+    }
   ]
 })
 ```
 
-Aguarde seleção. Se escolher criar documentação, execute o comando correspondente e **não continue** até que `docs/` tenha conteúdo.
+**Se "Criar documentação primeiro":**
 
-**Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
+```
+AskUserQuestion({
+  question: "O que você quer documentar?",
+  options: [
+    { label: "📋 Contexto de negócio", description: "/setup:build-business — visão, personas, produto" },
+    { label: "🔧 Contexto técnico", description: "/setup:build-tech — stack, arquitetura, ADRs" },
+    { label: "🚀 Os dois", description: "/setup:start — guia completo" }
+  ]
+})
+```
+
+Execute o comando escolhido e, ao concluir, retome o fluxo a partir do PASSO 3.
+
+**Se "Começar agora" (Bootstrap Mode):**
+
+Registre internamente `bootstrap_mode: true` e continue para PASSO 3.
+
+Em modo bootstrap:
+- Pipelines disponíveis ficam restritos a `quick-fix` e `bug-fix` (PASSO 6 filtra automaticamente)
+- GATE-0 passa com aviso, sem bloqueio
+- Modo de performance é fixado em **Solo** (sem checkpoints de aprovação)
+- Ao final da execução (FASE 3 do pipeline-runner), exiba:
+
+```
+💡 Quer resultados mais precisos?
+   Agents com documentação do projeto entendem seu contexto, padrões e ADRs.
+
+   /setup:build-tech      → stack, arquitetura, regras do projeto
+   /setup:build-business  → produto, personas, estratégia
+```
 
 ---
 
@@ -261,6 +301,14 @@ AskUserQuestion({
 ## PASSO 6 — CONFIGURAR SQUAD
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
+
+> **Se `bootstrap_mode: true` (ativado no PASSO 2):** aplique as restrições abaixo antes de qualquer pergunta:
+>
+> 1. **Pipeline:** ofereça apenas pipelines `quick-fix` e `bug-fix` do template. Remova os demais da lista.
+>    Se o template não tiver nenhum dos dois, informe e ofereça `quick-fix` como opção genérica.
+> 2. **Agents:** inclua apenas os agents base do template. Não apresente agents opcionais.
+> 3. **Modo:** fixe automaticamente em `solo` — não pergunte. Registre `mode: solo` no squad.yaml.
+> 4. Salve `bootstrap: true` no squad.yaml para que o pipeline-runner saiba que não há docs disponíveis.
 
 ### 6.1 — Agents disponíveis (SELEÇÃO INTERATIVA)
 
@@ -423,6 +471,7 @@ displayName: "{displayName do template}"
 description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
+bootstrap: {true | false}     # true quando docs/ estava vazia no momento da criação
 created_at: {YYYY-MM-DD}
 feature: {feature-slug}
 session: docs/.squads/sessions/{feature-slug}/
