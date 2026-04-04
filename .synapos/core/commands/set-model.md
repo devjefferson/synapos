@@ -1,7 +1,7 @@
 ---
 name: synapos-set-model
-version: 1.0.0
-description: Altera model_capability e model_name em docs/_memory/preferences.md de forma interativa
+version: 1.1.0
+description: Altera model_capability e model_name em docs/_memory/preferences.md
 ---
 
 # PROTOCOLO SET-MODEL
@@ -9,17 +9,17 @@ description: Altera model_capability e model_name em docs/_memory/preferences.md
 > Atualiza as configurações de modelo usadas pelo pipeline-runner e model-adapter.
 > Afeta: injeção de contexto, model_tier routing e nível de adaptação de prompts.
 
+**Suporta dois modos:**
+- **Non-interactive:** `/set-model high claude-opus-4-6` → aplica direto
+- **Interactive:** `/set-model` → fluxo guiado com AskUserQuestion
+
 ---
 
 ## PASSO 1 — Ler estado atual
 
-Leia `docs/_memory/preferences.md` e extraia:
-- `model_capability` (atual)
-- `model_name` (atual)
-- `model_fast` (atual, se existir)
-- `model_powerful` (atual, se existir)
+Leia `docs/_memory/preferences.md` e extraia valores atuais.
 
-Se o arquivo não existir, informe:
+Se o arquivo não existir:
 ```
 ⚠️  docs/_memory/preferences.md não encontrado.
 Execute /init primeiro para criar o onboarding.
@@ -28,25 +28,118 @@ E encerre.
 
 ---
 
-## PASSO 2 — Exibir estado atual
+## PASSO 2 — Modo non-interactive (se argumentos fornecidos)
 
-Exiba um resumo antes de qualquer pergunta:
+Se o comando vier com argumentos (ex: `/set-model high claude-opus-4-6`):
 
+1. Parseie: `{capability} {model_name}` (model_fast e model_powerful são opcionais)
+2. Valide `capability`: deve ser `high`, `standard` ou `lite`
+3. Valide `model_name`: não vazio
+4. Se válido: vá para PASSO 6 (confirmar e salvar)
+5. Se inválido: informe erro e sugira interactive mode
+
+**Formatos aceitos:**
 ```
-⚙️  Configuração de modelo atual
-────────────────────────────────
-model_capability : {valor ou "não definido"}
-model_name       : {valor ou "não definido"}
-model_fast       : {valor ou "não definido"}
-model_powerful   : {valor ou "não definido"}
-────────────────────────────────
+/set-model high claude-opus-4-6
+/set-model standard gpt-4o-mini
+/set-model lite kimi
+/set-model high opus — fast haiku — powerful opus   # com multi-model
 ```
 
 ---
 
-## PASSO 3 — Escolher model_capability
+## PASSO 3 — Modo interativo (se sem argumentos)
 
-Use AskUserQuestion:
+Exiba estado atual e use **no máximo 2 AskUserQuestion**:
+
+```
+⚙️  Configuração atual
+model_capability: {valor}
+model_name: {valor}
+model_fast: {valor ou "—"}
+model_powerful: {valor ou "—"}
+```
+
+```
+AskUserQuestion({
+  question: "Qual capability do modelo?",
+  options: [
+    { label: "high", description: "Claude Opus/Sonnet, GPT-4o, Gemini Pro — contexto completo" },
+    { label: "standard", description: "Claude Haiku, GPT-4o-mini, Gemini Flash — CoT prefix" },
+    { label: "lite", description: "Kimi, MiniMax, Llama — context pruning" }
+  ]
+})
+```
+
+```
+AskUserQuestion({
+  question: "Modelo principal?",
+  options: [
+    { label: "claude-opus-4-6", description: "Anthropic" },
+    { label: "claude-sonnet-4-6", description: "Anthropic" },
+    { label: "gpt-4o", description: "OpenAI" },
+    { label: "gpt-4o-mini", description: "OpenAI" },
+    { label: "gemini-1.5-pro", description: "Google" },
+    { label: "Outro", description: "Vou informar" }
+  ]
+})
+```
+
+Se "Outro": peça input livre.
+
+---
+
+## PASSO 4 — Multi-model routing (opcional)
+
+```
+AskUserQuestion({
+  question: "Deseja configurar model_fast e model_powerful separados?",
+  options: [
+    { label: "Não — usar um modelo só", description: "Mais simples" },
+    { label: "Sim — diferenciar por tier", description: "Fast + Powerful" }
+  ]
+})
+```
+
+Se Sim: perguntefast e powerful (máximo 2 AskUserQuestion adicionais).
+
+---
+
+## PASSO 5 — Resumo e confirmação
+
+Exiba resumo:
+```
+model_capability: {valor}
+model_name: {valor}
+model_fast: {valor ou "—"}
+model_powerful: {valor ou "—"}
+```
+
+```
+AskUserQuestion({
+  question: "Aplicar esta configuração?",
+  options: [
+    { label: "✅ Confirmar", description: "Salvar em preferences.md" },
+    { label: "↩️ Cancelar", description: "Não alterar" }
+  ]
+})
+```
+
+---
+
+## PASSO 6 — Salvar
+
+Atualize `docs/_memory/preferences.md` com os novos valores.
+
+---
+
+## PASSO 7 — Efeito por capability
+
+| model_capability | O que muda |
+|---|---|
+| `high` | Contexto completo — sem adaptação |
+| `standard` | CoT prefix + templates |
+| `lite` | Context pruning (~70%) + scope forcing |
 
 ```
 AskUserQuestion({

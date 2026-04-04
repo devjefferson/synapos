@@ -135,6 +135,11 @@ Opções:
 - [ ] Output atende os critérios mínimos do agent (Quality Criteria do .agent.md)
 - [ ] Nenhuma veto_condition foi violada
 
+**BOOTSTRAP LITE — verificações mínimas:**
+- [ ] Output existe e tem > 50 caracteres
+- [ ] Output não é só placeholder (TODO, PLACEHOLDER, [vazio])
+- [ ] Não contém decisão autônoma sem sinalização
+
 **Falha:** Aponte a condição violada. Retorne ao step anterior.
 
 ---
@@ -144,13 +149,22 @@ Opções:
 **Quando usar:** Exclusivo para squad de Produto, antes do handoff.
 
 **Verifica (na session folder `docs/.squads/sessions/{feature-slug}/`):**
-- [ ] `context.md` existe e não está vazio
-- [ ] `architecture.md` ou `spec.md` existe com critérios de aceite
-- [ ] `plan.md` existe (se pipeline gerou)
-- [ ] `review-notes.md` existe
-- [ ] `state.json` tem entrada para este squad com todos os steps concluídos
 
-**Falha:** Liste os documentos faltantes na session. Não libere o handoff.
+**Existência + Qualidade:**
+
+| Arquivo | Verificação mínima |
+|---------|-------------------|
+| `context.md` | Existe, > 100 chars, contém pelo menos 2 seções |
+| `architecture.md` ou `spec.md` | Existe, > 200 chars, contém "Critérios de aceite" ou "Definition of Done" |
+| `plan.md` | Existe (se pipeline gerou), > 50 chars |
+| `review-notes.md` | Existe, > 20 chars |
+| `state.json` | Entry existe para este squad com `completed_steps` preenchido |
+
+**Verificação de não-placeholder:**
+- Arquivo não pode conter apenas "TODO", "PLACEHOLDER", "[vazio]", ou menos de 3 palavras significativas
+- Se `context.md` contém apenas títulos (sem conteúdo real) → falha
+
+**Falha:** Liste os documentos que falharam a verificação com o motivo específico. Não libere o handoff.
 
 ---
 
@@ -220,9 +234,10 @@ Aguarde a seleção do usuário. **Nunca resolva automaticamente.**
 
 **Quando usar:** Obrigatório antes de qualquer step de implementação (`execution: subagent` ou `execution: inline`) quando o projeto tem ADRs em `docs/`.
 
+**Nota:** O pipeline-runner pré-carrega as ADRs e injeta no contexto do agent. O agent NÃO precisa ler docs/ manualmente — as ADRs já estão disponíveis. O gate verifica se o output demonstra conformidade.
+
 **Verifica:**
-- [ ] O agent leu todas as ADRs disponíveis em `docs/` (arquivos com `ADR`, `adr`, `decisions`, `architecture-decision` no nome ou caminho)
-- [ ] O output do step lista explicitamente quais ADRs foram consultadas
+- [ ] O output **menciona** as ADRs relevantes (`[RESPEITADA]` ou `[NÃO APLICÁVEL]`) — isso é prova de que o agent as considerou
 - [ ] Nenhuma decisão técnica no output contradiz uma ADR com status `Aceito` ou `Ativo`
 - [ ] Se o step CRIA uma nova ADR, ela segue o template padrão (Contexto / Decisão / Alternativas / Consequências)
 
@@ -242,12 +257,12 @@ Opções:
   - Proponha uma nova ADR para substituir a existente (requer aprovação do usuário)
 ```
 
-**Falha — ADRs não consultadas:**
+**Falha — ADRs não mencionadas:**
 ```
-⚠️  GATE-ADR — AVISO: ADRs não referenciadas no output
+⚠️  GATE-ADR — AVISO: ADRs não mencionadas no output
 
-ADRs disponíveis não foram listadas pelo agent.
-Reexecutando step com instrução explícita de consulta às ADRs.
+O output não demonstra que as ADRs foram consideradas.
+Inclua [RESPEITADA] ou [NÃO APLICÁVEL] para cada ADR no output.
 ```
 
 **Falha — Decisão sem ADR correspondente:**
@@ -324,13 +339,22 @@ Verifique se já existe antes de propor. Se não existe, documente a justificati
 
 **Quando usar:** Último step de qualquer pipeline antes de marcar como completed.
 
-**Verifica:**
-- [ ] Todos os `output_file` definidos no pipeline foram gerados em `docs/.squads/sessions/{feature-slug}/`
-- [ ] `state.json` marca `state.squads["{squad-slug}"].completed_steps` com todos os steps do pipeline
-- [ ] Não há veto_conditions pendentes
-- [ ] Não há `[DECISÃO PENDENTE]` não resolvida nos arquivos da session
+**Verifica (resumo automático — não bloqueia):**
+- Pipeline runner já verificou output_files, state.json, veto_conditions e decisões
+- GATE-5 é apenas confirmação visual
 
-**Falha:** Liste o que está faltando. Não marque o squad como completed.
+**Se tudo OK:**
+```
+✅ GATE-5 — Pronto para entrega
+   Squad pode ser marcado como completed.
+```
+
+**Se algo pendiente (warning, não bloqueia):**
+```
+⚠️  GATE-5 — Itens pendentes detectados:
+   {lista}
+   Squad será finalizado mesmo assim.
+```
 
 ---
 
@@ -343,15 +367,36 @@ O pipeline-runner lê `execution_mode` do squad.yaml e ativa apenas os gates cor
 | GATE-0 | ✅ (passa com aviso) | ✅ | ✅ |
 | GATE-1 | ✅ | ✅ | ✅ |
 | GATE-2 | ❌ desativado | ✅ | ✅ |
-| GATE-3 | ❌ desativado | ✅ | ✅ |
+| GATE-3 | ⚡ **LITE** | ✅ | ✅ |
 | GATE-4 | ❌ desativado | ❌ desativado | ✅ |
-| GATE-5 | ❌ desativado | ✅ | ✅ |
+| GATE-5 | ⚡ **LITE** | ✅ | ✅ |
 | GATE-ADR | ❌ desativado | ✅ | ✅ |
 | GATE-DECISION | ✅ | ✅ | ✅ |
 | GATE-DESIGN | ❌ desativado | ❌ desativado | ✅ |
 
 > **GATE-1 e GATE-DECISION são universais** — ativos em todos os modos, sempre.
 > **GATE-DECISION nunca é desativado** — evitar decisões autônomas é princípio inegociável.
+
+### BOOTSTRAP — Filosofia
+
+**Meta: 3 minutos do /init à task rodando.**
+
+BOOTSTRAP assume que:
+- Task é simples/bem-definida (bug fix, quick fix)
+- Usuário sabe o que quer
+- Contexto de negócio não é necessário para começar
+- O agente precisa de espaço para agir, não de validações pesadas
+
+**GATE-3 LITE em BOOTSTRAP:**
+- Verificar: output existe e tem > 50 chars
+- Verificar: não é só placeholder ("TODO", "PLACEHOLDER", "[vazio]")
+- Verificar: não contém `[DECISÃO PENDENTE]` sem contexto
+- **Não aplica:** vetos de qualidade complexos, validações deadr
+
+**GATE-5 LITE em BOOTSTRAP:**
+- Verificar: `output_files` do pipeline foram criados
+- **Não bloqueia** — apenas avisa se algo está faltando
+- Squad é marcado `completed` mesmo com warning
 
 ---
 

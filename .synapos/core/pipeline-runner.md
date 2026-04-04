@@ -280,38 +280,68 @@ Atualize `state.updated_at`.
 
 ### 1.4c — Proteção e Resiliência do state.json
 
-**Leitura segura:**
+**Leitura segura — tentar recuperação parcial:**
 Antes de usar o `state.json`, execute:
 1. Tente parsear o conteúdo como JSON
-2. Se falhar (JSON malformado): crie backup automático em `state.json.bak.{ISO-timestamp}` e informe:
-   ```
-   ⚠️  state.json corrompido. Backup salvo em state.json.bak.{timestamp}.
-   Reiniciando state da feature. Histórico preservado no backup.
-   ```
-3. Reinicialize com estrutura mínima (`{ "feature": "{slug}", "created_at": "...", "squads": {} }`)
+2. Se falhar (JSON malformado):
+   a. Crie backup: `state.json.bak.{ISO-timestamp}`
+   b. Tente extrair qualquer dado válido (feature name, squads com status conhecido)
+   c. Se conseguiu recuperar `feature` e `squads`:
+      ```
+      ⚠️  state.json corrompido. Recuperando dados parciais.
+      Backup salvo em state.json.bak.{timestamp}.
+      ```
+      Use os dados recuperados na reinicialização
+   d. Se não conseguiu recuperar nada:
+      ```
+      🚫 state.json irrecuperável. Backup salvo em state.json.bak.{timestamp}.
+      Histórico de squads perdido — start fresh.
+      ```
+      Reinicialize com estrutura mínima
+
+**Recovery de squads em caso de corrompimento:**
+Se conseguiu recuperar `squads` com dados parciais, preserve o máximo possível:
+- `squads[].status`已知 → manter
+- `squads[].completed_steps` → preservar se intacto
+- `squads[].suspended_at` → preservar se intacto
 
 **Escrita segura:**
 Antes de persistir qualquer escrita no `state.json`:
 1. Serialize o objeto atualizado para string
-2. Valide que é JSON válido
-3. Se inválido: descarte a escrita, log de erro, não sobrescreva o arquivo existente
-4. Se válido: sobrescreva (nunca usar append direto — sempre reescrever o arquivo completo com o objeto completo)
+2. Valide que é JSON válido antes de escrever
+3. Se inválido: descarte a escrita, log de erro, não sobrescreva
+4. Se válido: atomic write — escreva em arquivo temporário, depois renomeie para state.json
+5. Mantenha sempre 1 backup do state.json anterior (`state.json.prev.bak`)
 
 **Regra:** O state.json nunca deve ser editado diretamente por agents. Apenas o pipeline-runner escreve nele.
 
 ### 1.4b — Verificar pre_pipeline
 
-Verifique se o `squad.yaml` tem a chave `pre_pipeline`:
+**Validação de segurança:** Antes de acessar `pre_pipeline`, verifique se a chave existe no squad.yaml.
 
 ```yaml
+# squad.yaml — estrutura válida
 pre_pipeline:
-  available: true
-  agent: {id-do-agent-lead}
+  available: true       # boolean
+  agent: {id-do-agent-lead}  # string — ID de um agent do squad
 ```
 
-**Se `pre_pipeline.available: true` E `context.md` ainda não existe na session:**
+**Se `pre_pipeline` não existe ou `available: false`:** pule esta seção.
 
-Pergunte ao usuário:
+**Se `pre_pipeline.available: true`:**
+
+1. **Validar agente:**
+   - Verifique se `pre_pipeline.agent` está preenchido (não vazio/nulo)
+   - Verifique se o agent referenciado existe no squad.yaml (em `agents[]`)
+   - Se inválido: log `⚠️ pre_pipeline.agent inválido ou não encontrado — pulando pré-execução` e pule
+
+2. **Validar arquivo do pipeline:**
+   - Verifique se `.synapos/core/pipelines/pre-execution.yaml` existe
+   - Se não existe: log `⚠️ pre-execution.yaml não encontrado — pulando pré-execução` e pule
+
+3. **Se `context.md` já existe na session:** pule — pré-execução já feita.
+
+4. **Se `context.md` não existe E pré-execução válida:**
 
 ```
 Esta feature ainda não tem contexto/arquitetura definidos.
@@ -324,7 +354,7 @@ Deseja executar a pré-execução antes de [{nome do pipeline principal}]?
 
 **Se escolher Sim:**
 1. Leia `.synapos/core/pipelines/pre-execution.yaml`
-2. Resolva `{lead_agent}` pelo valor de `pre_pipeline.agent` no squad.yaml
+2. Use `pre_pipeline.agent` como lead do pre-execution
 3. Execute os steps do pre-execution (com todos os gates e checkpoints)
 4. Os arquivos gerados (context.md, architecture.md, plan.md) vão para a session folder
 5. Ao concluir, anuncie:
@@ -335,8 +365,6 @@ Deseja executar a pré-execução antes de [{nome do pipeline principal}]?
    Iniciando: {nome do pipeline principal}...
    ```
 6. Continue para o pipeline principal com session files já no contexto
-
-**Se `context.md` já existe na session:** pule — a pré-execução já foi feita.
 
 ### 1.5 — Verificação de Squads Paralelos
 
@@ -606,7 +634,7 @@ Se houver resposta, acrescente em `docs/.squads/sessions/{feature-slug}/memories
 
 Após cada append, conte o número de seções de segundo nível (`##`) em `memories.md`.
 
-Se ≥ 10 seções: apresente ao usuário:
+Se ≥ 30 seções: apresente ao usuário:
 ```
 📝 memories.md acumula {N} entradas.
 Deseja consolidar para facilitar a leitura?
@@ -639,7 +667,7 @@ Para aprendizados inseridos diretamente pelo usuário (não por agent), usar:
 
 Após cada append em `review-notes.md`, atualize o contador `[REVIEW_NOTES_COUNT]`.
 
-Se ≥ 10 seções (`##`): apresente ao usuário:
+Se ≥ 30 seções (`##`): apresente ao usuário:
 ```
 📝 review-notes.md acumula {N} entradas de revisão.
 Deseja consolidar para facilitar a leitura?

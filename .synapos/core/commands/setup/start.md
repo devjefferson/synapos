@@ -12,71 +12,20 @@ Você é o orquestrador de documentação do Synapos. Ao ser ativado, analise o 
 
 Execute todas as verificações abaixo silenciosamente antes de apresentar qualquer output.
 
-### 1.1 — Ler contexto do framework
+### 1.1 — Verificar onboarding
 
 Verifique se os arquivos existem e leia-os:
 - `docs/_memory/company.md` → nome, setor, linguagem de saída
 - `docs/_memory/preferences.md` → IDE principal, preferências
 
 Se `docs/_memory/company.md` **não existir**:
-- Execute o **PROTOCOLO DE ONBOARDING** abaixo para criar os arquivos
-- Depois continue para a verificação da documentação
-
-### PROTOCOLO DE ONBOARDING (primeira vez)
-
-Apresente ao usuário:
-
 ```
-Olá! Sou o Synapos — framework de orquestração de agents.
-Antes de começar, preciso de algumas informações rápidas:
+⚠️ Onboarding não realizado.
 
-1. Seu nome ou nome da empresa:
-2. Setor / tipo de projeto principal:
-3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
-4. IDE principal: [Claude Code / outro]
-5. Você usa algum task tracker? [GitHub Issues / Linear / Jira / Não uso]
-6. Qual modelo de IA você está usando? [Claude Sonnet/Opus / GPT-4o / Gemini Pro / Kimi / MiniMax / Outro]
+Execute /init primeiro para configurar o projeto.
+O setup de documentação será retomado após o onboarding.
 ```
-
-Após as respostas, mapeie o modelo informado para o perfil de capacidade:
-
-| Modelo | model_capability |
-|---|---|
-| Claude Opus/Sonnet, GPT-4o, Gemini 1.5 Pro+ | `high` |
-| GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
-| Kimi, MiniMax, Llama 3.x, modelos locais, outros não listados | `lite` |
-
-Se o usuário não souber ou pular a pergunta, assuma `high`.
-
-Crie os arquivos abaixo e continue para verificação da documentação:
-
-**`docs/_memory/company.md`:**
-```markdown
----
-atualizado: {YYYY-MM-DD}
----
-# Perfil
-
-**Nome:** {resposta}
-**Setor:** {resposta}
-**Linguagem de saída:** {resposta}
-```
-
-**`docs/_memory/preferences.md`:**
-```markdown
----
-atualizado: {YYYY-MM-DD}
----
-# Preferências
-
-**IDE Principal:** {resposta}
-**Formato de data:** YYYY-MM-DD
-**Task Tracker:** {github | linear | jira | none}
-**model_capability:** {high | standard | lite}
-**model_name:** {nome do modelo informado}
-```
-
-**Pare aqui até que o onboarding esteja completo.**
+**Pare aqui e redirecione para /init.** O orchestrator handles the onboarding.
 
 ### 1.2 — Verificar documentação existente
 

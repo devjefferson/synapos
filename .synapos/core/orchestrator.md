@@ -67,70 +67,25 @@ Se não: nenhuma ação necessária.
 
 ### PROTOCOLO DE ONBOARDING (primeira vez)
 
-**Use AskUserQuestion para cada pergunta.**
+**Use no MÁXIMO 2 AskUserQuestion para todo o onboarding.**
 
 ```
 AskUserQuestion({
-  question: "Olá! Sou o Synapos — framework de orquestração de agents.\n\nAntes de começar, qual é o nome da empresa ou projeto?",
+  question: "Olá! Sou o Synapos — framework de orquestração de agents.\n\nPreciso de algumas informações para configurar o ambiente:",
   options: [
-    { label: "Vou informar", description: "Informar nome" }
-  ]
+    { label: "Nome do projeto/empresa", description: "Ex: Acme Inc, Meu SaaS" },
+    { label: "Setor", description: "SaaS, E-commerce, API, Mobile..." },
+    { label: "Task tracker", description: "GitHub, Linear, Jira ou nenhum" },
+    { label: "Modelo de IA", description: "Claude, GPT-4o, Gemini, Kimi, MiniMax..." }
+  ],
+  multiSelect: true
 })
 ```
 
-```
-AskUserQuestion({
-  question: "Qual é o setor ou tipo de projeto?",
-  options: [
-    { label: "SaaS / Software", description: "Produto de software como serviço" },
-    { label: "E-commerce", description: "Loja virtual / marketplace" },
-    { label: "Aplicativo Mobile", description: "App para celulares" },
-    { label: "API / Backend", description: "Apenas backend/API" },
-    { label: "Ferramenta Interna", description: "Software para uso interno" },
-    { label: "Open Source", description: "Projeto open source" },
-    { label: "Outro", description: "Vou especificar" }
-  ]
-})
-```
+> Se o usuário selecionar apenas "Nome", pergunte o restante via input livre.
+> Se o usuário não souber o modelo, assuma `high`.
 
-```
-AskUserQuestion({
-  question: "Qual linguagem de saída preferida?",
-  options: [
-    { label: "Português (PT-BR)", description: "Documentação em português" },
-    { label: "English (EN-US)", description: "Documentação em inglês" },
-    { label: "Outro", description: "Vou especificar" }
-  ]
-})
-```
-
-```
-AskUserQuestion({
-  question: "Qual task tracker você usa?",
-  options: [
-    { label: "GitHub Issues", description: "Issues do GitHub" },
-    { label: "Linear", description: "Linear" },
-    { label: "Jira", description: "Jira" },
-    { label: "Não uso", description: "Sem task tracker" }
-  ]
-})
-```
-
-```
-AskUserQuestion({
-  question: "Qual modelo de IA você está usando?",
-  options: [
-    { label: "Claude Opus/Sonnet", description: "Anthropic Claude premium" },
-    { label: "GPT-4o", description: "OpenAI GPT-4o" },
-    { label: "Gemini Pro", description: "Google Gemini Pro" },
-    { label: "Kimi", description: "Kimi AI" },
-    { label: "MiniMax", description: "MiniMax" },
-    { label: "Outro", description: "Vou especificar" }
-  ]
-})
-```
-
-Após as respostas, mapeie o modelo para `model_capability`:
+**Mapeamento de model_capability:**
 
 | Modelo | model_capability |
 |---|---|
@@ -138,7 +93,7 @@ Após as respostas, mapeie o modelo para `model_capability`:
 | GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
 | Kimi, MiniMax, Llama 3.x, modelos locais | `lite` |
 
-Se o usuário não souber, assuma `high`.
+**Linguagem:** Se não especificada, use o idioma do sistema ou русский inglês como padrão.
 
 Crie os arquivos e continue para PASSO 2:
 
@@ -149,9 +104,9 @@ atualizado: {YYYY-MM-DD}
 ---
 # Perfil
 
-**Nome:** {resposta}
-**Setor:** {resposta}
-**Linguagem de saída:** {resposta}
+**Nome:** {nome ou 'não informado'}
+**Setor:** {setor ou 'não informado'}
+**Linguagem de saída:** {pt-BR ou en-US, padrão: pt-BR}
 ```
 
 **`docs/_memory/preferences.md`:**
@@ -161,11 +116,11 @@ atualizado: {YYYY-MM-DD}
 ---
 # Preferências
 
-**IDE Principal:** {resposta}
+**IDE Principal:** Claude Code
 **Formato de data:** YYYY-MM-DD
 **Task Tracker:** {github | linear | jira | none}
 **model_capability:** {high | standard | lite}
-**model_name:** {nome do modelo informado}
+**model_name:** {nome do modelo ou 'não informado'}
 ```
 
 ---
@@ -321,14 +276,20 @@ Armazene como `[HAS_TEMPLATES]` (true / false).
 
 ```
 AskUserQuestion({
-  question: "⚠️ Nenhum squad template instalado.\n\nSem templates não é possível criar squads.\n\nInstale templates com:\n  npx synapos add <template>",
+  question: "⚠️ Nenhum squad template instalado.\n\nSem templates não é possível criar squads.\n\nTemplates disponíveis: backend, frontend, fullstack, mobile, devops, ia-dados, produto",
   options: [
+    { label: "📦 Instalar templates", description: "Instalar todos os templates padrão" },
+    { label: "🔍 Ver como instalar", description: "Mostrar comandos npx synapos add" },
     { label: "Encerrar", description: "Fechar o orquestrador" }
   ]
 })
 ```
 
-**Pare a execução.** Não continue para PASSO 4.
+- Se "Instalar templates": redirecione para instalação (passos definidos no README)
+- Se "Ver como instalar": mostre `npx synapos add <template-name>`
+- Se "Encerrar": pare aqui
+
+**Pare a execução após a ação do usuário.**
 
 ---
 
@@ -366,25 +327,51 @@ AskUserQuestion({
 
 > **Pré-condição:** `[HAS_TEMPLATES]` = true (garantido pelo PASSO 3.5).
 
-Liste os subdiretórios em `.synapos/squad-templates/` e leia `template.yaml` para cada um.
+Liste **todos** os subdiretórios em `.synapos/squad-templates/` e leia `template.yaml` de cada um.
 
-Monte as opções para AskUserQuestion:
+Monte a lista numerada completa e exiba como texto antes do AskUserQuestion:
+
+```
+Domínios disponíveis:
+
+  1. {icon} {displayName} — {description}
+  2. {icon} {displayName} — {description}
+  3. {icon} {displayName} — {description}
+  4. {icon} {displayName} — {description}
+  5. {icon} {displayName} — {description}
+  6. {icon} {displayName} — {description}
+  7. {icon} {displayName} — {description}
+  8. {icon} {displayName} — {description}
+  9. ✨ Customizado — Monte seu próprio squad
+
+Digite o número ou o nome do domínio:
+```
 
 ```
 AskUserQuestion({
-  question: "Qual domínio você quer trabalhar?",
+  question: "Qual domínio você quer trabalhar?\n\nDomínios disponíveis:\n  1. {icon} {displayName} — {description}\n  2. {icon} {displayName} — {description}\n  3. {icon} {displayName} — {description}\n  4. {icon} {displayName} — {description}\n  5. {icon} {displayName} — {description}\n  6. {icon} {displayName} — {description}\n  7. {icon} {displayName} — {description}\n  8. {icon} {displayName} — {description}\n  9. ✨ Customizado — Monte seu próprio squad\n\nDigite o número ou o nome:",
   options: [
-    { label: "{icon} {displayName}", description: "{description}" },
-    { label: "{icon} {displayName}", description: "{description}" },
-    { label: "✨ Customizado", description: "Monte seu próprio squad" }
+    { label: "1. {icon} {displayName}", description: "{description}" },
+    { label: "2. {icon} {displayName}", description: "{description}" },
+    { label: "3. {icon} {displayName}", description: "{description}" },
+    { label: "4. {icon} {displayName}", description: "{description}" },
+    { label: "5. {icon} {displayName}", description: "{description}" },
+    { label: "6. {icon} {displayName}", description: "{description}" },
+    { label: "7. {icon} {displayName}", description: "{description}" },
+    { label: "8. {icon} {displayName}", description: "{description}" },
+    { label: "9. ✨ Customizado", description: "Monte seu próprio squad" }
   ]
 })
 ```
 
+> **Importante:** os números dos options acima são gerados dinamicamente — itere sobre todos os subdiretórios encontrados em `.synapos/squad-templates/` em ordem alfabética, atribuindo índice 1, 2, 3… O item "✨ Customizado" é sempre o último.
+>
+> O usuário pode responder com o número (ex: `3`) ou com o nome do domínio (ex: `backend`). Ambos são aceitos.
+
 **Roteamento obrigatório — execute apenas UM dos caminhos abaixo:**
 
-- Se o usuário selecionou um template existente → **vá para PASSO 6**. Não execute SQUAD CUSTOMIZADO.
-- Se o usuário selecionou "✨ Customizado" → **vá para SQUAD CUSTOMIZADO**. Não execute PASSO 6.
+- Se o usuário selecionou um template existente (por número ou nome) → **vá para PASSO 6**. Não execute SQUAD CUSTOMIZADO.
+- Se o usuário selecionou "✨ Customizado" ou digitou `9` (ou o índice correspondente) → **vá para SQUAD CUSTOMIZADO**. Não execute PASSO 6.
 
 ---
 
@@ -392,7 +379,7 @@ AskUserQuestion({
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
 
-> **Restrições por `[EXECUTION_MODE]` — aplique antes de qualquer pergunta:**
+> **Restrições por `[EXECUTION_MODE]`:**
 >
 > | | BOOTSTRAP | STANDARD | STRICT |
 > |---|---|---|---|
@@ -400,92 +387,40 @@ Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/temp
 > | **Agents opcionais** | não apresenta | apresenta | apresenta |
 > | **Modo de performance** | fixado em `solo` | apresenta opções | apresenta opções |
 > | **squad.yaml `execution_mode`** | `bootstrap` | `standard` | `strict` |
->
-> Em **BOOTSTRAP**: se o template não tiver `quick-fix` nem `bug-fix`, ofereça `quick-fix` como opção genérica.
 
-### 6.1 — Agents disponíveis (SELEÇÃO INTERATIVA)
+### 6.1 — Configuração (BOOTSTRAP = ZERO perguntas)
 
-**Use AskUserQuestion para apresentar os agents.**
+**BOOTSTRAP: Use defaults automáticas, sem perguntar**
+- Agents: apenas base do template
+- Modo: `solo`
+- Nome: auto-gerado `{domínio}-{NNN}`
+- Contexto: da mensagem/argumento do usuário
+
+Log:
+```
+⚡ BOOTSTRAP: squad criado com defaults
+   Agents: base | Modo: solo | Pipeline: {default}
+```
+
+**STANDARD/STRICT:pergunte (máximo 1 AskUserQuestion):**
 
 ```
 AskUserQuestion({
-  question: "Squad: {displayName}\n\nAgents base (sempre incluídos):\n  ✅ {icon} {displayName} — {role}\n  ✅ {icon} {displayName} — {role}\n\nQuais agents opcionais você quer adicionar?",
-  multiSelect: true,
+  question: "Squad: {displayName}\n\nQuer usar defaults ou customizar?",
   options: [
-    { label: "{icon} {displayName}", description: "{role}" },
-    { label: "{icon} {displayName}", description: "{role}" },
-    { label: "{icon} {displayName}", description: "{role}" },
-    { label: "Nenhum adicional", description: "Usar apenas agents base" }
+    { label: "✅ Defaults", description: "Agents base + solo + auto-nome" },
+    { label: "🔧 Customizar", description: "Escolher agents, modo, nome" }
   ]
 })
 ```
-
-Aguarde a seleção. Agents base são sempre incluídos.
-
-### 6.2 — Modo de performance (SELEÇÃO INTERATIVA)
-
-**Use AskUserQuestion:**
-
-```
-AskUserQuestion({
-  question: "Qual modo de operação você prefere?",
-  options: [
-    {
-      label: "⚡ Alta Performance",
-      description: "Squad completo, documentação máxima, revisões aprofundadas — para features críticas"
-    },
-    {
-      label: "💰 Econômico",
-      description: "Docs core, execução rápida, menos checkpoints — para tasks bem definidas"
-    },
-    {
-      label: "🧑‍💻 Solo",
-      description: "Para dev solo: sem checkpoints de aprovação, execução direta — para quick fixes"
-    }
-  ]
+  ],
+  multiSelect: true
 })
 ```
 
-> **Importante:** O modo de performance NÃO afeta quais agents são instalados.
-> - Agents base → sempre incluídos
-> - Agents opcionais selecionados → sempre incluídos
->
-> O modo afeta apenas:
-> - Quantidade de etapas de documentação/revisão
-> - Exigência de aprovação em checkpoints intermediários
-> - Nível de detalhamento dos outputs
-
-> **Modo Solo:** Registre `mode: solo` no `squad.yaml`. O pipeline runner ignora checkpoints de aprovação intermediários (mantendo gates de integridade).
-
-### 6.3 — Nome / slug do squad (SELEÇÃO OU INPUT)
-
-**Use AskUserQuestion com opção de input:**
-
-```
-AskUserQuestion({
-  question: "Qual nome para identificar este squad?",
-  options: [
-    { label: "Auto-gerar", description: "Gerar: {domínio}-001" },
-    { label: "Definir nome", description: "Vou informar o nome" }
-  ]
-})
-```
-
-Se "Definir nome": peça input livre.
-Auto-geração: `{domínio}-{NNN}` → backend-001, frontend-002
-
-### 6.4 — Contexto do squad (INPUT LIVRE)
-
-**Use AskUserQuestion com input:**
-
-```
-AskUserQuestion({
-  question: "Descreva o objetivo deste squad (1-2 frases):",
-  options: [
-    { label: "Vou describir", description: "Ex: Implementar endpoints de autenticação" }
-  ]
-})
-```
+> Para cada seleção, faça uma pergunta específica (máximo 1 por item selecionado).
+> Agents base são SEMPRE incluídos — nunca pergunte para remover.
+> Auto-nome: `{domínio}-{NNN}` → backend-001, frontend-002
 
 ---
 
@@ -563,92 +498,67 @@ Verifique se `docs/_memory/project-learnings.md` existe. Se não existir, crie:
 
 > **Executar apenas após o squad ter sido criado (arquivos do PASSO 7 já gravados).**
 
-**Use AskUserQuestion:**
+**Auto-detectar:** Liste as pastas em `docs/.squads/sessions/`.
+
+- **Se 0 sessions existirem:** vá direto para criar nova (sem AskUserQuestion)
+- **Se 1 session existir:** use ela automaticamente (sem AskUserQuestion)
+- **Se 2+ existirem:** pergunte qual usar
 
 ```
 AskUserQuestion({
-  question: "Squad {squad-slug} criado! 🎉\n\nAgora, em qual feature este squad vai trabalhar?",
+  question: "Squad {squad-slug} criado! 🎉\n\nFeature session:",
   options: [
-    { label: "📂 Session existente", description: "Selecionar feature já criada" },
-    { label: "✨ Nova feature", description: "Criar nova feature session" }
+    { label: "✨ Nova: {auto-slug}", description: "Criar nova feature" },
+    { label: "📂 {feature-1}", description: "Usar session existente" },
+    { label: "📂 {feature-2}", description: "Usar session existente" }
   ]
 })
 ```
 
-**Se "Session existente":**
-Liste as pastas em `docs/.squads/sessions/` com AskUserQuestion:
-
-```
-AskUserQuestion({
-  question: "Selecione a feature session:",
-  options: [
-    { label: "{feature-slug}", description: "{descrição do state.json}" },
-    { label: "{feature-slug}", description: "{descrição}" }
-  ]
-})
-```
-
-**Se "Nova feature":**
-
-```
-AskUserQuestion({
-  question: "Qual é o nome/slug da nova feature?",
-  options: [
-    { label: "Vou informar", description: "Ex: auth-module, feat/pagamentos" }
-  ]
-})
-```
+Se "Nova": o slug é inferido do contexto do squad (ex: "bug-login" se o squad é sobre corrigir login).
 
 `{feature-slug}` = lowercase, espaços → hífens, sem caracteres especiais.
 
-Após obter o `{feature-slug}`, atualize o campo `feature` e `session` no `squad.yaml` já criado:
-
-```yaml
-feature: {feature-slug}
-session: docs/.squads/sessions/{feature-slug}/
-```
+Após obter o `{feature-slug}`, atualize `feature` e `session` no `squad.yaml`.
 
 ---
 
 ## PASSO 8 — ATIVAR SQUAD
 
-### 8.1 — Resumo e Confirmação
-
-**Use AskUserQuestion antes de iniciar:**
+### 8.1 — Resumo e Confirmação (1 AskUserQuestion)
 
 ```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Squad {slug} criado! 🚀
+
+Agents: {lista}
+Modo: {modo}
+Pipeline: {pipeline}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**BOOTSTRAP:** iniciar direto sem AskUserQuestion
+```
+⚡ Iniciando squad {slug}...
+```
+
+**STANDARD/STRICT:** pedir confirmação
+```
 AskUserQuestion({
-  question: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSquad {slug} criado e pronto! 🚀\n\nAgents:\n  {icon} {displayName} — {role}\n  {icon} {displayName} — {role}\n\nModo: {Alta Performance | Econômico}\nPipeline: {nome do pipeline padrão}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  question: "Squad pronto. Iniciar execução?",
   options: [
-    { label: "▶️ Iniciar Squad", description: "Executar o pipeline agora" },
-    { label: "Revisar Squad", description: "Verificar configurações antes de iniciar" },
-    { label: "Cancelar", description: "Voltar sem iniciar" }
+    { label: "▶️ Iniciar", description: "Executar o pipeline" },
+    { label: "Revisar squad.yaml", description: "Ver antes de rodar" }
   ]
 })
 ```
 
-### 8.2 — Verificação de Skills
+### 8.2 — Verificação automática de Skills
 
-Antes de iniciar o pipeline:
-1. Leia os arquivos de steps do pipeline
-2. Busque por menções a skills nos steps
-3. Para cada skill, verifique se `.synapos/skills/{skill-name}/SKILL.md` existe
-
-Se alguma skill não está instalada:
-```
-AskUserQuestion({
-  question: "⚠️ Skills não instaladas detectadas no pipeline:\n  ✗ {skill-name-1}\n  ✗ {skill-name-2}\n\nEstas skills melhoram a qualidade dos outputs mas não são obrigatórias.",
-  options: [
-    { label: "Continuar sem skills", description: "Prosseguir mesmo sem as skills" },
-    { label: "Instalar skills primeiro", description: "Cancelar e instalar as skills" }
-  ]
-})
-```
-
-Se todas as skills estão instaladas:
-```
-✅ Skills verificadas: {lista de skills disponíveis}
-```
+Silenciosamente antes de iniciar:
+1. Leia os steps do pipeline
+2. Verifique skills necessárias
+3. Se skill ausente: log `⚠️ Skill {x} não encontrada — continuando sem ela`
+4. Não bloqueia — apenas alerta
 
 ### 8.3 — Iniciar Pipeline
 
@@ -758,25 +668,47 @@ Aguarde a seleção do usuário.
 
 Quando o usuário escolhe "✨ Customizado" no PASSO 5.
 
-> O domínio já foi identificado como "customizado" — não pergunte novamente. Siga diretamente para a configuração abaixo.
+> O domínio já foi identificado como "customizado" — não pergunte novamente.
 
-1. Leia `.synapos/squad-templates/` e liste todos os agents disponíveis com AskUserQuestion (multi-select)
+### Orientações:
+- **Minimum:** 1 agent (base)
+- **Recommended for feature:** 2-3 agents (base + 1-2 relevantes)
+- **Avoid:** selecionar todos — overhead sem benefício
+- Agents base são sempre incluídos — não precisam ser selecionados
 
-3. **Seleção de pipeline:**
+### Passo 1 — Selecionar agents
 
 ```
 AskUserQuestion({
-  question: "Qual pipeline usar?",
+  question: "Squad Customizado\n\nSelecione agents adicionais (além dos base):",
+  options: [
+    { label: "🧑‍💻 Dev Fullstack", description: "Para features integradas" },
+    { label: "🎨 Designer/UX", description: "Para features com UI" },
+    { label: "🔧 DevOps", description: "Para features com infra" },
+    { label: "✅ Nenhum — só base", description: "Agents base apenas" }
+  ],
+  multiSelect: true
+})
+```
+
+### Passo 2 — Selecionar pipeline
+
+```
+AskUserQuestion({
+  question: "Qual pipeline para este squad?",
   options: [
     { label: "Feature Development", description: "Discovery → Arquitetura → Implementação → Review" },
     { label: "Bug Fix", description: "Diagnóstico → Fix → Testes → Review" },
-    { label: "Quick Fix", description: "Mudança rápida sem aprovações" },
-    { label: "Customizado", description: "Descrever um novo fluxo" }
+    { label: "Quick Fix", description: "Mudança rápida sem aprovações" }
   ]
 })
 ```
 
-4. Crie o squad.yaml com `domain: custom`
+### Passo 3 — Criar squad.yaml
+
+- Domain: `custom`
+- DisplayName: `Squad Customizado`
+- Mode: `solo` (padrão para custom)
 
 ---
 

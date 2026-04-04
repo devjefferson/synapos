@@ -93,7 +93,9 @@ skills:
 ```
 
 ### 2. Para cada skill listada:
-- Verificar se `.synapos/skills/{skill}/SKILL.md` existe — diretório real **ou symlink**
+- Verificar se `.synapos/skills/{skill}/SKILL.md` existe
+- Se symlink: validar que o destino está DENTRO de `.synapos/skills/` ou `docs/_memory/`
+  - Se fora: tratar como broken, log `⚠️ Skill '{skill}' symlink inválido — pulando`
 - Se não existe → apresentar opções:
   ```
   ⚠ Skill '{skill}' não está instalada.
