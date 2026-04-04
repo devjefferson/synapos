@@ -311,17 +311,42 @@ Construa a lista interna de squads ativos.
 
 ---
 
-## PASSO 4 — MENU PRINCIPAL
+## PASSO 3.5 — VERIFICAR SQUAD TEMPLATES
 
-**Se existem squads**, use AskUserQuestion:
+Verifique se existem subdiretórios em `.synapos/squad-templates/` (ignorar `.gitkeep`).
+
+Armazene como `[HAS_TEMPLATES]` (true / false).
+
+**Se `[HAS_TEMPLATES]` = false:**
 
 ```
 AskUserQuestion({
-  question: "Olá, {nome do usuário}! Qual squad você quer trabalhar?",
+  question: "⚠️ Nenhum squad template instalado.\n\nSem templates não é possível criar squads.\n\nInstale templates com:\n  npx synapos add <template>",
+  options: [
+    { label: "Encerrar", description: "Fechar o orquestrador" }
+  ]
+})
+```
+
+**Pare a execução.** Não continue para PASSO 4.
+
+---
+
+## PASSO 4 — MENU PRINCIPAL
+
+**Se existem squads**, monte o menu com AskUserQuestion.
+
+Regra para a opção "Criar novo squad":
+- **Inclua** `{ label: "✨ Criar novo squad", description: "Montar um novo squad do zero" }` **apenas se** `[HAS_TEMPLATES]` = true.
+- **Se** `[HAS_TEMPLATES]` = false, **não inclua** essa opção e adicione um aviso no `question`: `"\n\n⚠️ Criação de squads indisponível — nenhum template instalado. Execute: npx synapos add <template>"`.
+
+```
+AskUserQuestion({
+  question: "Olá, {nome do usuário}! Qual squad você quer trabalhar?{aviso se sem templates}",
   options: [
     { label: "🟢 {slug}", description: "{domain} · {description} (ativo)" },
     { label: "🟡 {slug}", description: "{domain} · {description} (pausado)" },
-    { label: "✨ Criar novo squad", description: "Montar um novo squad do zero" }
+    // ✨ Criar novo squad — incluir SOMENTE se [HAS_TEMPLATES] = true
   ]
 })
 ```
@@ -331,11 +356,15 @@ AskUserQuestion({
 - 🟡 paused — pausado, pode retomar
 - ✅ completed — entregue
 
-**Se não existem squads** → vá direto para PASSO 5.
+**Se não existem squads e `[HAS_TEMPLATES]` = true** → vá direto para PASSO 5.
+
+**Se não existem squads e `[HAS_TEMPLATES]` = false** → já foi tratado no PASSO 3.5. Este passo nunca será alcançado nesse estado.
 
 ---
 
 ## PASSO 5 — SELEÇÃO DE DOMÍNIO
+
+> **Pré-condição:** `[HAS_TEMPLATES]` = true (garantido pelo PASSO 3.5).
 
 Liste os subdiretórios em `.synapos/squad-templates/` e leia `template.yaml` para cada um.
 
@@ -348,17 +377,6 @@ AskUserQuestion({
     { label: "{icon} {displayName}", description: "{description}" },
     { label: "{icon} {displayName}", description: "{description}" },
     { label: "✨ Customizado", description: "Monte seu próprio squad" }
-  ]
-})
-```
-
-**Se nenhum template for encontrado:** use AskUserQuestion para informar:
-
-```
-AskUserQuestion({
-  question: "Nenhum squad template instalado.\n\nInstale templates com: npx synapos",
-  options: [
-    { label: "Voltar", description: "Voltar ao menu" }
   ]
 })
 ```
@@ -464,46 +482,6 @@ AskUserQuestion({
 })
 ```
 
-Seção 6.5 — Feature Session (SELEÇÃO INTERATIVA)
-
-**Use AskUserQuestion:**
-
-```
-AskUserQuestion({
-  question: "Este squad trabalha em qual feature?",
-  options: [
-    { label: "📂 Session existente", description: "Selecionar feature já criada" },
-    { label: "✨ Nova feature", description: "Criar nova feature session" }
-  ]
-})
-```
-
-**Se "Session existente":**
-Liste as pastas em `docs/.squads/sessions/` com AskUserQuestion:
-
-```
-AskUserQuestion({
-  question: "Selecione a feature session:",
-  options: [
-    { label: "{feature-slug}", description: "{descrição do state.json}" },
-    { label: "{feature-slug}", description: "{descrição}" }
-  ]
-})
-```
-
-**Se "Nova feature":**
-
-```
-AskUserQuestion({
-  question: "Qual é o nome/slug da nova feature?",
-  options: [
-    { label: "Vou informar", description: "Ex: auth-module, feat/pagamentos" }
-  ]
-})
-```
-
-`{feature-slug}` = lowercase, espaços → hífens, sem caracteres especiais.
-
 ---
 
 ## PASSO 7 — CRIAR SQUAD
@@ -544,8 +522,8 @@ mode: {alta | economico | solo}
 execution_mode: {bootstrap | standard | strict}   # determinado pelo Mode Decision System no PASSO 2
 doc_score: {0-100}                                # score de documentação no momento da criação
 created_at: {YYYY-MM-DD}
-feature: {feature-slug}
-session: docs/.squads/sessions/{feature-slug}/
+feature: ""        # preenchido no PASSO 7.5
+session: ""        # preenchido no PASSO 7.5
 agents:
   - {id do agent 1}
   - {id do agent 2}
@@ -558,7 +536,7 @@ project_context:
   docs_business: docs/business/
   docs_tech: docs/tech/
   docs_context: docs/tech-context/
-  session: docs/.squads/sessions/{feature-slug}/
+  session: ""      # preenchido no PASSO 7.5
 ```
 
 ### 7.3 — Inicializar project-learnings.md (se não existir)
@@ -572,6 +550,57 @@ Verifique se `docs/_memory/project-learnings.md` existe. Se não existir, crie:
 > Atualizado automaticamente ao final de cada pipeline.
 
 (preenchido durante execuções)
+```
+
+---
+
+## PASSO 7.5 — FEATURE SESSION
+
+> **Executar apenas após o squad ter sido criado (arquivos do PASSO 7 já gravados).**
+
+**Use AskUserQuestion:**
+
+```
+AskUserQuestion({
+  question: "Squad {squad-slug} criado! 🎉\n\nAgora, em qual feature este squad vai trabalhar?",
+  options: [
+    { label: "📂 Session existente", description: "Selecionar feature já criada" },
+    { label: "✨ Nova feature", description: "Criar nova feature session" }
+  ]
+})
+```
+
+**Se "Session existente":**
+Liste as pastas em `docs/.squads/sessions/` com AskUserQuestion:
+
+```
+AskUserQuestion({
+  question: "Selecione a feature session:",
+  options: [
+    { label: "{feature-slug}", description: "{descrição do state.json}" },
+    { label: "{feature-slug}", description: "{descrição}" }
+  ]
+})
+```
+
+**Se "Nova feature":**
+
+```
+AskUserQuestion({
+  question: "Qual é o nome/slug da nova feature?",
+  options: [
+    { label: "Vou informar", description: "Ex: auth-module, feat/pagamentos" }
+  ]
+})
+```
+
+`{feature-slug}` = lowercase, espaços → hífens, sem caracteres especiais.
+
+Após obter o `{feature-slug}`, atualize o campo `feature` e `session` no `squad.yaml` já criado:
+
+```yaml
+feature: {feature-slug}
+session: docs/.squads/sessions/{feature-slug}/
 ```
 
 ---

@@ -162,8 +162,8 @@ ${bold('OPÇÕES')}
   -h, --help         Exibe esta ajuda
 
 ${bold('EXEMPLOS')}
-  npx synapos                     Seleção interativa de squads
-  npx synapos front               Instala squad Frontend
+  npx synapos                     Instala todos os squads + seleciona IDE
+  npx synapos front               Instala só o squad Frontend
   npx synapos front back          Instala Frontend + Backend
   npx synapos front back devops   Instala múltiplos squads
 `);
@@ -180,7 +180,7 @@ ${bold('EXEMPLOS')}
     process.exit(1);
   }
 
-  // ── 1. Resolver squads via args ou seleção interativa ────────────────────────
+  // ── 1. Resolver squads via args ou instalar todos por padrão ─────────────────
   let selectedSquadIds = [];
 
   if (args.length > 0) {
@@ -194,24 +194,9 @@ ${bold('EXEMPLOS')}
     info(`Squads selecionados via argumento: ${selectedSquadIds.join(', ')}`);
     nl();
   } else {
-    // Seleção interativa
-    const { selected } = await prompts({
-      type:         'multiselect',
-      name:         'selected',
-      message:      'Quais squads você quer instalar?',
-      choices:      SQUADS.map(s => ({
-        title:       s.title,
-        value:       s.value,
-        description: s.description,
-        selected:    false,
-      })),
-      hint:         '- Espaço para selecionar, Enter para confirmar',
-      instructions: false,
-      min:          1,
-    }, { onCancel: () => { nl(); process.exit(0); } });
-
-    if (!selected || selected.length === 0) process.exit(0);
-    selectedSquadIds = selected;
+    // Instalar todos os squads disponíveis
+    selectedSquadIds = SQUADS.map(s => s.value);
+    info(`Instalando todos os squads disponíveis (${selectedSquadIds.length})`);
     nl();
   }
 
