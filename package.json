@@ -1,6 +1,6 @@
 {
   "name": "synapos",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
   "keywords": ["ai", "agents", "claude", "cursor", "framework", "orchestration", "llm"],
   "author": "",
@@ -14,7 +14,8 @@
   },
   "files": [
     "bin/",
-    ".synapos/"
+    ".synapos/",
+    ".github/"
   ],
   "dependencies": {
     "prompts": "^2.4.2"

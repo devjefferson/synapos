@@ -31,7 +31,7 @@ const PACKAGE_DIR = path.join(__dirname, '..');
 const VERSION = (() => {
   try {
     return JSON.parse(fs.readFileSync(path.join(PACKAGE_DIR, 'package.json'), 'utf8')).version;
-  } catch { return '2.4.0'; }
+  } catch { return '2.5.0'; }
 })();
 
 // Squad definitions — value = folder name in squad-templates/
@@ -59,8 +59,9 @@ const COMMANDS = [
 
 // IDE definitions
 const IDES = [
-  { value: 'claude',   title: 'Claude Code', commandsDir: '.claude/commands',   hint: '/init na conversa' },
-  { value: 'opencode', title: 'OpenCode',    commandsDir: '.opencode/commands', hint: '/init no chat'     },
+  { value: 'claude',   title: 'Claude Code', commandsDir: '.claude/commands',   hint: '/init na conversa'               },
+  { value: 'copilot',  title: 'Copilot',     commandsDir: null,                 hint: 'synapos:init no chat do Copilot' },
+  { value: 'opencode', title: 'OpenCode',    commandsDir: '.opencode/commands', hint: '/init no chat'                   },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -282,10 +283,18 @@ ${bold('EXEMPLOS')}
   for (const ideId of selectedIdes) {
     const ide = IDES.find(i => i.value === ideId);
     try {
-      for (const cmd of COMMANDS) {
-        writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
+      if (ideId === 'copilot') {
+        // Copilot usa .github/copilot-instructions.md em vez de comandos
+        const copilotSrc  = path.join(PACKAGE_DIR, '.github', 'copilot-instructions.md');
+        const copilotDest = path.join(targetDir, '.github', 'copilot-instructions.md');
+        copyFile(copilotSrc, copilotDest);
+        ok(`${ide.title} configurado ${gray('(.github/copilot-instructions.md)')}`);
+      } else {
+        for (const cmd of COMMANDS) {
+          writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
+        }
+        ok(`${ide.title} configurado ${gray(`(${ide.commandsDir}/, ${COMMANDS.length} comandos)`)}`);
       }
-      ok(`${ide.title} configurado ${gray(`(${ide.commandsDir}/, ${COMMANDS.length} comandos)`)}`);
     } catch (e) {
       err(`Erro ao configurar ${ide.title}: ${e.message}`);
     }
