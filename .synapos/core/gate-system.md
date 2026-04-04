@@ -1,6 +1,6 @@
 ---
 name: synapos-gate-system
-version: 1.4.0
+version: 1.5.0
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 
@@ -33,64 +33,68 @@ Use `gate:` nos steps do pipeline.yaml para ativar um gate antes de continuar.
 - [ ] Pasta `docs/` existe na raiz do projeto
 - [ ] `docs/` contém pelo menos um arquivo `.md`
 
-**Se `docs/` não existe ou está vazia — avalie o modo do squad:**
+**Verificação de documentação — leia `execution_mode` do squad.yaml:**
 
-Leia `squad.yaml` e verifique `mode` e `bootstrap`:
-
-| Condição | Comportamento |
+| `execution_mode` | Comportamento se `docs/` ausente ou incompleta |
 |---|---|
-| `bootstrap: true` | Passa com aviso — ver abaixo |
-| `mode: solo` E `company.md` existe | Passa com aviso — ver abaixo |
-| `mode: solo` E `company.md` ausente | Bloqueio total |
-| `mode: alta` ou `economico` | Bloqueio total |
+| `bootstrap` | Passa com aviso — gates GATE-ADR e GATE-2 desativados |
+| `standard` | Passa se `company.md` + pelo menos 1 dir de docs existir; avisa sobre gaps |
+| `strict` | Exige `company.md` + `docs/tech/` + `docs/business/` — bloqueia se faltar |
 
-**Modo padrão — bloqueio (`alta` / `economico` sem bootstrap):**
+---
+
+**BOOTSTRAP — docs ausentes ou incompletas:**
 ```
-🚫 GATE-0 — Documentação ausente
+⚡ GATE-0 (Bootstrap Mode) — Score de documentação: {doc_score}/100
+   Executando com contexto mínimo.
 
-A pasta docs/ está vazia ou não existe.
-Nenhum agent pode executar sem documentação do projeto.
+   Gates ativos neste modo: GATE-DECISION
+   Desativados: GATE-ADR, GATE-2, GATE-DESIGN
 
-Execute primeiro o fluxo de documentação:
-  → /setup:build-business   (contexto de negócio)
-  → /setup:build-tech        (contexto técnico, se aplicável)
-
-Após gerar a documentação, execute o pipeline novamente.
-```
-
-**Bootstrap Mode (`bootstrap: true` em squad.yaml):**
-
-GATE-0 passa com aviso:
-```
-⚡ GATE-0 (Bootstrap Mode) — Sem documentação de projeto
-docs/ não encontrada. Executando com contexto mínimo.
-
-Pipelines disponíveis: quick-fix e bug-fix
-Outputs são funcionais, mas sem conhecimento dos seus padrões e arquitetura.
-
-Para resultados melhores:
-  → /setup:build-tech       (stack, padrões, ADRs)
-  → /setup:build-business   (produto, personas, contexto)
+   Para resultados melhores:
+   → /setup:build-tech       (+35 pontos de documentação)
+   → /setup:build-business   (+40 pontos de documentação)
 
 Prosseguindo...
 ```
 
-ADR enforcement e GATE-2 são desativados automaticamente em Bootstrap Mode — agents não tentam ler docs/ que não existe.
-
-**Modo Solo sem bootstrap (`mode: solo` e `company.md` existe):**
+**STANDARD — docs parcialmente presentes:**
 ```
-⚠️  GATE-0 (modo solo) — Documentação de projeto ausente
-docs/ não contém documentação técnica ou de negócio.
-Os agents vão operar com contexto limitado — outputs podem ser menos específicos.
+🟡 GATE-0 (Standard Mode) — Score de documentação: {doc_score}/100
+   Contexto parcial. Executando com gates essenciais.
 
-Recomendado (a qualquer momento):
-  → /setup:build-business
-  → /setup:build-tech
+   Gates ativos: GATE-0, GATE-ADR, GATE-DECISION
+   Desativados: GATE-DESIGN (requer docs/business completo)
 
-Prosseguindo em modo solo com contexto mínimo...
+   Documentação faltante:
+   {lista de itens ausentes com pontos correspondentes}
+
+Prosseguindo...
 ```
 
-**Falha de framework:** Liste os arquivos faltantes e pare.
+**STRICT — docs completas:**
+```
+🔴 GATE-0 (Strict Mode) — Score de documentação: {doc_score}/100
+   Contexto completo. Todos os gates ativos.
+
+✅ GATE-0 aprovado
+```
+
+**STRICT sem documentação completa — bloqueia:**
+```
+🚫 GATE-0 — Documentação insuficiente para Strict Mode
+
+Score atual: {doc_score}/100 (mínimo necessário: 70)
+
+Itens faltantes:
+  ✗ {item} — {pontos} pontos
+
+Opções:
+  → Crie a documentação: /setup:build-tech e /setup:build-business
+  → Execute uma tarefa mais simples (reduz para Standard/Bootstrap automaticamente)
+```
+
+**Falha de framework (qualquer modo):** Liste os arquivos faltantes do core e pare.
 
 ---
 
@@ -327,6 +331,27 @@ Verifique se já existe antes de propor. Se não existe, documente a justificati
 - [ ] Não há `[DECISÃO PENDENTE]` não resolvida nos arquivos da session
 
 **Falha:** Liste o que está faltando. Não marque o squad como completed.
+
+---
+
+## GATES POR EXECUTION MODE
+
+O pipeline-runner lê `execution_mode` do squad.yaml e ativa apenas os gates correspondentes:
+
+| Gate | BOOTSTRAP | STANDARD | STRICT |
+|---|---|---|---|
+| GATE-0 | ✅ (passa com aviso) | ✅ | ✅ |
+| GATE-1 | ✅ | ✅ | ✅ |
+| GATE-2 | ❌ desativado | ✅ | ✅ |
+| GATE-3 | ❌ desativado | ✅ | ✅ |
+| GATE-4 | ❌ desativado | ❌ desativado | ✅ |
+| GATE-5 | ❌ desativado | ✅ | ✅ |
+| GATE-ADR | ❌ desativado | ✅ | ✅ |
+| GATE-DECISION | ✅ | ✅ | ✅ |
+| GATE-DESIGN | ❌ desativado | ❌ desativado | ✅ |
+
+> **GATE-1 e GATE-DECISION são universais** — ativos em todos os modos, sempre.
+> **GATE-DECISION nunca é desativado** — evitar decisões autônomas é princípio inegociável.
 
 ---
 

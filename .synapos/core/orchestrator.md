@@ -1,6 +1,6 @@
 ---
 name: synapos-orchestrator
-version: 1.4.0
+version: 1.5.0
 description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
 ---
 
@@ -170,66 +170,133 @@ atualizado: {YYYY-MM-DD}
 
 ---
 
-## PASSO 2 — VERIFICAR DOCUMENTAÇÃO DO PROJETO
+## PASSO 2 — MODE DECISION SYSTEM
 
-Verifique se a pasta `docs/` existe na raiz do projeto e contém pelo menos um arquivo `.md`.
-
-**Se `docs/` existe e tem conteúdo** → leia os arquivos disponíveis e continue para PASSO 3.
+O orquestrador determina automaticamente o modo de execução cruzando dois fatores: **score de documentação** e **complexidade da tarefa**. Nunca bloqueia — sempre encontra um caminho de execução.
 
 ---
 
-**Se `docs/` não existe ou está vazia — Bootstrap Mode:**
+### 2.1 — Calcular Score de Documentação
 
-Não bloqueie. Ofereça duas rotas:
+Verifique a existência de cada item e some os pontos:
+
+| Item | Pontos |
+|------|--------|
+| `docs/_memory/company.md` existe | +30 |
+| `docs/tech/` existe com ≥ 1 arquivo `.md` | +20 |
+| `docs/business/` existe com ≥ 1 arquivo `.md` | +20 |
+| `docs/tech-context/` existe com ≥ 1 arquivo `.md` | +15 |
+| Total de arquivos `.md` em `docs/` ≥ 5 | +15 |
+
+**Score total possível: 100**
+
+Armazene como `[DOC_SCORE]` (0–100).
+
+---
+
+### 2.2 — Inferir Complexidade da Tarefa
+
+Pergunte ao usuário o que ele quer fazer. Se já houver contexto da mensagem inicial, use-o diretamente.
 
 ```
 AskUserQuestion({
-  question: "Documentação do projeto não encontrada.\n\nVocê pode começar agora mesmo — ou criar a documentação primeiro para resultados mais precisos.",
+  question: "O que você quer fazer?",
   options: [
-    {
-      label: "⚡ Começar agora",
-      description: "Bootstrap Mode — quick-fix e bug-fix disponíveis sem documentação"
-    },
-    {
-      label: "📚 Criar documentação primeiro",
-      description: "Recomendado — agents com contexto completo do projeto"
-    }
+    { label: "Vou descrever", description: "Ex: corrigir bug no login, criar endpoint de pagamento..." }
   ]
 })
 ```
 
-**Se "Criar documentação primeiro":**
+Com base na descrição, classifique a complexidade:
+
+| Complexidade | Palavras-chave e sinais |
+|---|---|
+| **LOW** | fix, typo, ajuste, quick, bug simples, texto, estilo, cor, label, tradução |
+| **MEDIUM** | feature, endpoint, component, tela, módulo, integração, API, CRUD |
+| **HIGH** | arquitetura, refactor, sistema, infra, migração, redesign, segurança, performance |
+
+Se não for possível classificar → assuma `MEDIUM`.
+
+Armazene como `[COMPLEXITY]` (LOW / MEDIUM / HIGH).
+
+---
+
+### 2.3 — Determinar Execution Mode
+
+Aplique as regras na ordem exata:
+
+| Condição | Execution Mode |
+|---|---|
+| `company.md` não existe e `[DOC_SCORE]` = 0 | **BOOTSTRAP** |
+| `[COMPLEXITY]` = LOW | **BOOTSTRAP** |
+| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` < 40 | **BOOTSTRAP** |
+| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` ≥ 40 | **STANDARD** |
+| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` < 70 | **STANDARD** |
+| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` ≥ 70 | **STRICT** |
+
+Armazene como `[EXECUTION_MODE]` (BOOTSTRAP / STANDARD / STRICT).
+
+---
+
+### 2.4 — Reagir ao Modo
+
+**Se `[EXECUTION_MODE]` = BOOTSTRAP:**
+
+Informe sem bloquear:
+```
+⚡ Bootstrap Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Executando com contexto mínimo.
+   Pipelines disponíveis: quick-fix, bug-fix
+
+   Para desbloquear mais pipelines:
+   → /setup:build-tech      (+35 pontos)
+   → /setup:build-business  (+40 pontos)
+```
+
+Continue para PASSO 3.
+
+**Se `[EXECUTION_MODE]` = STANDARD:**
+
+Informe e continue:
+```
+🟡 Standard Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Contexto parcial disponível. Gates ativos: GATE-0, GATE-ADR, GATE-DECISION.
+```
+
+Continue para PASSO 3.
+
+**Se `[EXECUTION_MODE]` = STRICT:**
+
+Informe e continue:
+```
+🔴 Strict Mode
+   Score de documentação: {DOC_SCORE}/100
+   Complexidade detectada: {COMPLEXITY}
+
+   Contexto completo disponível. Todos os gates ativos. Máxima qualidade.
+```
+
+Continue para PASSO 3.
+
+---
+
+### 2.5 — Sugestão de upgrade (STANDARD e STRICT)
+
+Se `[DOC_SCORE]` < 100, exiba ao final qual documentação faltante aumentaria o score:
 
 ```
-AskUserQuestion({
-  question: "O que você quer documentar?",
-  options: [
-    { label: "📋 Contexto de negócio", description: "/setup:build-business — visão, personas, produto" },
-    { label: "🔧 Contexto técnico", description: "/setup:build-tech — stack, arquitetura, ADRs" },
-    { label: "🚀 Os dois", description: "/setup:start — guia completo" }
-  ]
-})
+💡 Documentação disponível pode melhorar o modo:
+   {item ausente} → +{pontos} pontos
+   Score atual: {DOC_SCORE}/100 → precisaria de {threshold} para {próximo modo}
 ```
 
-Execute o comando escolhido e, ao concluir, retome o fluxo a partir do PASSO 3.
-
-**Se "Começar agora" (Bootstrap Mode):**
-
-Registre internamente `bootstrap_mode: true` e continue para PASSO 3.
-
-Em modo bootstrap:
-- Pipelines disponíveis ficam restritos a `quick-fix` e `bug-fix` (PASSO 6 filtra automaticamente)
-- GATE-0 passa com aviso, sem bloqueio
-- Modo de performance é fixado em **Solo** (sem checkpoints de aprovação)
-- Ao final da execução (FASE 3 do pipeline-runner), exiba:
-
-```
-💡 Quer resultados mais precisos?
-   Agents com documentação do projeto entendem seu contexto, padrões e ADRs.
-
-   /setup:build-tech      → stack, arquitetura, regras do projeto
-   /setup:build-business  → produto, personas, estratégia
-```
+Exiba apenas como informação — nunca bloqueie.
 
 ---
 
@@ -302,13 +369,16 @@ AskUserQuestion({
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
 
-> **Se `bootstrap_mode: true` (ativado no PASSO 2):** aplique as restrições abaixo antes de qualquer pergunta:
+> **Restrições por `[EXECUTION_MODE]` — aplique antes de qualquer pergunta:**
 >
-> 1. **Pipeline:** ofereça apenas pipelines `quick-fix` e `bug-fix` do template. Remova os demais da lista.
->    Se o template não tiver nenhum dos dois, informe e ofereça `quick-fix` como opção genérica.
-> 2. **Agents:** inclua apenas os agents base do template. Não apresente agents opcionais.
-> 3. **Modo:** fixe automaticamente em `solo` — não pergunte. Registre `mode: solo` no squad.yaml.
-> 4. Salve `bootstrap: true` no squad.yaml para que o pipeline-runner saiba que não há docs disponíveis.
+> | | BOOTSTRAP | STANDARD | STRICT |
+> |---|---|---|---|
+> | **Pipelines disponíveis** | quick-fix, bug-fix | todos | todos |
+> | **Agents opcionais** | não apresenta | apresenta | apresenta |
+> | **Modo de performance** | fixado em `solo` | apresenta opções | apresenta opções |
+> | **squad.yaml `execution_mode`** | `bootstrap` | `standard` | `strict` |
+>
+> Em **BOOTSTRAP**: se o template não tiver `quick-fix` nem `bug-fix`, ofereça `quick-fix` como opção genérica.
 
 ### 6.1 — Agents disponíveis (SELEÇÃO INTERATIVA)
 
@@ -471,7 +541,8 @@ displayName: "{displayName do template}"
 description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
-bootstrap: {true | false}     # true quando docs/ estava vazia no momento da criação
+execution_mode: {bootstrap | standard | strict}   # determinado pelo Mode Decision System no PASSO 2
+doc_score: {0-100}                                # score de documentação no momento da criação
 created_at: {YYYY-MM-DD}
 feature: {feature-slug}
 session: docs/.squads/sessions/{feature-slug}/
