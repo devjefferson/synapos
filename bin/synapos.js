@@ -31,7 +31,7 @@ const PACKAGE_DIR = path.join(__dirname, '..');
 const VERSION = (() => {
   try {
     return JSON.parse(fs.readFileSync(path.join(PACKAGE_DIR, 'package.json'), 'utf8')).version;
-  } catch { return '2.5.0'; }
+  } catch { return '2.6.0'; }
 })();
 
 // Squad definitions — value = folder name in squad-templates/

@@ -11,6 +11,16 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.6.0] — 2026-04-03
+
+### Modificado
+
+- `orchestrator` v1.6.0 — fluxo de criação de squad corrigido: pergunta de feature session movida para após a criação dos arquivos do squad (PASSO 7.5), garantindo que o squad exista antes de vincular uma feature
+- `orchestrator` v1.6.0 — adicionado PASSO 3.5 de verificação de squad-templates: bloqueia execução quando nenhum template está instalado e oculta a opção "Criar novo squad" no menu quando `[HAS_TEMPLATES]` = false
+- `bin/synapos.js` — instalação simplificada: sem argumentos instala todos os squads por padrão, sem prompt interativo de seleção
+
+---
+
 ## [2.5.0] — 2026-04-03
 
 ### Adicionado
