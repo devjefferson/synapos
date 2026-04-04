@@ -1,355 +1,285 @@
 # Synapos
 
-**AI Agent Orchestration Framework — Multi-IDE**
+> AI Agent Orchestration Framework for Software Development
 
-Instale squads de agents especializados no seu projeto com um único comando. Funciona com Claude Code, Cursor, Trae, OpenCode e Antigravity.
-
----
-
-## Instalação
-
-Execute no diretório do seu projeto:
+Instale squads de agentes de IA no seu projeto com um comando.
+Eles planejam, executam, validam e documentam features completas — com gates de qualidade e memória persistente.
 
 ```bash
 npx synapos
 ```
 
-O CLI vai guiar você por dois passos:
+---
 
-1. **Selecione os squads** que quer instalar (multi-select)
-2. **Selecione as IDEs** para configurar (multi-select)
+## ⚡ Teste em 2 minutos
 
-Ou passe os squads direto como argumento:
+```bash
+npx synapos front
+```
+
+Depois, na sua IDE:
+
+```
+/init → escolha "quick-fix"
+```
+
+✅ Um squad de IA começa a trabalhar no seu código
+✅ Com contexto real do projeto
+✅ Seguindo padrões e validações
+
+---
+
+## 🤯 O que é isso?
+
+Synapos não é só um “agent”.
+
+É um **runtime de squads de IA** que trabalham como um time de engenharia:
+
+* 🧠 Pensam (arquitetura, decisões)
+* ⚙️ Implementam (código real)
+* 🔍 Validam (gates, testes, review)
+* 📝 Documentam (automaticamente)
+
+---
+
+## 🧩 Como funciona
+
+```
+Você → /init
+      ↓
+Orquestrador cria um squad
+      ↓
+Pipeline executa steps
+      ↓
+Agents + Gates + Memória + Checkpoints
+```
+
+---
+
+## 🔥 Por que isso é diferente?
+
+### ❌ Antes (IA comum)
+
+* Respostas isoladas
+* Sem memória real
+* Sem processo
+* Sem validação
+
+### ✅ Com Synapos
+
+* Squads especializados por domínio
+* Pipelines estruturados
+* Gates que bloqueiam código ruim
+* Memória persistente por feature
+* Execução contínua (não só chat)
+
+---
+
+## 🧠 Squads prontos
+
+Instale times completos com um comando:
 
 ```bash
 npx synapos front
 npx synapos back
-npx synapos front back
-npx synapos front back devops
+npx synapos full
+npx synapos produto
+```
+
+Cada squad inclui:
+
+* Arquiteto
+* Dev
+* Reviewer
+* (opcional) UX, testes, segurança, etc.
+
+---
+
+## ⚙️ Multi-IDE (onde você já trabalha)
+
+Funciona direto na sua stack:
+
+* Claude Code
+* Cursor
+* Trae
+* OpenCode
+* Antigravity
+
+---
+
+## 🧠 Memória persistente (game changer)
+
+Cada feature cria uma session:
+
+```
+docs/.squads/sessions/{feature}/
+```
+
+Com:
+
+* contexto
+* arquitetura
+* plano
+* decisões
+* aprendizados
+
+👉 Seus agents **não esquecem o que fizeram**
+
+---
+
+## 📚 Fluxo de documentação (o diferencial invisível)
+
+A maioria das ferramentas de IA ignora documentação.
+
+O Synapos trata documentação como **parte do processo**, não como algo opcional.
+
+Cada execução:
+
+* gera contexto estruturado
+* registra decisões arquiteturais
+* mantém histórico da feature
+* acumula aprendizados automaticamente
+
+Isso cria um efeito poderoso:
+
+👉 o projeto fica **cada vez mais inteligente com o tempo**
+
+---
+
+### ❌ Sem Synapos
+
+* documentação desatualizada
+* decisões perdidas
+* contexto fragmentado
+
+### ✅ Com Synapos
+
+* documentação viva e versionada
+* contexto compartilhado entre squads
+* onboarding muito mais rápido
+
+👉 Não é só sobre gerar código.
+👉 É sobre **construir conhecimento do projeto continuamente**.
+
+---
+
+## 🚧 Gates (qualidade obrigatória)
+
+Nada passa sem validação:
+
+* GATE-0 → integridade do projeto
+* GATE-ADR → respeita arquitetura
+* GATE-DESIGN → qualidade visual
+* GATE-DECISION → evita decisões ocultas
+
+👉 "Fail loud. Never silent."
+
+---
+
+## ⚡ Modos de execução
+
+* **Alta Performance** → completo + checkpoints
+* **Econômico** → rápido e direto
+* **Solo** → sem interrupções
+
+---
+
+## 🧪 Casos reais
+
+### Criar feature completa
+
+```
+/init → frontend → feature-development
+```
+
+### Corrigir bug
+
+```
+/init → backend → bug-fix
+```
+
+### Ajuste rápido
+
+```
+/init → quick-fix
 ```
 
 ---
 
-## Squads disponíveis
+## 🧠 Configuração de modelo
 
-| Alias | Squad | Especialidade |
-|-------|-------|---------------|
-| `front` | Frontend | React, Vue, CSS, UX/UI, testes |
-| `back` | Backend | APIs, banco de dados, segurança |
-| `full` | Fullstack | Frontend + Backend integrados |
-| `produto` | Produto | Pesquisa, spec, documentação |
-| `mobile` | Mobile | React Native, Flutter, iOS, Android |
-| `devops` | DevOps | CI/CD, containers, cloud, infra |
-| `ia` | IA / Dados | ML, pipelines de dados, LLMs |
+Compatível com qualquer modelo:
 
----
+* Claude
+* GPT
+* Gemini
+* modelos locais
 
-## IDEs suportadas
+Com otimização automática de contexto:
 
-| IDE | Arquivo gerado |
-|-----|----------------|
-| Claude Code | `.claude/commands/init.md` |
-| Cursor | `.cursor/rules/synapos.mdc` |
-| Trae | `.trae/rules.md` |
-| OpenCode | `.opencode/instructions.md` |
-| Antigravity | `.antigravity/rules.md` |
+* high → máximo contexto
+* standard → balanceado
+* lite → até -70% de tokens
 
 ---
 
-## O que é instalado
+## 🔌 Skills (integrações)
 
-Após rodar o CLI, seu projeto terá:
+* GitHub (PRs, issues)
+* Browser (testes E2E)
+* Web search
+* Filesystem
+
+---
+
+## 🏗️ Estrutura gerada
 
 ```
-synapos/
-├── core/               — orquestrador, pipeline runner, gate system, skills engine
-├── squad-templates/    — templates dos squads selecionados (agents + pipelines)
-├── skills/             — integrações (brave-search, github, playwright, etc.)
-├── squads/             — squads ativos criados durante o uso
-└── _memory/            — memória de contexto (empresa, preferências)
+.synapos/   → core do framework
+docs/       → memória + contexto
+.squads/    → execução por feature
 ```
 
 ---
 
-## Como usar
+## 💡 Visão
 
-### Claude Code
+Synapos é um passo na direção de:
 
-Após instalar, abra o projeto no Claude Code e execute:
-
-```
-/init
-```
-
-O Synapos vai iniciar o onboarding, perguntar sobre seu projeto e apresentar o menu de squads.
+> desenvolvimento de software onde humanos definem o problema
+> e squads de IA executam com qualidade e contexto
 
 ---
 
-## Fluxo Completo
+## 🚀 Roadmap
 
-```
-/setup:start → documentação → /init → squad → pipeline
-```
-
-### Passo 1 — Criar a documentação do projeto
-
-Antes de qualquer squad, o projeto precisa ter documentação em `docs/`. Execute:
-
-```
-/setup:start
-```
-
-O orquestrador analisa o projeto e exibe o estado atual:
-
-| | Documento | Caminho |
-|---|---|---|
-| ✅ / ⚠️ | Project Briefing | `docs/tech-context/` |
-| ✅ / ⚠️ | Contexto de Negócio | `docs/business/` |
-| ✅ / ⚠️ | Contexto Técnico | `docs/tech/` |
-
-A partir daí você pode rodar cada comando separado:
-
-| Comando | O que faz |
-|---|---|
-| `/setup:build-business` | Gera `docs/business/` — personas, mercado, visão, estratégia |
-| `/setup:build-tech` | Gera `docs/tech/` — arquitetura, stack, ADRs, guia do codebase |
-| `/setup:discover` | Analisa o codebase e gera `docs/tech-context/` — briefing técnico incremental |
-
-Cada comando tem 3 fases: descoberta automática → perguntas ao usuário → geração dos arquivos.
-
-Estrutura gerada:
-
-```
-docs/
-├── _memory/
-│   ├── company.md            ← perfil da empresa/usuário
-│   └── preferences.md        ← IDE, idioma, preferências
-├── business/
-│   ├── index.md
-│   ├── business-context.md
-│   ├── product-vision.md
-│   ├── product-strategy.md
-│   ├── competitive_landscape.md
-│   ├── customer_communication.md
-│   ├── features/
-│   ├── personas/
-│   └── research/
-├── tech/
-│   ├── index.md
-│   ├── architecture.md
-│   ├── stack.md
-│   ├── business_logic.md
-│   ├── codebase-guide.md
-│   ├── api-spec.md
-│   ├── contributing.md
-│   └── adr/
-└── tech-context/
-    ├── project-briefing.md
-    └── briefing/
-        ├── critical-rules.md
-        ├── adrs-summary.md
-        ├── backend-conventions.md
-        └── tech-stack.md
-```
+* [ ] Dashboard visual de pipelines
+* [ ] Synapos Cloud
+* [ ] Marketplace de agents
+* [ ] Observabilidade de execução
 
 ---
 
-### Passo 2 — Iniciar o orquestrador
+## ⭐ Contribua
 
-Com a documentação pronta, execute:
+Esse projeto é open source e está evoluindo rápido.
 
-```
-/init
-```
-
-**Primeira vez — onboarding:**
-
-```
-1. Seu nome ou nome da empresa
-2. Setor / tipo de projeto principal
-3. Linguagem de saída preferida (PT-BR / EN-US / outro)
-4. IDE principal
-```
-
-Cria `docs/_memory/company.md` e `docs/_memory/preferences.md` automaticamente.
-
-**Menu principal** (quando já existem squads):
-
-```
-🟢 auth-mobile · backend · Sistema de autenticação    (ativo)
-🟡 pagamentos-v2 · fullstack · Módulo de pagamentos   (pausado)
-✨ Criar novo squad
-```
-
-Se não há squads ativos, vai direto para seleção de domínio.
+Se você acredita no futuro de AI-native development:
+👉 dê uma estrela
+👉 abra uma issue
+👉 contribua
 
 ---
 
-### Passo 3 — Criar ou carregar um squad
-
-**Seleção de domínio:**
-
-```
-⚙️  Backend   — APIs, serviços, banco de dados
-🖥️  Frontend  — Interfaces, componentes, UX
-🔀 Fullstack  — Features que cruzam front e back
-📱 Mobile     — iOS, Android, React Native
-☁️  DevOps    — Infra, CI/CD, containers
-📊 IA / Dados — ML, pipelines de dados, LLMs
-📋 Produto    — Discovery, spec, handoff
-✨ Customizado — Monte seu próprio squad
-```
-
-**Configuração do squad:**
-
-1. Agents base (sempre incluídos) + agents opcionais para adicionar
-2. Modo de operação: **⚡ Alta Performance** ou **💰 Econômico**
-3. Descrição do objetivo (1-2 frases)
-4. Nome/slug (ou auto-gerado como `backend-001`)
-
-**Arquivos criados:**
-
-```
-.synapos/squads/{slug}/
-├── squad.yaml
-├── agents/
-└── pipeline/
-    ├── pipeline.yaml
-    └── steps/
-
-docs/.squads/{slug}/
-├── _memory/memories.md    ← aprendizados persistentes entre sessões
-└── output/                ← resultados de cada execução
-```
-
-**Carregando squad existente:**
-
-```
-Squad auth-mobile carregado.
-
-▶️  Continuar de onde parou
-🔄  Nova execução (manter contexto)
-🧠  Ver memória do squad
-⏸️  Pausar / arquivar squad
-```
-
----
-
-### Passo 4 — Execução do pipeline
-
-O Pipeline Runner executa os steps em sequência:
-
-```
-[GATE-0] Verificando integridade e documentação...   ✅
-[Step 1] design-api        → Alexandre (Arquiteto de API)
-[Step 2] checkpoint        → aguarda aprovação humana  ⏸
-[Step 3] implementacao     → Bruno (Dev Backend)
-[Step 4] seguranca         → Sergio (Especialista em Segurança)
-[Step 5] review            → Roberto (Revisor de Código)
-```
-
-**GATE-0** é obrigatório no início de todo pipeline. Verifica se `docs/` existe, se o framework está íntegro e se o squad está configurado. Falha → bloqueia.
-
-**Checkpoints** aguardam aprovação humana. Você pode aprovar, pedir revisão ou vetar.
-
-Outputs salvos em: `docs/.squads/{slug}/output/{YYYY-MM-DD-HHmmss}/`
-
----
-
-### Resumo visual
-
-```
-/setup:start
-    ├── /setup:build-business   → docs/business/
-    ├── /setup:build-tech       → docs/tech/
-    └── /setup:discover         → docs/tech-context/
-
-/init
-    ├── onboarding (1ª vez)     → docs/_memory/
-    ├── squads ativos?
-    │   ├── sim → selecionar squad existente
-    │   └── não → selecionar domínio
-    ├── configurar agents + modo + contexto
-    ├── criar .synapos/squads/{slug}/
-    └── pipeline runner
-            ├── GATE-0
-            ├── steps (agents + checkpoints)
-            └── output → docs/.squads/{slug}/output/
-```
-
----
-
-## Primeira execução
-
-Na primeira vez que o Synapos roda, ele faz o onboarding:
-
-```
-Olá! Sou o Synapos — framework de orquestração de agents.
-Antes de começar, preciso de algumas informações rápidas:
-
-1. Seu nome ou nome da empresa:
-2. Setor / tipo de projeto principal:
-3. Linguagem de saída preferida: [PT-BR / EN-US / outro]
-4. IDE principal: [Claude / Cursor / Trae / outro]
-```
-
-Essas informações são salvas em `docs/_memory/` e usadas em todas as sessões seguintes.
-
----
-
-## Criando um squad
-
-Após o onboarding, o Synapos apresenta o menu principal:
-
-```
-Qual domínio você quer trabalhar?
-
-  ⚙️  Backend
-  🖥️  Frontend
-  🔀 Fullstack
-  📋 Produto
-  📱 Mobile
-  ☁️  DevOps / Infra
-  📊 IA / Dados
-  ✨ Customizado
-```
-
-Cada squad tem agents base (sempre incluídos) e agents opcionais. Você escolhe o modo de operação:
-
-- **Alta Performance** — squad completo, documentação máxima, revisões aprofundadas
-- **Econômico** — agents essenciais, execução rápida
-
-O squad criado fica em `.synapos/squads/{slug}/` com agents, pipeline e memória isolados.
-
----
-
-## Exemplos de uso rápido
+## 📦 Instalação
 
 ```bash
-# Instalar apenas frontend para Claude Code e Cursor
-npx synapos front
-
-# Instalar fullstack para múltiplas IDEs
-npx synapos full
-
-# Instalar frontend + backend + devops de uma vez
-npx synapos front back devops
+npx synapos
 ```
 
 ---
 
-## Opções do CLI
+## 🧠 TL;DR
 
-```
-npx synapos [squad...] [options]
-
-Options:
-  -v, --version    Exibe a versão
-  -h, --help       Exibe a ajuda
-```
-
----
-
-## Versão
-
-`1.4.0`
+Você não usa mais um agent.
+Você roda um **time inteiro de IA no seu projeto**.

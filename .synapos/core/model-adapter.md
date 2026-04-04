@@ -1,10 +1,10 @@
 ---
 name: synapos-model-adapter
-version: 1.0.0
+version: 1.1.0
 description: Protocolo de adaptação de prompts para modelos de capacidade inferior — compensa limitações sem alterar os outputs esperados
 ---
 
-# SYNAPOS MODEL ADAPTER v1.0.0
+# SYNAPOS MODEL ADAPTER v1.1.0
 
 > Ativado automaticamente pelo pipeline-runner quando `model_capability: standard` ou `lite` está definido em `docs/_memory/preferences.md`.
 > Garante a mesma qualidade e produtividade independente da capacidade do modelo usado.
@@ -111,7 +111,7 @@ Em vez de instruir o agent a "ler toda a pasta docs/", construa e injete um resu
 {se não existir, omita esta seção}
 ```
 
-> **Regra:** No modo `lite`, o agent NÃO recebe instrução para "ler toda a pasta docs/". Recebe apenas este resumo. Outputs de steps anteriores (`depends_on`) ainda são fornecidos na íntegra.
+> **Regra:** No modo `lite`, o agent NÃO recebe instrução para "ler toda a pasta docs/". Recebe apenas este resumo. Outputs de steps anteriores (`depends_on`) ainda são fornecidos na íntegra. ADRs são injetados do cache `[ADRS_CARREGADOS]` — nunca instrua o agent a ler docs/ para buscá-los.
 
 ### L3 — Chain-of-Thought Obrigatório
 
@@ -177,7 +177,8 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 
 ```
 [Agent Persona completa do .agent.md]
-[Contexto Squad: company.md + leitura de toda a pasta docs/]
+[Contexto Squad: company.md + ADRs pré-carregados (ADRS_CARREGADOS)]
+[Session files: context.md + architecture.md + plan.md]
 [Memória do squad: memories.md]
 [Project Learnings: project-learnings.md, se existir]
 [Outputs anteriores relevantes: depends_on]
@@ -185,12 +186,15 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 [Skills ativas]
 ```
 
+> **Nota:** Em modo `high`, o agent **não** recebe instrução de "ler toda a pasta docs/". Os ADRs e docs relevantes são injetados pelo pipeline-runner a partir do cache carregado na FASE 1. Isso evita re-leitura redundante por step.
+
 ### Modo `standard`
 
 ```
 [CoT Prefix — S1]
 [Agent Persona completa do .agent.md]
-[Contexto Squad: company.md + leitura de toda a pasta docs/]
+[Contexto Squad: company.md + ADRs pré-carregados (ADRS_CARREGADOS)]
+[Session files: context.md + architecture.md + plan.md]
 [Memória do squad: memories.md]
 [Project Learnings: project-learnings.md, se existir]
 [Outputs anteriores relevantes: depends_on]
@@ -236,5 +240,6 @@ Sempre que o adapter estiver ativo, registre antes de executar o step:
 | **Template é estrutura** | O modelo preenche o conteúdo — o template define apenas a forma |
 | **Scope Forcing é sequencial** | Sub-steps de um step são apresentados um por vez, aguardando output antes do próximo |
 | **Context Pruning preserva depends_on** | Outputs de steps anteriores são sempre fornecidos na íntegra, nunca resumidos |
+| **ADRs vêm do cache** | Em todos os modos, ADRs são injetados do cache ADRS_CARREGADOS — nunca instrua re-leitura de docs/ |
 | **Checkpoints não são afetados** | O adapter só atua em steps `subagent` e `inline` — nunca em `checkpoint` |
 | **high é o padrão** | Se `model_capability` não estiver em preferences.md, comportamento é `high` sem log |

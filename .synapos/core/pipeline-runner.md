@@ -1,10 +1,10 @@
 ---
 name: synapos-pipeline-runner
-version: 2.1.0
+version: 2.2.0
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
-# SYNAPOS PIPELINE RUNNER v2.1.0
+# SYNAPOS PIPELINE RUNNER v2.2.0
 
 > Responsável por executar pipelines de squads step-by-step.
 > Chamado pelo orchestrator após criação ou carregamento de um squad.
@@ -51,6 +51,7 @@ Leia os seguintes arquivos:
 ```
 .synapos/squads/{squad-slug}/squad.yaml                         → configuração do squad
 docs/.squads/sessions/{feature-slug}/memories.md               → memória da feature (todos os squads)
+docs/.squads/sessions/{feature-slug}/review-notes.md           → notas de revisão (se existir)
 docs/.squads/sessions/{feature-slug}/context.md                → contexto da feature (se existir)
 docs/.squads/sessions/{feature-slug}/architecture.md           → arquitetura (se existir)
 docs/.squads/sessions/{feature-slug}/plan.md                   → plano (se existir)
@@ -59,7 +60,40 @@ docs/_memory/preferences.md                                    → preferências
 docs/_memory/project-learnings.md                              → aprendizados transversais (se existir)
 ```
 
-### 1.1b — Verificar model_capability
+Adicionalmente, **pré-carregue os ADRs do projeto uma única vez**:
+- Leia todos os arquivos em `docs/` cujo nome contenha `ADR`, `adr`, `decisions` ou `architecture-decision`
+- Armazene o conteúdo em memória como `[ADRS_CARREGADOS]`
+- Esses ADRs serão injetados diretamente nos steps — agents não precisam ler `docs/` para buscá-los
+
+Conte as seções de segundo nível (`##`) em `memories.md` e `review-notes.md` e armazene os valores como `[MEMORIES_COUNT]` e `[REVIEW_NOTES_COUNT]` para uso nas fases 2 e 3.
+
+### 1.1b — Estimativa de Budget de Contexto
+
+Com base nos arquivos carregados em 1.1, estime o volume de contexto da session:
+
+1. Some o número de linhas de `context.md` + `architecture.md` + `plan.md` (se existirem)
+2. Some o número de linhas de `memories.md` + `review-notes.md`
+
+| Linhas totais (session files) | Ação |
+|---|---|
+| < 400 linhas | Sem alerta — contexto saudável |
+| 400–700 linhas | Alerta amarelo: contexto crescendo |
+| > 700 linhas | Alerta laranja: considere ativar `model_capability: standard` |
+
+Se o total ultrapassar **400 linhas**, exiba ao anunciar o pipeline:
+```
+⚠️  [BUDGET] Session com contexto elevado:
+   context.md + architecture.md + plan.md: ~{N} linhas
+   memories.md + review-notes.md: ~{N} linhas
+   Total: ~{soma} linhas (~{soma/25}k tokens estimados por step)
+
+   Dica: ative model_capability: standard em docs/_memory/preferences.md
+   para comprimir o contexto automaticamente.
+```
+
+Nenhuma execução é bloqueada — apenas alerta informativo.
+
+### 1.1c — Verificar model_capability
 
 Leia o campo `model_capability` de `docs/_memory/preferences.md`:
 
@@ -350,7 +384,7 @@ Leia o arquivo do step: `.synapos/squads/{squad-slug}/{file}`
 
 Exemplo: `docs/architecture.md` → `docs/.squads/sessions/auth-module/architecture.md`
 
-**Se `model_capability` for `standard` ou `lite` (verificado em 1.1b):**
+**Se `model_capability` for `standard` ou `lite` (verificado em 1.1c):**
 Aplique o protocolo do MODEL-ADAPTER sobre o prompt composto antes de enviar ao agent.
 O adapter atua apenas em steps com `execution: subagent` ou `execution: inline`.
 Steps com `execution: checkpoint` nunca são afetados.
@@ -480,6 +514,9 @@ Antes de sobrescrever qualquer `output_file` que já existe na session folder:
 
 Isso protege `context.md`, `architecture.md`, `spec.md` e outros artefatos centrais de reescritas acidentais.
 
+**Retenção de backups:** Mantenha no máximo **3 arquivos `.bak`** por output file. Ao criar um novo backup quando já existem 3 versões, delete o mais antigo antes de criar o novo.
+Log: `🗑️ Backup antigo removido: {filename}.v{N-2}.bak → novo: {filename}.v{N+1}.bak`
+
 ### 2.7 — Loop de revisão (on_reject)
 
 Se o usuário rejeitar um output:
@@ -575,6 +612,23 @@ Para aprendizados inseridos diretamente pelo usuário (não por agent), usar:
 {conteúdo}
 ```
 
+### Consolidação de review-notes.md
+
+Após cada append em `review-notes.md`, atualize o contador `[REVIEW_NOTES_COUNT]`.
+
+Se ≥ 10 seções (`##`): apresente ao usuário:
+```
+📝 review-notes.md acumula {N} entradas de revisão.
+Deseja consolidar para facilitar a leitura?
+  [1] Sim — agrupar revisões antigas em bloco único preservando todo o conteúdo
+  [2] Não — manter como está
+```
+
+Se o usuário escolher consolidar:
+1. Crie seção `## Revisões Consolidadas até {YYYY-MM-DD}` com resumo estruturado de todas as entradas antigas
+2. Marque entradas antigas com `<!-- consolidado em {data} -->`
+3. Não delete nenhuma entrada — apenas reorganize
+
 **Aprendizados transversais do projeto:**
 ```
 Algo que todos os squads deste projeto devem saber? (ENTER para pular)
@@ -620,7 +674,7 @@ Ao executar qualquer step, o agent recebe automaticamente:
    - `docs/.squads/sessions/{feature-slug}/context.md`
    - `docs/.squads/sessions/{feature-slug}/architecture.md`
    - `docs/.squads/sessions/{feature-slug}/plan.md`
-5. **ADRs do projeto** — **obrigatório antes de steps de implementação**: leia arquivos com `ADR`, `adr`, `decisions`, `architecture-decision` no nome/path. Liste cada ADR como `[RESPEITADA]` ou `[NÃO APLICÁVEL]`. Conflito = output vetado.
+5. **ADRs do projeto** — injetados a partir do cache `[ADRS_CARREGADOS]` pré-lido na FASE 1. O agent **não precisa ler docs/** para buscá-los — recebe o conteúdo diretamente. Liste cada ADR como `[RESPEITADA]` ou `[NÃO APLICÁVEL]`. Conflito = output vetado.
 6. **Memória da feature** (`docs/.squads/sessions/{feature-slug}/memories.md`)
 7. **Aprendizados transversais** (`docs/_memory/project-learnings.md` — se existir)
 8. **Outputs anteriores relevantes** (definidos em `depends_on`)
@@ -682,5 +736,8 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **ADRs são lei** | Antes de implementação, agents leem ADRs. Conflito = veto |
 | **Sessão recuperável** | `suspended_at` atualizado a cada step. Orquestrador detecta e retoma |
 | **Session é compartilhada** | Múltiplos squads trabalham na mesma session. Nunca apague arquivos existentes sem aprovação |
-| **review-notes é append-only** | Nunca substitua review-notes.md — sempre acrescente |
-| **memories é append-only** | Nunca substitua memories.md — sempre acrescente |
+| **review-notes é append-only** | Nunca substitua review-notes.md — sempre acrescente. Consolidar ao atingir 10+ entradas |
+| **memories é append-only** | Nunca substitua memories.md — sempre acrescente. Consolidar ao atingir 10+ entradas |
+| **Backups limitados a 3** | Máximo 3 arquivos `.bak` por output file — delete o mais antigo antes de criar novo |
+| **ADRs são pré-carregados** | ADRs lidos uma vez na FASE 1 e injetados diretamente — subagents não re-leem docs/ |
+| **Budget é monitorado** | Estime linhas da session na inicialização — alerte acima de 400 linhas |
