@@ -1,7 +1,7 @@
 {
   "framework": {
     "name": "synapos",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "released_at": "2026-04-03"
   },
   "best_practices": {
@@ -30,6 +30,8 @@
     "model_adapter": "1.1.0",
     "skills_engine": "1.1.0",
     "versioning": "1.1.0",
+    "copilot_runtime": "1.0.0",
+    "copilot_adapter": "1.0.0",
     "pipelines": {
       "pre-execution": "1.1.0"
     },

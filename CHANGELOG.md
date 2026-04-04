@@ -11,6 +11,25 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.5.0] — 2026-04-03
+
+### Adicionado
+
+#### Synapos Copilot Mode (IDE-native Runtime)
+
+- `.github/copilot-instructions.md` — arquivo de instrução de projeto carregado automaticamente pelo GitHub Copilot Chat. Define regras obrigatórias, sistema de comandos via comentário e adaptações ativas do Synapos.
+- `.synapos/copilot.md` v1.0.0 — runtime manifest do Copilot Mode. Protocolo completo de ativação, onboarding, mode decision system, criação de squads e execução de pipelines adaptados para o ambiente IDE-native (sem subagentes, sem slash commands).
+- `.synapos/core/copilot-adapter.md` v1.0.0 — mapeamento técnico de capacidades Synapos → GitHub Copilot:
+  - `AskUserQuestion` → listas numeradas com aguardo de input
+  - `execution: subagent` → execução inline com persona declarada
+  - `execution: checkpoint` → checklist com confirmação explícita
+  - Gates → checklist de validação no output
+  - Sistema de comandos via comentário: `// synapos:{comando} {params}`
+  - Prompt anchors via blocos HTML em arquivos-chave
+  - Mapeamento de limitações e compensações (memória, pipeline, flow control)
+
+---
+
 ## [2.1.0] — 2026-04-01
 
 ### Adicionado
