@@ -11,6 +11,15 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.7.3] — 2026-04-04
+
+### Adicionado
+
+- `.antigravity/rules.md` — arquivo de regras para Antigravity com descrição de toda a documentação do framework a ser seguida
+- `.antigravity/` adicionado ao `files` do `package.json` para inclusão no pacote npm
+
+---
+
 ## [2.7.2] — 2026-04-04
 
 ### Adicionado

@@ -278,6 +278,15 @@ ${bold('EXEMPLOS')}
         const copilotDest = path.join(targetDir, '.github', 'copilot-instructions.md');
         copyFile(copilotSrc, copilotDest);
         ok(`${ide.title} configurado ${gray('(.github/copilot-instructions.md)')}`);
+      } else if (ideId === 'antigravity') {
+        // Antigravity: workflows em .agent/workflows/ + rules em .antigravity/rules.md
+        for (const cmd of COMMANDS) {
+          writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
+        }
+        const rulesSrc  = path.join(PACKAGE_DIR, '.antigravity', 'rules.md');
+        const rulesDest = path.join(targetDir, '.antigravity', 'rules.md');
+        copyFile(rulesSrc, rulesDest);
+        ok(`${ide.title} configurado ${gray(`(.agent/workflows/, ${COMMANDS.length} workflows + .antigravity/rules.md)`)}`);
       } else {
         for (const cmd of COMMANDS) {
           writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
