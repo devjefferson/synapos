@@ -1,154 +1,136 @@
 # Synapos — Getting Started
 
-> Guia rápido para começar a usar o Synapos Framework v2.2+
+> Guia rápido para começar a usar o Synapos.
 
 ---
 
-## Começo rápido (sem documentação)
+## Começo em 3 interações
 
-Quer rodar agora sem configurar nada?
+### Primeiro uso (sem nada configurado)
 
 ```
-/init → "Começar agora" → domínio → quick-fix
+/init
+→ "Meu SaaS — corrigir bug no login"   ← nome do projeto + o que quer fazer
+→ Escolha o role: backend               ← inferido automaticamente ou você escolhe
+→ Pipeline roda
 ```
 
-O **Bootstrap Mode** ativa automaticamente quando `docs/` não existe. Você já executa um quick-fix ou bug-fix com contexto mínimo. Ao final, o framework recomenda criar a documentação para resultados mais completos.
+Pronto. O Synapos configura o ambiente, cria a session e executa.
+
+### Retorno (projeto já configurado)
+
+```
+/init
+→ Escolha o role ativo ou crie novo
+→ Pipeline roda
+```
+
+Uma interação.
 
 ---
 
-## Por Onde Começar
+## Qual modo escolher
 
-Escolha o cenário que melhor descreve sua situação:
+| Situação | Modo |
+|----------|------|
+| Bug fix, ajuste, quick change | ⚡ **Rápido** — inferido automaticamente |
+| Feature nova, refactor, arquitetura | 🔵 **Completo** — injeta docs/ e ADRs |
+| Dúvida | Rápido — você pode reexecutar em Completo depois |
 
-### Quero testar agora (sem setup)
-
-1. Execute `/init`
-2. Quando perguntado sobre documentação → escolha **"Começar agora"**
-3. Selecione um domínio e escolha `quick-fix` ou `bug-fix`
-4. O squad executa com contexto mínimo (Bootstrap Mode)
-5. Ao final: siga a recomendação de criar docs para resultados melhores
-
-### Tenho um projeto existente com código
-
-1. Execute `/init` no Claude Code — responda as perguntas de onboarding (empresa, IDE, modelo, task tracker)
-2. Execute `/setup:build-tech` → analisa o codebase e gera `docs/tech/` (stack, ADRs, arquitetura)
-3. Execute `/setup:build-business` → entrevista sobre o produto e gera `docs/business/`
-4. Execute `/init` novamente → GATE-0 vai passar com contexto completo
-5. Escolha seu squad:
-   - Backend API → Squad `engineer` ou `backend`
-   - Frontend UI → Squad `frontend`
-   - Produto/Discovery → Squad `produto`
-
-**Atalho:** Se só quer documentação técnica (sem contexto de negócio), pode pular `/setup:build-business` e usar Modo Solo.
+O modo é inferido pela mensagem. Se não der para inferir, o Synapos pergunta uma vez.
 
 ---
 
-### Estou começando um produto do zero
+## Qual role escolher
 
-1. Execute `/init`
-2. Execute `/setup:build-business` → define visão, personas, concorrentes, OKRs
-3. Execute `/setup:build-tech` → define stack, arquitetura inicial, primeiras ADRs
-4. Escolha **Squad de Produto** → pipeline `discovery-spec-handoff` para a primeira feature
-5. Após o handoff, escolha Squad `engineer` ou `frontend` para implementação
+| Você quer... | Role |
+|---|---|
+| API, endpoint, banco | `backend` |
+| Componente, tela, UI | `frontend` |
+| Feature que cruza FE + BE | `fullstack` |
+| App iOS/Android | `mobile` |
+| Infra, CI/CD, deploy | `devops` |
+| Spec, discovery, produto | `produto` |
+| ML, dados, pipeline | `ia-dados` |
 
----
-
-### Tenho uma task específica no backlog
-
-1. Execute `/init` (se primeira vez: complete onboarding)
-2. Se `docs/` já existe → GATE-0 passa automaticamente
-3. Escolha seu squad → **Modo Econômico** → pipeline `quick-spec` ou `quick-fix`
-4. Para features bem definidas: `quick-spec` (spec + handoff em 2 steps)
-5. Para bugs e ajustes: `quick-fix` (contexto + execução + registro)
+O role também é inferido da mensagem quando possível.
 
 ---
+
+## Cenários comuns
+
+### Tenho um projeto existente
+
+```
+1. /init → onboarding (1 pergunta: nome + o que quer fazer)
+2. /setup:build-tech  → gera docs/tech/ a partir do código
+3. /setup:build-business → gera docs/business/ (opcional, mas melhora muito)
+4. /init → escolha o role → Modo Completo
+```
+
+### Estou começando do zero
+
+```
+1. /init → onboarding
+2. /setup:build-business → visão, personas, OKRs
+3. /setup:build-tech → stack, arquitetura inicial
+4. /init → role produto → pipeline discovery-spec-handoff
+5. /init → role backend ou frontend → implementação
+```
+
+### Tenho uma task no backlog
+
+```
+/init → role → ⚡ Rápido → quick-fix
+```
 
 ### Sou dev solo sem documentação
 
-1. Execute `/init`
-2. Escolha **Modo Solo** → GATE-0 passa com aviso (não bloqueia)
-3. Crie documentação quando conveniente: `/setup:build-business` e `/setup:build-tech`
-4. Use `quick-fix` para tarefas pontuais sem overhead de discovery
+```
+/init → "nome do projeto — o que quer fazer" → ⚡ Rápido → executa
+```
+Sem documentação, sem bloqueio — contexto mínimo.
 
 ---
 
-## O GATE-0 Bloqueou — O Que Fazer
+## Sessions: o que persiste
 
-GATE-0 verifica a existência de documentação mínima. Se bloqueou:
-
-| Item faltando | Comando para resolver |
-|---------------|----------------------|
-| `docs/_memory/company.md` | `/init` (onboarding cria automaticamente) |
-| `docs/` vazia | `/setup:build-business` e/ou `/setup:build-tech` |
-| `docs/` sem nenhum `.md` | `/setup:build-tech` (mínimo necessário) |
-
-**Modo Solo ignora GATE-0** (avisa mas não bloqueia). Use quando quiser avançar sem documentação completa.
-
----
-
-## Qual Modo Escolher
-
-| Cenário | Modo |
-|---------|------|
-| Nova feature crítica para produção | **Alta Performance** |
-| Feature estratégica com risco de negócio | **Alta Performance** |
-| Hotfix ou bugfix simples | **Econômico** |
-| Feature incremental com contexto já mapeado | **Econômico** |
-| Quick spec para feature bem definida | **Econômico** |
-| Prototipação ou exploração | **Solo** |
-| Dev solo sem prazo | **Solo** |
-| Refatoração sem mudança de comportamento | **Econômico** |
-| Mudança pontual de UI (texto, ajuste visual) | **Solo** |
-
-**Regra geral:** Em caso de dúvida entre Econômico e Alta, prefira Econômico — você pode reexecutar em Alta depois.
-
----
-
-## Qual Pipeline Escolher
-
-| Situação | Pipeline |
-|----------|----------|
-| Discovery completo de feature nova | `discovery-spec-handoff` (produto) |
-| Feature com spec clara, sem discovery | `quick-spec` (produto) |
-| Ajuste pontual bem definido | `quick-fix` (qualquer squad) |
-| Desenvolvimento de feature técnica | `feature-development` (engineer/backend/frontend) |
-| Bug com diagnóstico necessário | `bug-fix` (backend/frontend) |
-| Componente React/UI isolado | `component-development` (frontend) |
-| API nova ou migração de banco | `api-development` / `database-migration` (backend) |
-
----
-
-## Entendendo a Session de Feature
-
-Toda execução de squad gera artefatos em `docs/.squads/sessions/{feature-slug}/`:
+Cada feature cria uma pasta que sobrevive entre conversas:
 
 ```
-docs/.squads/sessions/minha-feature/
-├── context.md          ← investigação: objetivos, motivação, ADRs relevantes
-├── architecture.md     ← decisões arquiteturais e componentes afetados
-├── plan.md             ← fases de execução com agents e estimativas
-├── visual-spec.md      ← especificação visual e design system (se aplicável)
-├── spec.md             ← especificação funcional (squad produto)
-├── memories.md         ← aprendizados acumulados (append-only)
-├── review-notes.md     ← notas de revisão (append-only)
-├── open-decisions.md   ← decisões pendentes de escalation
-├── state.json          ← estado de todos os squads nesta feature
-└── pending-approvals.md ← checkpoints aguardando aprovação assíncrona
+docs/.squads/sessions/{feature}/
+├── context.md     ← O que é, por que existe, decisões, o que não fazer
+├── memories.md    ← Aprendizados acumulados
+├── architecture.md
+└── plan.md
 ```
 
-Múltiplos squads compartilham a mesma pasta de session — não há duplicação de contexto.
+Para navegar sessions sem abrir o `/init`:
+
+```
+/session                  → lista todas as features ativas
+/session auth-module      → abre o contexto de uma feature
+/session consolidate      → compacta memories quando crescer demais
+```
 
 ---
 
-## Breaking Changes v1 → v2
+## GATE-0 bloqueou — o que fazer
 
-Se você usava Synapos v1.x, veja o guia de migração em [.synapos/core/commands/migrate/v1-to-v2.md](.synapos/core/commands/migrate/v1-to-v2.md).
+GATE-0 verifica se os arquivos core do framework existem. Se bloqueou:
+
+| Arquivo faltando | Como resolver |
+|-----------------|---------------|
+| `docs/_memory/company.md` | `/init` cria automaticamente no onboarding |
+| Arquivos core do `.synapos/` | Reinstale: `npx synapos add backend` |
+
+No Modo Rápido, GATE-0 passa com aviso — nunca bloqueia por falta de docs.
 
 ---
 
 ## Referências
 
-- [CHANGELOG.md](CHANGELOG.md) — histórico completo de versões
-- [.synapos/core/orchestrator.md](.synapos/core/orchestrator.md) — fluxo de init e criação de squads
-- [.synapos/core/gate-system.md](.synapos/core/gate-system.md) — todos os gates disponíveis
-- [.synapos/core/pipeline-runner.md](.synapos/core/pipeline-runner.md) — como os pipelines são executados
+- [GUIDE.md](GUIDE.md) — referência completa
+- [orchestrator.md](../.synapos/core/orchestrator.md) — fluxo de init
+- [gate-system.md](../.synapos/core/gate-system.md) — gates disponíveis
+- [pipeline-runner.md](../.synapos/core/pipeline-runner.md) — execução de pipelines

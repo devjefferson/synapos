@@ -12,9 +12,10 @@ Este comando analisa automaticamente o projeto e gera um briefing técnico compl
 
 # REGRAS ABSOLUTAS
 
-## Regra 1: JANELAS INTERATIVAS são OBRIGATÓRIAS
+## Regra 1: ESCANEAR SILENCIOSAMENTE, VALIDAR UMA VEZ
 
-Após cada fase de detecção, você DEVE usar `AskUserQuestion` para validar os resultados.
+Detecte tudo silenciosamente. Valide apenas no final (Fase 5).
+Não pergunte após cada fase — isso cria fricção desnecessária.
 
 ## Regra 2: NUNCA INVENTE
 
@@ -78,29 +79,7 @@ Para cada arquivo `.md` encontrado na pasta de ADRs:
 1. Ler o arquivo
 2. Extrair: número, título, status, contexto, decisão, consequências
 
-### 1.3 VALIDAR ADRs Detectadas
-
-```
-AskUserQuestion({
-  question: "Encontrei as seguintes ADRs. Todas estão ativas e corretas?",
-  options: [
-    { label: "Sim, corretas", description: "Prosseguir" },
-    { label: "ADRs incorretas", description: "Vou informar quais estão erradas" },
-    { label: "Faltam ADRs", description: "Vou informar as que faltam" }
-  ]
-})
-```
-
-Se "ADRs incorretas" ou "Faltam ADRs":
-```
-AskUserQuestion({
-  question: "Quais ADRs devem ser incluidas ou corrigidas?",
-  options: [
-    { label: "Vou listar", description: "Informar ADRs manualmente" },
-    { label: "Pular ADRs", description: "Gerar sem esta ADR" }
-  ]
-})
-```
+> Armazene os resultados em `[ADRs_DETECTED]` para exibir na Fase 5.
 
 ---
 
@@ -128,47 +107,13 @@ Padrões que indicam Lovable:
 - shadcn/ui (`components/ui/`)
 - Vite config
 
-### 2.3 VALIDAR Frontend Detectado
+### 2.3 Detectar Mocks (se Lovable)
 
-```
-AskUserQuestion({
-  question: "Encontrei um frontend. É Lovable?",
-  options: [
-    { label: "É Lovable", description: "Prosseguir com mapeamento" },
-    { label: "É customizado", description: "Frontend manual, não Lovable" },
-    { label: "Não é frontend", description: "Não existe frontend" }
-  ]
-})
-```
-
-Se "É Lovable", perguntar sobre mocks:
-```
-AskUserQuestion({
-  question: "O frontend Lovable tem mocks de dados? (hardcoded no código)",
-  options: [
-    { label: "Sim, tem mocks", description: "Vou identificar os mocks" },
-    { label: "Não tem mocks", description: "Frontend já integrado" },
-    { label: "Não sei", description: "Preciso verificar" }
-  ]
-})
-```
-
-Se "Sim, tem mocks":
-- Escaneie componentes .tsx/.jsx em `src/`
+Se for Lovable, escaneie componentes .tsx/.jsx em `src/`:
 - Identifique: useState com arrays/objetos hardcoded, arquivos mock*.ts, fake*.ts
 - NÃO invente — liste apenas o que encontrar
 
-### 2.4 VALIDAR Mocks Encontrados
-
-```
-AskUserQuestion({
-  question: "Encontrei os seguintes mocks pendentes de integração. Confirmar?",
-  options: [
-    { label: "Corretos", description: "Prosseguir" },
-    { label: "Corrigir lista", description: "Vou informar quais estão errados" }
-  ]
-})
-```
+> Armazene resultados em `[FRONTEND_DETECTED]` e `[MOCKS_DETECTED]` para Fase 5.
 
 ---
 
@@ -205,82 +150,28 @@ Escanear e detectar:
 - Service Layer? (existe pasta services/)
 - MVC? (existe controllers/, models/)
 
-### 3.4 VALIDAR Backend Detectado
+**Se não detectar claramente:** marcar como "não detectado" — não perguntar.
 
-```
-AskUserQuestion({
-  question: "Detectei backend em [caminho]. Estrutura está correta?",
-  options: [
-    { label: "Correto", description: "Prosseguir" },
-    { label: "Corrigir estrutura", description: "Vou informar a estrutura correta" }
-  ]
-})
-```
-
-```
-AskUserQuestion({
-  question: "Detected as seguintes pastas. Confirmar convenções?",
-  options: [
-    { label: "Corretas", description: "Prosseguir" },
-    { label: "Corrigir", description: "Vou informar as correções" }
-  ]
-})
-```
-
-### 3.5 NÃO Assuma, Pergunte
-
-Se não conseguir detectar padrão claramente:
-
-```
-AskUserQuestion({
-  question: "Não consegui detectar o padrão arquitetural claramente. Qual é?",
-  options: [
-    { label: "MVC", description: "Model-View-Controller" },
-    { label: "Service Layer", description: "Services + Repositories" },
-    { label: "Clean Architecture", description: "Camadas separadas" },
-    { label: "Domain-Driven", description: "DDD com aggregates" },
-    { label: "Outro", description: "Vou especificar" }
-  ]
-})
-```
+> Armazene resultados em `[BACKEND_DETECTED]` para Fase 5.
 
 ---
 
 ## Fase 4: Detectar Stack Tecnológico (Silencioso)
 
-Ler `package.json` do backend:
-
-**Extrair:**
-- Framework web: express, fastify, nest, koa, hapi
-- Database/ORM: prisma, typeorm, drizzle, sequelize, mongoose
-- Validação: zod, joi, yup, class-validator
-- Testes: jest, vitest, mocha
-- Runtime: engines.node
-
-### 4.1 VALIDAR Stack
-
-```
-AskUserQuestion({
-  question: "Detectei a seguinte stack. Confirmar?",
-  options: [
-    { label: "Stack Correta", description: "Prosseguir" },
-    { label: "Corrigir stack", description: "Vou informar a stack correta" }
-  ]
-})
-```
-
-Se "Corrigir", perguntar cada item separadamente.
+> Armazene em `[STACK_DETECTED]` para Fase 5.
 
 ---
 
-## Fase 5: VALIDAR TUDO ANTES DE GERAR
+## Fase 5: VALIDAR TUDO (UMA vez só)
+
+Apresente o resumo consolidado de tudo que foi detectado:
 
 ```
 AskUserQuestion({
-  question: "Análise completa. Resumo do que foi detectado:",
+  question: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAnálise completa!\n\nADRs: {N} encontradas {ou "nenhuma"}\nFrontend: {[tipo] ou "não detectado"}\nBackend: {[caminho] ou "não detectado"}\nStack: {[lista] ou "não detectada"}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nTudo correto para gerar o briefing?",
   options: [
-    { label: "Está tudo correto", description: "Gerar briefing completo" },
-    { label: "Preciso corrigir", description: "Vou informar o que está errado" }
+    { label: "✅ Gerar briefing", description: "Prosseguir com geração" },
+    { label: "✏️ Corrigir algo", description: "Vou informar o que está errado" }
   ]
 })
 ```

@@ -1,59 +1,39 @@
 ## PROTOCOLO DE BUMP
 
+Versiona o **pacote npm** do Synapos. Não versiona arquivos markdown internos.
+
 ### 1 — Ler estado atual
-- Leia `.synapos/VERSION` → versão atual do framework
-- Leia `.synapos/.manifest.json` → inventário completo
-- Leia `.synapos/CHANGELOG.md` → histórico de mudanças
+- Leia `package.json` → versão atual
 
-### 2 — Identificar o que mudou
-Pergunte ao usuário (se não informado nos argumentos):
+### 2 — Detectar tipo de bump
+
+**Se argumento fornecido** (ex: `/bump minor`): use diretamente.
+
+**Se sem argumento:**
 ```
-O que foi alterado?
-  [1] Agent (qual?)
-  [2] Template de squad (qual?)
-  [3] Core (orchestrator / pipeline-runner / gate-system / skills-engine)
-  [4] Múltiplos
-
-Tipo de mudança:
-  [M] MAJOR — quebra compatibilidade
-  [m] MINOR — adiciona sem quebrar
-  [p] PATCH — corrige sem quebrar
+AskUserQuestion({
+  question: "Versão atual: {versão}\n\nQual tipo de bump?",
+  options: [
+    { label: "PATCH", description: "Correção sem quebrar (~1.0.1)" },
+    { label: "MINOR", description: "Feature sem quebrar (~1.1.0)" },
+    { label: "MAJOR", description: "Breaking change (~2.0.0)" }
+  ]
+})
 ```
 
 ### 3 — Calcular nova versão
 Use semver: `MAJOR.MINOR.PATCH`
-- PATCH: Z+1 (ex: 1.0.0 → 1.0.1)
-- MINOR: Y+1, Z=0 (ex: 1.0.3 → 1.1.0)
-- MAJOR: X+1, Y=0, Z=0 (ex: 1.2.1 → 2.0.0)
+- PATCH: Z+1
+- MINOR: Y+1, Z=0
+- MAJOR: X+1, Y=0, Z=0
 
 ### 4 — Executar o bump
-Execute em ordem:
 
-**4a.** Atualizar `version:` no frontmatter do(s) arquivo(s) modificado(s)
+**4a.** Atualizar `version` em `package.json`
 
-**4b.** Atualizar `.synapos/.manifest.json`:
-- Versão do componente alterado
-- Versão do framework (`framework.version` e `framework.released_at`)
+**4b.** Adicionar entrada no `CHANGELOG.md` na raiz do projeto
 
-**4c.** Atualizar `.synapos/VERSION` com a nova versão do framework
-
-**4d.** Adicionar entrada no `.synapos/CHANGELOG.md`:
-```markdown
-## [{nova_versão}] — {YYYY-MM-DD}
-
-### {Adicionado | Modificado | Corrigido | Removido}
-- `{componente}` v{versão} — {descrição da mudança}
+### 5 — Resumo
 ```
-
-### 5 — Confirmar
-Apresente um resumo do bump realizado:
-```
-Bump concluído!
-
-Versão: {anterior} → {nova}
-Arquivos atualizados:
-  ✅ .synapos/VERSION
-  ✅ .synapos/.manifest.json
-  ✅ .synapos/CHANGELOG.md
-  ✅ {arquivo do componente alterado}
+✅ Bump: {anterior} → {nova}
 ```

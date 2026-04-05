@@ -1,9 +1,8 @@
 # Synapos
 
-> AI Agent Orchestration Framework for Software Development
+> Workflow system para trabalhar com IA em projetos reais.
 
-Instale squads de agentes de IA no seu projeto com um comando.
-Eles planejam, executam, validam e documentam features completas — com gates de qualidade e memória persistente.
+Synapos organiza **como você usa LLMs no desenvolvimento** — não é um agente mágico, é uma estrutura que faz a IA trabalhar melhor no seu projeto específico.
 
 ```bash
 npx synapos
@@ -11,275 +10,154 @@ npx synapos
 
 ---
 
-## ⚡ Teste em 2 minutos
+## O que é
 
-```bash
-npx synapos front
-```
+Synapos resolve um problema concreto: **a IA esquece tudo entre conversas**.
 
-Depois, na sua IDE:
-
-```
-/init → escolha "quick-fix"
-```
-
-✅ Um squad de IA começa a trabalhar no seu código
-✅ Com contexto real do projeto
-✅ Seguindo padrões e validações
-
----
-
-## 🤯 O que é isso?
-
-Synapos não é só um “agent”.
-
-É um **runtime de squads de IA** que trabalham como um time de engenharia:
-
-* 🧠 Pensam (arquitetura, decisões)
-* ⚙️ Implementam (código real)
-* 🔍 Validam (gates, testes, review)
-* 📝 Documentam (automaticamente)
-
----
-
-## 🧩 Como funciona
-
-```
-Você → /init
-      ↓
-Orquestrador cria um squad
-      ↓
-Pipeline executa steps
-      ↓
-Agents + Gates + Memória + Checkpoints
-```
-
----
-
-## 🔥 Por que isso é diferente?
-
-### ❌ Antes (IA comum)
-
-* Respostas isoladas
-* Sem memória real
-* Sem processo
-* Sem validação
-
-### ✅ Com Synapos
-
-* Squads especializados por domínio
-* Pipelines estruturados
-* Gates que bloqueiam código ruim
-* Memória persistente por feature
-* Execução contínua (não só chat)
-
----
-
-## 🧠 Squads prontos
-
-Instale times completos com um comando:
-
-```bash
-npx synapos front
-npx synapos back
-npx synapos full
-npx synapos produto
-```
-
-Cada squad inclui:
-
-* Arquiteto
-* Dev
-* Reviewer
-* (opcional) UX, testes, segurança, etc.
-
----
-
-## ⚙️ Multi-IDE (onde você já trabalha)
-
-Funciona direto na sua stack:
-
-* Claude Code
-* Cursor
-* Trae
-* OpenCode
-* Antigravity
-
----
-
-## 🧠 Memória persistente (game changer)
-
-Cada feature cria uma session:
+Cada feature do seu projeto ganha uma **session** — uma pasta com contexto persistente que qualquer role de IA lê antes de começar a trabalhar. O resultado é uma IA que sabe o que foi decidido, por que, e o que não fazer.
 
 ```
 docs/.squads/sessions/{feature}/
+├── context.md       ← o que é, por que existe, decisões tomadas, o que não fazer
+├── memories.md      ← aprendizados acumulados
+├── architecture.md  ← desenho técnico
+└── plan.md          ← plano de execução
 ```
 
-Com:
-
-* contexto
-* arquitetura
-* plano
-* decisões
-* aprendizados
-
-👉 Seus agents **não esquecem o que fizeram**
+Isso persiste entre conversas, entre roles, entre dias.
 
 ---
 
-## 📚 Fluxo de documentação (o diferencial invisível)
+## O que não é
 
-A maioria das ferramentas de IA ignora documentação.
-
-O Synapos trata documentação como **parte do processo**, não como algo opcional.
-
-Cada execução:
-
-* gera contexto estruturado
-* registra decisões arquiteturais
-* mantém histórico da feature
-* acumula aprendizados automaticamente
-
-Isso cria um efeito poderoso:
-
-👉 o projeto fica **cada vez mais inteligente com o tempo**
+- ❌ Não é multi-agent real — os roles são simulados sequencialmente pelo mesmo modelo
+- ❌ Não garante execução determinística — é tão bom quanto o modelo que você usa
+- ❌ Não substitui código ou decisões de arquitetura — estrutura o ambiente para a IA trabalhar melhor
 
 ---
 
-### ❌ Sem Synapos
+## Como funciona
 
-* documentação desatualizada
-* decisões perdidas
-* contexto fragmentado
+```
+/init → escolhe um role (backend, frontend, produto...)
+      → escolhe modo (⚡ Rápido ou 🔵 Completo)
+      → pipeline executa steps
+      → contexto salvo na session
+```
 
-### ✅ Com Synapos
+Roles simulados disponíveis:
 
-* documentação viva e versionada
-* contexto compartilhado entre squads
-* onboarding muito mais rápido
+```bash
+npx synapos add backend
+npx synapos add frontend
+npx synapos add fullstack
+npx synapos add mobile
+npx synapos add devops
+npx synapos add produto
+npx synapos add ia-dados
+```
 
-👉 Não é só sobre gerar código.
-👉 É sobre **construir conhecimento do projeto continuamente**.
+Cada role inclui agents especializados (arquiteto, dev, reviewer) que a IA simula durante a execução.
 
 ---
 
-## 🚧 Gates (qualidade obrigatória)
+## Modos de execução
 
-Nada passa sem validação:
-
-* GATE-0 → integridade do projeto
-* GATE-ADR → respeita arquitetura
-* GATE-DESIGN → qualidade visual
-* GATE-DECISION → evita decisões ocultas
-
-👉 "Fail loud. Never silent."
+| Modo | Quando usar | O que injeta |
+|------|-------------|--------------|
+| ⚡ Rápido | Bug fix, ajuste, quick change | Contexto da session apenas |
+| 🔵 Completo | Feature nova, refactor, arquitetura | Session + docs/ do projeto + ADRs |
 
 ---
 
-## ⚡ Modos de execução
+## O diferencial real: sessions
 
-* **Alta Performance** → completo + checkpoints
-* **Econômico** → rápido e direto
-* **Solo** → sem interrupções
+A maioria das ferramentas de IA trata cada conversa como um começo do zero.
 
----
+Com Synapos, cada feature acumula contexto ao longo do tempo:
 
-## 🧪 Casos reais
+- **Decisões registradas** → a IA não repropõe o que já foi descartado
+- **Armadilhas documentadas** → erros não se repetem
+- **Contexto compartilhado** → qualquer role que entrar na feature lê o mesmo contexto
 
-### Criar feature completa
-
-```
-/init → frontend → feature-development
-```
-
-### Corrigir bug
-
-```
-/init → backend → bug-fix
-```
-
-### Ajuste rápido
-
-```
-/init → quick-fix
+```bash
+/session              # lista todas as features ativas
+/session auth-module  # abre o contexto de uma feature específica
+/session consolidate  # compacta memórias quando o arquivo crescer
 ```
 
 ---
 
-## 🧠 Configuração de modelo
+## Qualidade integrada
 
-Compatível com qualquer modelo:
+Três gates ativos em todas as execuções:
 
-* Claude
-* GPT
-* Gemini
-* modelos locais
+- **GATE-0** → arquivos obrigatórios existem antes de começar
+- **GATE-3** → output não está vazio ou é placeholder
+- **GATE-5** → confirmação visual de entrega
 
-Com otimização automática de contexto:
-
-* high → máximo contexto
-* standard → balanceado
-* lite → até -70% de tokens
+Decisões fora do escopo são sinalizadas com `[?]` no output — o role para e aguarda sua aprovação antes de continuar.
 
 ---
 
-## 🔌 Skills (integrações)
+## Skills (integrações)
 
-* GitHub (PRs, issues)
-* Browser (testes E2E)
-* Web search
-* Filesystem
-
----
-
-## 🏗️ Estrutura gerada
-
-```
-.synapos/   → core do framework
-docs/       → memória + contexto
-.squads/    → execução por feature
+```bash
+npx synapos add skill brave-search
+npx synapos add skill playwright
+npx synapos add skill github
 ```
 
----
-
-## 💡 Visão
-
-Synapos é um passo na direção de:
-
-> desenvolvimento de software onde humanos definem o problema
-> e squads de IA executam com qualidade e contexto
+Skills injetam ferramentas ou instruções no contexto do agent durante a execução.
 
 ---
 
-## 🚀 Roadmap
+## Estrutura gerada
 
-* [ ] Dashboard visual de pipelines
-* [ ] Synapos Cloud
-* [ ] Marketplace de agents
-* [ ] Observabilidade de execução
-
----
-
-## ⭐ Contribua
-
-Esse projeto é open source e está evoluindo rápido.
-
-Se você acredita no futuro de AI-native development:
-👉 dê uma estrela
-👉 abra uma issue
-👉 contribua
+```
+.synapos/               → core do framework (não edite)
+  squads/               → configuração dos roles ativos
+  squad-templates/      → templates por domínio
+  skills/               → integrações instaladas
+docs/
+  _memory/              → perfil do projeto e preferências
+  .squads/sessions/     → contexto persistente por feature
+  tech/                 → documentação técnica (opcional)
+  business/             → documentação de negócio (opcional)
+```
 
 ---
 
-## 📦 Instalação
+## Compatibilidade
+
+Funciona em qualquer IDE com suporte a agentes:
+
+- Claude Code
+- Cursor
+- Trae
+- OpenCode
+
+Compatível com qualquer modelo (Claude, GPT, Gemini, modelos locais).
+
+---
+
+## Instalação
 
 ```bash
 npx synapos
 ```
 
+Ou instale um role direto:
+
+```bash
+npx synapos add backend
+```
+
 ---
 
-## 🧠 TL;DR
+## Contribua
 
-Você não usa mais um agent.
-Você roda um **time inteiro de IA no seu projeto**.
+Projeto open source em evolução.
+
+👉 [Abra uma issue](https://github.com/devjefferson/synapse/issues)
+👉 Dê uma estrela se achar útil

@@ -1,6 +1,5 @@
 ---
 name: synapos-pipeline-runner
-version: 2.2.0
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
@@ -47,74 +46,52 @@ O `{feature-slug}` é o identificador da feature — geralmente o nome da branch
 
 ### 1.1 — Carregar contexto
 
-Leia os seguintes arquivos:
+Leia os seguintes arquivos na ordem exata:
+
 ```
 .synapos/squads/{squad-slug}/squad.yaml                         → configuração do squad
-docs/.squads/sessions/{feature-slug}/memories.md               → memória da feature (todos os squads)
-docs/.squads/sessions/{feature-slug}/review-notes.md           → notas de revisão (se existir)
-docs/.squads/sessions/{feature-slug}/context.md                → contexto da feature (se existir)
-docs/.squads/sessions/{feature-slug}/architecture.md           → arquitetura (se existir)
-docs/.squads/sessions/{feature-slug}/plan.md                   → plano (se existir)
 docs/_memory/company.md                                        → perfil da empresa/usuário
 docs/_memory/preferences.md                                    → preferências de saída
+docs/.squads/sessions/{feature-slug}/context.md                → contexto da feature ← LEIA PRIMEIRO, sempre
+docs/.squads/sessions/{feature-slug}/memories.md               → memória da feature
+docs/.squads/sessions/{feature-slug}/architecture.md           → arquitetura (se existir)
+docs/.squads/sessions/{feature-slug}/plan.md                   → plano (se existir)
+docs/.squads/sessions/{feature-slug}/review-notes.md           → notas de revisão (se existir)
 docs/_memory/project-learnings.md                              → aprendizados transversais (se existir)
 ```
 
-Leia `execution_mode` e `doc_score` do `squad.yaml` e configure o runner:
+> **Regra — context.md é obrigatório em feature existente:**
+> Se a session folder já existe e `context.md` está presente, leia-o **antes de qualquer outra coisa**.
+> O context.md é a memória principal da feature — define o que é, por que existe, decisões tomadas e o que não fazer.
+> Ignorar o context.md em feature existente é o erro mais comum de um role novo entrando na feature.
+
+Leia `execution_mode` do `squad.yaml` e configure o runner:
 
 | `execution_mode` | Contexto injetado | Gates ativos |
 |---|---|---|
-| `bootstrap` | `company.md` + session files apenas | GATE-1, GATE-DECISION |
-| `standard` | `company.md` + docs parciais + session files + ADRs | GATE-0,1, GATE-ADR, GATE-DECISION, GATE-3, GATE-5 |
-| `strict` | Tudo — docs completas + session files + ADRs | Todos os gates |
+| `quick` | `company.md` + session files | GATE-0, GATE-3, GATE-5 |
+| `complete` | Tudo — docs/, ADRs, session files | GATE-0, GATE-3, GATE-5 |
 
 Log ao iniciar:
 ```
-⚙️  [MODE] {BOOTSTRAP | STANDARD | STRICT} — doc_score: {score}/100
-   Gates ativos: {lista}
+⚙️  [MODE] {Rápido | Completo}
+   Gates ativos: GATE-0, GATE-3, GATE-5
 ```
 
-**Se `execution_mode: bootstrap`:**
+**Se `execution_mode: quick`:**
 - Não tente ler `docs/`, `docs/business/`, `docs/tech/` nem `docs/tech-context/`
 - Injete apenas: `company.md` (se existir) + session files + step instructions
-- Log adicional: `⚡ [BOOTSTRAP] Contexto mínimo — ADRs e docs de projeto não injetados`
+- Log adicional: `⚡ [RÁPIDO] Contexto mínimo — ADRs e docs de projeto não injetados`
 
-**Se `execution_mode: standard` ou `strict`:**
+**Se `execution_mode: complete`:**
 
 Adicionalmente, **pré-carregue os ADRs do projeto uma única vez**:
 - Leia todos os arquivos em `docs/` cujo nome contenha `ADR`, `adr`, `decisions` ou `architecture-decision`
 - Armazene o conteúdo em memória como `[ADRS_CARREGADOS]`
 - Esses ADRs serão injetados diretamente nos steps — agents não precisam ler `docs/` para buscá-los
 
-Conte as seções de segundo nível (`##`) em `memories.md` e `review-notes.md` e armazene os valores como `[MEMORIES_COUNT]` e `[REVIEW_NOTES_COUNT]` para uso nas fases 2 e 3.
 
-### 1.1b — Estimativa de Budget de Contexto
-
-Com base nos arquivos carregados em 1.1, estime o volume de contexto da session:
-
-1. Some o número de linhas de `context.md` + `architecture.md` + `plan.md` (se existirem)
-2. Some o número de linhas de `memories.md` + `review-notes.md`
-
-| Linhas totais (session files) | Ação |
-|---|---|
-| < 400 linhas | Sem alerta — contexto saudável |
-| 400–700 linhas | Alerta amarelo: contexto crescendo |
-| > 700 linhas | Alerta laranja: considere ativar `model_capability: standard` |
-
-Se o total ultrapassar **400 linhas**, exiba ao anunciar o pipeline:
-```
-⚠️  [BUDGET] Session com contexto elevado:
-   context.md + architecture.md + plan.md: ~{N} linhas
-   memories.md + review-notes.md: ~{N} linhas
-   Total: ~{soma} linhas (~{soma/25}k tokens estimados por step)
-
-   Dica: ative model_capability: standard em docs/_memory/preferences.md
-   para comprimir o contexto automaticamente.
-```
-
-Nenhuma execução é bloqueada — apenas alerta informativo.
-
-### 1.1c — Verificar model_capability
+### 1.1b — Verificar model_capability
 
 Leia o campo `model_capability` de `docs/_memory/preferences.md`:
 
@@ -202,7 +179,8 @@ Verifique se `docs/.squads/sessions/{feature-slug}/` existe.
 
 ```
 docs/.squads/sessions/{feature-slug}/
-├── memories.md     ← inicializar vazio com header
+├── context.md      ← template padrão (ver abaixo)
+├── memories.md     ← template padrão (ver abaixo)
 ├── review-notes.md ← inicializar vazio com header
 └── state.json      ← inicializar com estrutura abaixo
 ```
@@ -217,21 +195,48 @@ docs/.squads/sessions/{feature-slug}/
 }
 ```
 
+`context.md` inicial:
+```markdown
+# Contexto: {feature-slug}
+
+> Arquivo central da feature. Lido por todos os roles antes de executar qualquer step.
+> Atualizado pelo role que fizer discovery/investigação.
+
+## O que é
+{descrição da feature — preenchido na pré-execução ou pelo usuário}
+
+## Por que existe
+{motivação de negócio ou técnica}
+
+## Decisões tomadas
+{decisões já resolvidas — evita retrabalho}
+
+## O que não fazer
+{armadilhas conhecidas, abordagens descartadas}
+```
+
 `memories.md` inicial:
 ```markdown
-# Memória da Feature: {feature-slug}
+# Memória: {feature-slug}
 
-> Aprendizados acumulados de todos os squads que trabalharam nesta feature.
-> Atualizado ao final de cada pipeline.
+> Aprendizados acumulados de todos os roles que trabalharam nesta feature.
+> Append-only. Para consolidar: execute /consolidate.
 
-(preenchido durante execuções)
+## Aprendizados
+{preenchido durante execuções}
+
+## Armadilhas conhecidas
+{preenchido durante execuções}
+
+## Próximos passos sugeridos
+{preenchido durante execuções}
 ```
 
 `review-notes.md` inicial:
 ```markdown
 # Review Notes: {feature-slug}
 
-> Notas de revisão de todos os squads. Acrescentadas, nunca substituídas.
+> Notas de revisão de todos os roles. Append-only.
 
 (preenchido durante revisões)
 ```
@@ -278,40 +283,48 @@ Atualize `state.updated_at`.
 
 **A cada step iniciado**, atualize imediatamente `state.squads["{squad-slug}"].suspended_at` com o step atual. Isso garante recuperação precisa se a sessão for interrompida.
 
-### 1.4c — Proteção e Resiliência do state.json
+### 1.4c — Resiliência do state.json
 
-**Leitura segura:**
-Antes de usar o `state.json`, execute:
-1. Tente parsear o conteúdo como JSON
-2. Se falhar (JSON malformado): crie backup automático em `state.json.bak.{ISO-timestamp}` e informe:
-   ```
-   ⚠️  state.json corrompido. Backup salvo em state.json.bak.{timestamp}.
-   Reiniciando state da feature. Histórico preservado no backup.
-   ```
-3. Reinicialize com estrutura mínima (`{ "feature": "{slug}", "created_at": "...", "squads": {} }`)
+O state.json é **best-effort** — log de execução, não fonte de verdade crítica.
 
-**Escrita segura:**
-Antes de persistir qualquer escrita no `state.json`:
-1. Serialize o objeto atualizado para string
-2. Valide que é JSON válido
-3. Se inválido: descarte a escrita, log de erro, não sobrescreva o arquivo existente
-4. Se válido: sobrescreva (nunca usar append direto — sempre reescrever o arquivo completo com o objeto completo)
+**Leitura:**
+- Tente parsear como JSON
+- Se falhar: logue `⚠️ state.json corrompido — reiniciando estado` e reinicialize com estrutura mínima
+- Nunca bloqueie a execução por causa do state.json
 
-**Regra:** O state.json nunca deve ser editado diretamente por agents. Apenas o pipeline-runner escreve nele.
+**Escrita:**
+- Escreva normalmente após cada mudança de step
+- Se a escrita falhar: logue o erro e continue sem interromper o pipeline
+
+**Regra:** agents não escrevem no state.json. Apenas o pipeline-runner.
 
 ### 1.4b — Verificar pre_pipeline
 
-Verifique se o `squad.yaml` tem a chave `pre_pipeline`:
+**Validação de segurança:** Antes de acessar `pre_pipeline`, verifique se a chave existe no squad.yaml.
 
 ```yaml
+# squad.yaml — estrutura válida
 pre_pipeline:
-  available: true
-  agent: {id-do-agent-lead}
+  available: true       # boolean
+  agent: {id-do-agent-lead}  # string — ID de um agent do squad
 ```
 
-**Se `pre_pipeline.available: true` E `context.md` ainda não existe na session:**
+**Se `pre_pipeline` não existe ou `available: false`:** pule esta seção.
 
-Pergunte ao usuário:
+**Se `pre_pipeline.available: true`:**
+
+1. **Validar agente:**
+   - Verifique se `pre_pipeline.agent` está preenchido (não vazio/nulo)
+   - Verifique se o agent referenciado existe no squad.yaml (em `agents[]`)
+   - Se inválido: log `⚠️ pre_pipeline.agent inválido ou não encontrado — pulando pré-execução` e pule
+
+2. **Validar arquivo do pipeline:**
+   - Verifique se `.synapos/core/pipelines/pre-execution.yaml` existe
+   - Se não existe: log `⚠️ pre-execution.yaml não encontrado — pulando pré-execução` e pule
+
+3. **Se `context.md` já existe na session:** pule — pré-execução já feita.
+
+4. **Se `context.md` não existe E pré-execução válida:**
 
 ```
 Esta feature ainda não tem contexto/arquitetura definidos.
@@ -324,7 +337,7 @@ Deseja executar a pré-execução antes de [{nome do pipeline principal}]?
 
 **Se escolher Sim:**
 1. Leia `.synapos/core/pipelines/pre-execution.yaml`
-2. Resolva `{lead_agent}` pelo valor de `pre_pipeline.agent` no squad.yaml
+2. Use `pre_pipeline.agent` como lead do pre-execution
 3. Execute os steps do pre-execution (com todos os gates e checkpoints)
 4. Os arquivos gerados (context.md, architecture.md, plan.md) vão para a session folder
 5. Ao concluir, anuncie:
@@ -335,8 +348,6 @@ Deseja executar a pré-execução antes de [{nome do pipeline principal}]?
    Iniciando: {nome do pipeline principal}...
    ```
 6. Continue para o pipeline principal com session files já no contexto
-
-**Se `context.md` já existe na session:** pule — a pré-execução já foi feita.
 
 ### 1.5 — Verificação de Squads Paralelos
 
@@ -530,15 +541,9 @@ Se `output_file` ou `output_files` definido:
 
 Antes de sobrescrever qualquer `output_file` que já existe na session folder:
 1. Verifique se o arquivo já existe
-2. Se sim E se `state.squads["{squad-slug}"].completed_steps` não está vazio (ou seja, há trabalho anterior):
-   - Crie cópia de segurança: `{filename}.v{N}.bak` onde N é o número de versões `.bak` existentes + 1
-   - Log: `📦 Backup criado: {filename}.v{N}.bak`
+2. Se sim: crie cópia de segurança `{filename}.bak` antes de sobrescrever
+   - Log: `📦 Backup criado: {filename}.bak`
 3. Prossiga com a escrita do novo conteúdo
-
-Isso protege `context.md`, `architecture.md`, `spec.md` e outros artefatos centrais de reescritas acidentais.
-
-**Retenção de backups:** Mantenha no máximo **3 arquivos `.bak`** por output file. Ao criar um novo backup quando já existem 3 versões, delete o mais antigo antes de criar o novo.
-Log: `🗑️ Backup antigo removido: {filename}.v{N-2}.bak → novo: {filename}.v{N+1}.bak`
 
 ### 2.7 — Loop de revisão (on_reject)
 
@@ -602,23 +607,6 @@ Se houver resposta, acrescente em `docs/.squads/sessions/{feature-slug}/memories
 {texto do usuário}
 ```
 
-### Consolidação de memories.md
-
-Após cada append, conte o número de seções de segundo nível (`##`) em `memories.md`.
-
-Se ≥ 10 seções: apresente ao usuário:
-```
-📝 memories.md acumula {N} entradas.
-Deseja consolidar para facilitar a leitura?
-  [1] Sim — resumir entradas antigas em bloco único preservando todas as informações
-  [2] Não — manter como está
-```
-
-Se o usuário escolher consolidar:
-1. Crie seção `## Consolidado até {YYYY-MM-DD}` com resumo estruturado de todas as entradas
-2. Marque as entradas antigas com comentário `<!-- consolidado em {data} -->`
-3. Não delete nenhuma entrada — apenas reorganize
-
 ### Formato de autoria (aplicar a todos os novos appends)
 
 Todo append em `memories.md` deve seguir o formato:
@@ -635,23 +623,6 @@ Para aprendizados inseridos diretamente pelo usuário (não por agent), usar:
 {conteúdo}
 ```
 
-### Consolidação de review-notes.md
-
-Após cada append em `review-notes.md`, atualize o contador `[REVIEW_NOTES_COUNT]`.
-
-Se ≥ 10 seções (`##`): apresente ao usuário:
-```
-📝 review-notes.md acumula {N} entradas de revisão.
-Deseja consolidar para facilitar a leitura?
-  [1] Sim — agrupar revisões antigas em bloco único preservando todo o conteúdo
-  [2] Não — manter como está
-```
-
-Se o usuário escolher consolidar:
-1. Crie seção `## Revisões Consolidadas até {YYYY-MM-DD}` com resumo estruturado de todas as entradas antigas
-2. Marque entradas antigas com `<!-- consolidado em {data} -->`
-3. Não delete nenhuma entrada — apenas reorganize
-
 **Aprendizados transversais do projeto:**
 ```
 Algo que todos os squads deste projeto devem saber? (ENTER para pular)
@@ -662,24 +633,6 @@ Se houver resposta, acrescente em `docs/_memory/project-learnings.md`:
 ## Aprendizado — {YYYY-MM-DD} [{squad-slug} / {feature-slug}]
 {texto do usuário}
 ```
-
-### 3.2b — Evolução de modo (verificar após execução)
-
-Recalcule o score de documentação usando a mesma fórmula do Mode Decision System (PASSO 2 do orchestrator):
-- `company.md` +30, `docs/tech/` +20, `docs/business/` +20, `docs/tech-context/` +15, ≥5 arquivos +15
-
-Se o novo score ultrapassar o threshold do próximo modo, exiba:
-
-```
-📈 [MODE UPGRADE DISPONÍVEL]
-   Score atual: {novo_score}/100 (era {score_anterior}/100)
-   Modo atual: {BOOTSTRAP | STANDARD}
-
-   Com /setup:build-{tech|business} você chegaria em {próximo_modo}.
-   Execute /init novamente para ativar automaticamente.
-```
-
-Nunca faça upgrade automático sem novo `/init` — deixe o usuário decidir.
 
 ### 3.3 — Apresentar sumário
 
@@ -706,32 +659,33 @@ O que deseja fazer agora?
 
 ## INJEÇÃO DE CONTEXTO NOS AGENTS
 
-Ao executar qualquer step, o agent recebe automaticamente:
+O contexto injetado depende do `execution_mode` do squad.
 
-1. **Conteúdo do próprio .agent.md** (persona, princípios, framework)
-2. **Contexto do squad** (company.md + objetivo do squad)
-3. **Documentação do projeto** (`docs/` na raiz — **obrigatório**, leia todos os arquivos disponíveis)
-4. **Session files** (leia na ordem abaixo, se existirem):
-   - `docs/.squads/sessions/{feature-slug}/context.md`
-   - `docs/.squads/sessions/{feature-slug}/architecture.md`
-   - `docs/.squads/sessions/{feature-slug}/plan.md`
-5. **ADRs do projeto** — injetados a partir do cache `[ADRS_CARREGADOS]` pré-lido na FASE 1. O agent **não precisa ler docs/** para buscá-los — recebe o conteúdo diretamente. Liste cada ADR como `[RESPEITADA]` ou `[NÃO APLICÁVEL]`. Conflito = output vetado.
-6. **Memória da feature** (`docs/.squads/sessions/{feature-slug}/memories.md`)
-7. **Aprendizados transversais** (`docs/_memory/project-learnings.md` — se existir)
-8. **Outputs anteriores relevantes** (definidos em `depends_on`)
-9. **Instruções do step** (arquivo do step)
-10. **Base path do squad** (caminho absoluto para todas as operações de arquivo)
+### Modo Rápido (`quick`) — 5 itens
 
-A ordem de composição sempre é:
+1. **Persona do agent** (conteúdo do `.agent.md`)
+2. **Contexto do squad** (`company.md` + descrição do squad + roles[])
+3. **Session files** (se existirem: `context.md` → `architecture.md` → `plan.md`)
+4. **Outputs anteriores relevantes** (definidos em `depends_on`)
+5. **Instrução do step** + base path do squad
+
 ```
-[Agent Persona] + [Contexto Squad] + [docs/ do projeto] + [Session Files] + [ADRs] + [Memória da Feature] + [Project Learnings] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Agent Persona] + [Contexto Squad] + [Session Files] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
 ```
 
-> **Regra ADR — Não-Negociável:** Conflito com ADR existente = `🚫 CONFLITO-ADR: {adr-id} — {motivo}` e output bloqueado.
+### Modo Completo (`complete`) — 5 itens + extras
 
-> **Regra:** Quando há skills ativas, o agent DEVE usá-las. Skills não são sugestões.
+1. **Persona do agent** (conteúdo do `.agent.md`)
+2. **Contexto do squad** (`company.md` + descrição + roles[]) + **docs/** do projeto
+3. **Session files** (`context.md` → `architecture.md` → `plan.md`) + **memories.md** + **project-learnings.md** (se existir)
+4. **ADRs** — injetados do cache `[ADRS_CARREGADOS]`. Agente lista cada ADR como `[RESPEITADA]` ou `[NÃO APLICÁVEL]`. Conflito com ADR aceita = output vetado.
+5. **Outputs anteriores relevantes** + **Instrução do step** + base path
 
-> **Regra:** Nenhum agent executa sem ler `docs/` da raiz. Sem documentação = bloqueio.
+```
+[Agent Persona] + [Contexto Squad + docs/] + [Session Files + Memória] + [ADRs] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+```
+
+> **Skills:** quando ativas, o agent DEVE usá-las — não são opcionais.
 
 ### Caminhos de arquivo
 
@@ -768,17 +722,17 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Veto máximo 2x** | Após 2 tentativas, escale para o usuário |
 | **Review máximo 3x** | Após 3 rejeições, pergunte como proceder |
 | **Sempre salve** | Nunca perca output gerado — salve antes de continuar |
-| **State é real-time** | Atualize state.json a cada mudança de step |
+| **State é best-effort** | Atualize state.json a cada mudança de step — falhas não bloqueiam |
 | **Falha loud** | Se agent ou arquivo não encontrado, pare e informe |
 | **Nunca escreva em .synapos/** | Outputs vão SEMPRE para `docs/.squads/sessions/{feature-slug}/` |
 | **Caminhos absolutos** | Todo agent usa caminhos a partir da raiz do projeto |
 | **Skills são obrigatórias** | Se uma skill cobre a tarefa, o agent DEVE usá-la |
-| **Zero decisões autônomas** | Toda decisão fora do escopo = `[DECISÃO PENDENTE]` obrigatório |
-| **ADRs são lei** | Antes de implementação, agents leem ADRs. Conflito = veto |
+| **Decisões sinalizam com `[?]`** | Decisão fora do escopo → sinaliza `[?]` no output, aguarda usuário |
+| **ADRs somente no modo Completo** | Modo Rápido não injeta ADRs. Modo Completo: conflito com ADR = veto |
 | **Sessão recuperável** | `suspended_at` atualizado a cada step. Orquestrador detecta e retoma |
-| **Session é compartilhada** | Múltiplos squads trabalham na mesma session. Nunca apague arquivos existentes sem aprovação |
-| **review-notes é append-only** | Nunca substitua review-notes.md — sempre acrescente. Consolidar ao atingir 10+ entradas |
-| **memories é append-only** | Nunca substitua memories.md — sempre acrescente. Consolidar ao atingir 10+ entradas |
-| **Backups limitados a 3** | Máximo 3 arquivos `.bak` por output file — delete o mais antigo antes de criar novo |
-| **ADRs são pré-carregados** | ADRs lidos uma vez na FASE 1 e injetados diretamente — subagents não re-leem docs/ |
-| **Budget é monitorado** | Estime linhas da session na inicialização — alerte acima de 400 linhas |
+| **Session é compartilhada** | Múltiplos roles trabalham na mesma session. Nunca apague arquivos sem aprovação |
+| **review-notes é append-only** | Nunca substitua — sempre acrescente. Consolidação é manual via `/consolidate` |
+| **memories é append-only** | Nunca substitua — sempre acrescente. Consolidação é manual via `/consolidate` |
+| **Backups simples** | Cria `{filename}.bak` antes de sobrescrever — sem rotação automática |
+| **ADRs são pré-carregados** | ADRs lidos uma vez na FASE 1 — subagents não re-leem docs/ |
+| **Contexto por modo** | Modo Rápido: 5 itens. Modo Completo: 5 itens + docs/ + ADRs + memories |
