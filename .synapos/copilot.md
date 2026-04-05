@@ -25,6 +25,7 @@ Antes de executar qualquer protocolo, tenha em mente:
 | `execution: checkpoint` | Apresente checklist `[ ]` e aguarde `ok` ou número |
 | Gates automáticos | Checklist ao final do output — falhas listadas explicitamente |
 | `/init`, `/setup:*` | `synapos:init`, `synapos:squad` via comentário ou mensagem |
+| `/session` | `synapos:session` — lista sessions, abre contexto, consolida memórias |
 
 Protocolo completo de adaptação: `.synapos/core/copilot-adapter.md`
 
@@ -60,65 +61,22 @@ Enquanto isso, você pode criar novos squads normalmente.
 
 ### PROTOCOLO DE ONBOARDING (primeira vez)
 
-Apresente as perguntas uma por vez. Aguarde resposta antes de prosseguir.
+**1 pergunta. Nada mais.**
 
-**Pergunta 1:**
 ```
-Olá! Sou o Synapos — framework de orquestração de agents.
+Olá! Sou o Synapos.
 
-Antes de começar, qual é o nome da empresa ou projeto?
-(Digite o nome)
-```
+Duas coisas rápidas para começar:
+  1. Qual é o nome do projeto?
+  2. O que você quer fazer agora?
 
-**Pergunta 2:**
-```
-Qual é o setor ou tipo de projeto?
-
-1) SaaS / Software
-2) E-commerce
-3) Aplicativo Mobile
-4) API / Backend
-5) Ferramenta Interna
-6) Open Source
-7) Outro — vou especificar
+Responda as duas juntas. Ex: "Meu SaaS — corrigir bug no login"
 ```
 
-**Pergunta 3:**
-```
-Qual linguagem de saída preferida?
-
-1) Português (PT-BR)
-2) English (EN-US)
-3) Outro
-```
-
-**Pergunta 4:**
-```
-Qual task tracker você usa?
-
-1) GitHub Issues
-2) Linear
-3) Jira
-4) Não uso
-```
-
-**Pergunta 5:**
-```
-Qual modelo de IA você está usando?
-
-1) GPT-4o (GitHub Copilot padrão)
-2) Claude Opus/Sonnet
-3) Gemini Pro
-4) Outro
-```
-
-Após as respostas, mapeie o modelo para `model_capability`:
-
-| Modelo | model_capability |
-|---|---|
-| GPT-4o, Claude Opus/Sonnet, Gemini 1.5 Pro+ | `high` |
-| GPT-4o-mini, Claude Haiku, Gemini Flash | `standard` |
-| Modelos locais, outros | `lite` |
+Com a resposta, extraia nome do projeto e contexto da tarefa. Defaults silenciosos:
+- Task tracker: `none`
+- model_capability: `high`
+- Linguagem: detectada na resposta, padrão `pt-BR`
 
 Crie os arquivos:
 
@@ -129,9 +87,9 @@ atualizado: {YYYY-MM-DD}
 ---
 # Perfil
 
-**Nome:** {resposta}
-**Setor:** {resposta}
-**Linguagem de saída:** {resposta}
+**Nome:** {nome inferido}
+**Setor:** não informado
+**Linguagem de saída:** {pt-BR | en-US}
 ```
 
 **`docs/_memory/preferences.md`:**
@@ -143,86 +101,42 @@ atualizado: {YYYY-MM-DD}
 
 **IDE Principal:** Copilot
 **Formato de data:** YYYY-MM-DD
-**Task Tracker:** {github | linear | jira | none}
-**model_capability:** {high | standard | lite}
-**model_name:** {nome do modelo informado}
+**Task Tracker:** none
+**model_capability:** high
+**model_name:** não informado
 ```
+
+> Setor, task tracker e modelo podem ser ajustados depois diretamente nos arquivos.
 
 ---
 
-## PASSO 2 — MODE DECISION SYSTEM
+## PASSO 2 — ESCOLHA DE MODO
 
-Calcule o score de documentação e a complexidade da tarefa para determinar o modo de execução.
+**Tente inferir o modo automaticamente pela mensagem do usuário.**
 
-### 2.1 — Score de Documentação
-
-| Item | Pontos |
-|------|--------|
-| `docs/_memory/company.md` existe | +30 |
-| `docs/tech/` existe com ≥ 1 arquivo `.md` | +20 |
-| `docs/business/` existe com ≥ 1 arquivo `.md` | +20 |
-| `docs/tech-context/` existe com ≥ 1 arquivo `.md` | +15 |
-| Total de arquivos `.md` em `docs/` ≥ 5 | +15 |
-
-Armazene como `[DOC_SCORE]` (0–100).
-
-### 2.2 — Inferir Complexidade
-
-Se o usuário não informou a tarefa ainda, pergunte:
-```
-O que você quer fazer?
-(Descreva em 1-2 frases — ex: corrigir bug no login, criar endpoint de pagamento)
-```
-
-| Complexidade | Sinais |
+| Sinal na mensagem | Modo inferido |
 |---|---|
-| **LOW** | fix, typo, ajuste, quick, bug simples, texto, cor, label |
-| **MEDIUM** | feature, endpoint, component, tela, módulo, integração, CRUD |
-| **HIGH** | arquitetura, refactor, sistema, infra, migração, redesign, segurança |
+| "fix", "bug", "typo", "quick", "ajuste", "cor", "texto" | `quick` |
+| "feature", "arquitetura", "refactor", "sistema", "integração" | `complete` |
+| Nenhum sinal claro | perguntar |
 
-### 2.3 — Execution Mode
-
-| Condição | Modo |
-|---|---|
-| `company.md` não existe OU `[DOC_SCORE]` = 0 | **BOOTSTRAP** |
-| `[COMPLEXITY]` = LOW | **BOOTSTRAP** |
-| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` < 40 | **BOOTSTRAP** |
-| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` ≥ 40 | **STANDARD** |
-| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` < 70 | **STANDARD** |
-| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` ≥ 70 | **STRICT** |
-
-### 2.4 — Informar o Modo
-
-**BOOTSTRAP:**
+**Se não for possível inferir, pergunte:**
 ```
-⚡ Bootstrap Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
+Como você quer executar?
 
-   Executando com contexto mínimo.
-   Pipelines disponíveis: quick-fix, bug-fix
-
-   Para desbloquear mais pipelines:
-   → Crie docs/tech/ com documentação técnica     (+20 pts)
-   → Crie docs/business/ com contexto de negócio  (+20 pts)
+1) ⚡ Rápido — executa direto, sem ler documentação do projeto
+2) 🔵 Completo — lê docs/, injeta ADRs e contexto completo
 ```
 
-**STANDARD:**
-```
-🟡 Standard Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
+Armazene como `[EXECUTION_MODE]` (`quick` / `complete`).
 
-   Contexto parcial disponível. Gates ativos: GATE-0, GATE-ADR, GATE-DECISION.
+**Informe o modo escolhido:**
 ```
-
-**STRICT:**
+⚡ Modo Rápido — executando sem documentação de projeto.
 ```
-🔴 Strict Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
-
-   Contexto completo disponível. Todos os gates ativos. Máxima qualidade.
+ou
+```
+🔵 Modo Completo — contexto completo disponível.
 ```
 
 ---
@@ -238,16 +152,16 @@ Para cada squad encontrado, leia `.synapos/squads/{squad}/squad.yaml` e extraia:
 
 ## PASSO 4 — MENU PRINCIPAL
 
-**Se existem squads**, apresente:
+**Se existem roles ativos (squads)**, apresente:
 ```
-Squads ativos:
+Roles ativos:
 
 1) 🟢 {slug} — {domain} · {description}
 2) 🟡 {slug} — {domain} · {description} (pausado)
-3) ✨ Criar novo squad
+3) ✨ Ativar novo role
 ```
 
-**Se não existem squads** → vá para PASSO 5.
+**Se não existem roles** → vá para PASSO 5.
 
 ---
 
@@ -397,14 +311,25 @@ Após confirmação, execute conforme `.synapos/core/pipeline-runner.md` com as 
 Quando o usuário usa `synapos:squad` com parâmetros, pule direto para PASSO 6:
 
 ```
-// synapos:squad squad:frontend mode:bootstrap pipeline:bug-fix feature:fix-login
+// synapos:squad squad:frontend mode:quick pipeline:bug-fix feature:fix-login
 ```
 
 Parse os parâmetros:
-- `squad:` → domínio do squad
-- `mode:` → forçar execution mode (bootstrap/standard/strict)
+- `squad:` → domínio do role
+- `mode:` → forçar execution mode (`quick` / `complete`)
 - `pipeline:` → pipeline a usar
 - `feature:` → slug da feature session
+
+---
+
+## COMANDO `synapos:session`
+
+Quando o usuário usa `synapos:session`, siga o protocolo de `.synapos/core/commands/session.md` com as adaptações Copilot ativas:
+
+- Sem AskUserQuestion → apresente lista numerada e aguarde resposta
+- `synapos:session` → lista todas as sessions
+- `synapos:session slug:{feature}` → abre session específica com resumo de context.md
+- `synapos:session consolidate` → consolida memories.md e review-notes.md da session ativa
 
 ---
 
@@ -416,25 +341,29 @@ Exiba o estado atual:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Synapos Status
 
-Squad ativo: {slug} ({domain})
+Role ativo:  {slug} ({domain})
 Feature:     {feature-slug}
 Pipeline:    {nome}
 Step atual:  {step-id} ({N}/{total})
-Modo:        {BOOTSTRAP | STANDARD | STRICT}
+Modo:        {Rápido | Completo}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
 
-## PROTOCOLO DE ESCALATION
+## DECISÕES NO OUTPUT
 
-Mesmo mecanismo do Claude Code — quando uma decisão não pode ser resolvida:
+Quando precisar tomar uma decisão fora do escopo do step, sinalize com `[?]` no output:
 
-1. Registre `[DECISÃO PENDENTE] {feature-slug}-{N}` em `docs/.squads/sessions/{feature-slug}/open-decisions.md`
-2. Bloqueie o squad: `status → "blocked"`
-3. Informe o usuário
+```
+[?] Decisão necessária: {descrição curta}
+Opções: A) {opção A}  B) {opção B}
+Recomendação: {opção preferida e motivo}
+```
 
-Para resolver: `// synapos:decision id:{N} choice:{A|B}`
+Aguarde a resposta do usuário antes de continuar. Nunca decida autonomamente.
+
+Para responder: o usuário digita a opção escolhida na conversa.
 
 ---
 

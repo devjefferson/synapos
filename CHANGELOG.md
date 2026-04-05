@@ -11,6 +11,34 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.7.0] — 2026-04-04
+
+### Modificado
+
+- `orchestrator` v2.0.0 — reescrito: onboarding reduzido a 1 AskUserQuestion, modo inferido automaticamente por palavras-chave, role inferido por contexto. Remoção do Mode Decision System com score (BOOTSTRAP/STANDARD/STRICT → ⚡ Rápido / 🔵 Completo)
+- `gate-system.md` v2.0.0 — simplificado de 9 gates para 3 (GATE-0, GATE-3, GATE-5). GATE-DECISION removido e substituído por sinalização `[?]` no output
+- `pipeline-runner.md` — injeção de contexto de 10 itens para 5 por modo. Consolidação automática de memories/review-notes removida (agora manual via `/session consolidate`). state.json de crítico para best-effort
+- `README.md` — reposicionamento honesto: "workflow system" em vez de "framework de orquestração", seção explícita sobre o que não é (multi-agent real)
+- `docs/GUIDE.md` e `docs/GETTING_STARTED.md` — reescritos para refletir fluxo atual (roles, modos Rápido/Completo, gates simplificados)
+- `bump.md` — simplificado para versionar apenas `package.json`, não arquivos markdown internos
+
+### Adicionado
+
+- `squad.yaml` — novo campo `roles[]`: lista os papéis simulados do squad (exibido na UI como "atuando como:")
+- `.synapos/core/commands/session.md` — novo comando `/session`: lista sessions, abre contexto com `context.md` em destaque, consolida memories manualmente
+- `pipeline-runner.md` — templates padronizados para `context.md` e `memories.md` com seções fixas. `context.md` marcado como obrigatório ao entrar em feature existente
+- `docs/user-testing/` — material para user testing da Semana 6: guia do testador, formulário de feedback, template de observação, mensagem de recrutamento
+- `docs/REFACTOR-PLAN.md` — plano de refatoração de 6 semanas documentado
+
+### Removido
+
+- `version:` do frontmatter dos arquivos core (orchestrator, pipeline-runner, gate-system, skills-engine) — markdown não precisa de semver
+- Consolidação automática de memories.md e review-notes.md ao atingir 30 entradas
+- Recálculo de score pós-execução (3.2b) — sobra do Mode Decision System
+- Budget estimation (1.1b) do pipeline-runner
+
+---
+
 ## [2.6.1] — 2026-04-03
 
 ### Corrigido
