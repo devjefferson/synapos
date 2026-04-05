@@ -11,6 +11,16 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.7.2] — 2026-04-04
+
+### Adicionado
+
+- Suporte a novas IDEs na CLI: **Cursor** (`.cursor/commands/`), **Trae** (`.trae/commands/`), **Antigravity** (`.agent/workflows/`)
+- Comando `session.md` adicionado ao array `COMMANDS` da CLI (estava ausente)
+- Pastas de comandos criadas para Cursor, Trae e Antigravity com todos os comandos do framework
+
+---
+
 ## [2.7.0] — 2026-04-04
 
 ### Modificado
