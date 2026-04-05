@@ -50,6 +50,7 @@ const SQUADS = [
 const COMMANDS = [
   { file: 'init.md',                  content: 'Leia e execute exatamente o protocolo em: .synapos/core/orchestrator.md\n' },
   { file: 'bump.md',                  content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/bump.md\n' },
+  { file: 'session.md',               content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/session.md\n' },
   { file: 'set-model.md',             content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/set-model.md\n' },
   { file: 'setup/start.md',           content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/start.md\n' },
   { file: 'setup/build-business.md',  content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/build-business.md\n' },
@@ -59,9 +60,12 @@ const COMMANDS = [
 
 // IDE definitions
 const IDES = [
-  { value: 'claude',   title: 'Claude Code', commandsDir: '.claude/commands',   hint: '/init na conversa'               },
-  { value: 'copilot',  title: 'Copilot',     commandsDir: null,                 hint: 'synapos:init no chat do Copilot' },
-  { value: 'opencode', title: 'OpenCode',    commandsDir: '.opencode/commands', hint: '/init no chat'                   },
+  { value: 'claude',      title: 'Claude Code',  commandsDir: '.claude/commands',    hint: '/init na conversa'               },
+  { value: 'copilot',     title: 'Copilot',      commandsDir: null,                  hint: 'synapos:init no chat do Copilot' },
+  { value: 'opencode',    title: 'OpenCode',     commandsDir: '.opencode/commands',  hint: '/init no chat'                   },
+  { value: 'cursor',      title: 'Cursor',       commandsDir: '.cursor/commands',    hint: '/init no chat'                   },
+  { value: 'trae',        title: 'Trae',         commandsDir: '.trae/commands',      hint: '/init no chat'                   },
+  { value: 'antigravity', title: 'Antigravity',  commandsDir: '.agent/workflows',    hint: '/init no chat'                   },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
