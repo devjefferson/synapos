@@ -1,24 +1,18 @@
 ## PROTOCOLO DE BUMP
 
+Versiona o **pacote npm** do Synapos. Não versiona arquivos markdown internos.
+
 ### 1 — Ler estado atual
-- Leia `.synapos/VERSION` → versão atual do framework
-- Leia `.synapos/.manifest.json` → inventário completo
-- Execute `git diff --name-only HEAD` para detectar arquivos modificados
+- Leia `package.json` → versão atual
 
-### 2 — Detectar o que mudou (via git)
+### 2 — Detectar tipo de bump
 
-O sistema detecta automaticamente:
-- Quais arquivos em `.synapos/` foram modificados
-- Se arquivos de agents, templates, core ou múltiplos foram alterados
+**Se argumento fornecido** (ex: `/bump minor`): use diretamente.
 
-**Se argumentos fornecidos** (ex: `/bump minor`):
-- Use o tipo fornecido diretamente
-- Ignore a detecção automática para o tipo
-
-**Se sem argumentos:**
+**Se sem argumento:**
 ```
 AskUserQuestion({
-  question: "Versão atual: {versão}\nArquivos modificados: {lista}\n\nQual tipo de bump?",
+  question: "Versão atual: {versão}\n\nQual tipo de bump?",
   options: [
     { label: "PATCH", description: "Correção sem quebrar (~1.0.1)" },
     { label: "MINOR", description: "Feature sem quebrar (~1.1.0)" },
@@ -35,18 +29,11 @@ Use semver: `MAJOR.MINOR.PATCH`
 
 ### 4 — Executar o bump
 
-**4a.** Atualizar `version:` no frontmatter dos arquivos modificados
+**4a.** Atualizar `version` em `package.json`
 
-**4b.** Atualizar `.synapos/.manifest.json`:
-- Versão do(s) componente(s) alterado(s)
-- `framework.version` e `framework.released_at`
-
-**4c.** Atualizar `.synapos/VERSION`
-
-**4d.** Adicionar entrada no `.synapos/CHANGELOG.md`
+**4b.** Adicionar entrada no `CHANGELOG.md` na raiz do projeto
 
 ### 5 — Resumo
 ```
 ✅ Bump: {anterior} → {nova}
-   {arquivos atualizados}
 ```

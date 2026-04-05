@@ -1,6 +1,5 @@
 ---
 name: synapos-skills-engine
-version: 1.1.0
 description: Engine de gerenciamento de skills — MCP, scripts e instruções de comportamento
 ---
 

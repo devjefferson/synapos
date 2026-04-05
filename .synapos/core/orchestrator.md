@@ -1,13 +1,30 @@
 ---
 name: synapos-orchestrator
-version: 1.6.1
-description: Meta-orquestrador do Synapos Framework — ponto de entrada universal multi-IDE
+version: 2.0.0
+description: Meta-orquestrador do Synapos — workflow system para projetos com IA
 ---
 
-# SYNAPOS ORCHESTRATOR v1.0.0
+# SYNAPOS ORCHESTRATOR v2.0.0
 
-> Framework de gerenciamento de agents para automação e desenvolvimento.
+> Workflow system para estruturar como você trabalha com IA em projetos reais.
 > Integração: Claude Code.
+
+---
+
+## COMANDOS DISPONÍVEIS
+
+| Comando | O que faz |
+|---------|-----------|
+| `/init` | Ponto de entrada principal — ativa roles, cria sessions, executa pipelines |
+| `/session` | Navega sessions, visualiza context.md e memories.md, consolida quando necessário |
+| `/session {slug}` | Abre diretamente a session de uma feature |
+| `/session consolidate` | Consolida memories.md e review-notes.md da session ativa |
+| `/setup:build-tech` | Gera documentação técnica do projeto (aumenta contexto disponível) |
+| `/setup:build-business` | Gera documentação de negócio do projeto |
+| `/bump` | Versiona os arquivos do framework |
+
+> Ao detectar `/session` ou `/session {slug}` na mensagem do usuário, redirecione imediatamente para `.synapos/core/commands/session.md`.
+> Não execute o protocolo de ativação do /init nesse caso.
 
 ---
 
@@ -67,33 +84,25 @@ Se não: nenhuma ação necessária.
 
 ### PROTOCOLO DE ONBOARDING (primeira vez)
 
-**Use no MÁXIMO 2 AskUserQuestion para todo o onboarding.**
+**1 AskUserQuestion. Nada mais.**
 
 ```
 AskUserQuestion({
-  question: "Olá! Sou o Synapos — framework de orquestração de agents.\n\nPreciso de algumas informações para configurar o ambiente:",
+  question: "Olá! Sou o Synapos.\n\nDuas perguntas rápidas para começar:\n  1. Qual é o nome do projeto?\n  2. O que você quer fazer agora?\n\nResponda as duas juntas. Ex: \"Meu SaaS — corrigir bug no login\"",
   options: [
-    { label: "Nome do projeto/empresa", description: "Ex: Acme Inc, Meu SaaS" },
-    { label: "Setor", description: "SaaS, E-commerce, API, Mobile..." },
-    { label: "Task tracker", description: "GitHub, Linear, Jira ou nenhum" },
-    { label: "Modelo de IA", description: "Claude, GPT-4o, Gemini, Kimi, MiniMax..." }
-  ],
-  multiSelect: true
+    { label: "Responder", description: "Digite: nome do projeto — o que quer fazer" }
+  ]
 })
 ```
 
-> Se o usuário selecionar apenas "Nome", pergunte o restante via input livre.
-> Se o usuário não souber o modelo, assuma `high`.
+Com a resposta, extraia:
+- **Nome do projeto** → salva em company.md
+- **O que fazer** → use como contexto para o PASSO 2 (modo) e PASSO 5 (role)
 
-**Mapeamento de model_capability:**
-
-| Modelo | model_capability |
-|---|---|
-| Claude Opus/Sonnet, GPT-4o, Gemini 1.5 Pro+ | `high` |
-| GPT-4o-mini, Gemini Flash, Claude Haiku | `standard` |
-| Kimi, MiniMax, Llama 3.x, modelos locais | `lite` |
-
-**Linguagem:** Se não especificada, use o idioma do sistema ou русский inglês como padrão.
+Defaults silenciosos (nunca pergunte sobre eles no onboarding):
+- Task tracker: `none`
+- model_capability: `high`
+- Linguagem: idioma detectado na resposta do usuário, padrão `pt-BR`
 
 Crie os arquivos e continue para PASSO 2:
 
@@ -104,9 +113,9 @@ atualizado: {YYYY-MM-DD}
 ---
 # Perfil
 
-**Nome:** {nome ou 'não informado'}
-**Setor:** {setor ou 'não informado'}
-**Linguagem de saída:** {pt-BR ou en-US, padrão: pt-BR}
+**Nome:** {nome inferido}
+**Setor:** não informado
+**Linguagem de saída:** {pt-BR | en-US}
 ```
 
 **`docs/_memory/preferences.md`:**
@@ -118,140 +127,55 @@ atualizado: {YYYY-MM-DD}
 
 **IDE Principal:** Claude Code
 **Formato de data:** YYYY-MM-DD
-**Task Tracker:** {github | linear | jira | none}
-**model_capability:** {high | standard | lite}
-**model_name:** {nome do modelo ou 'não informado'}
+**Task Tracker:** none
+**model_capability:** high
+**model_name:** não informado
 ```
 
----
-
-## PASSO 2 — MODE DECISION SYSTEM
-
-O orquestrador determina automaticamente o modo de execução cruzando dois fatores: **score de documentação** e **complexidade da tarefa**. Nunca bloqueia — sempre encontra um caminho de execução.
+> Task tracker, setor e modelo podem ser atualizados depois pelo usuário diretamente nos arquivos.
 
 ---
 
-### 2.1 — Calcular Score de Documentação
+## PASSO 2 — ESCOLHA DE MODO
 
-Verifique a existência de cada item e some os pontos:
+**Tente inferir o modo automaticamente.** Só pergunte se não for possível inferir.
 
-| Item | Pontos |
-|------|--------|
-| `docs/_memory/company.md` existe | +30 |
-| `docs/tech/` existe com ≥ 1 arquivo `.md` | +20 |
-| `docs/business/` existe com ≥ 1 arquivo `.md` | +20 |
-| `docs/tech-context/` existe com ≥ 1 arquivo `.md` | +15 |
-| Total de arquivos `.md` em `docs/` ≥ 5 | +15 |
+**Inferência automática (sem perguntar):**
 
-**Score total possível: 100**
+| Sinal na mensagem do usuário | Modo inferido |
+|------------------------------|---------------|
+| "fix", "bug", "typo", "quick", "ajuste", "cor", "texto" | `quick` |
+| "feature", "arquitetura", "refactor", "sistema", "integração" | `complete` |
+| Nenhum sinal claro | perguntar |
 
-Armazene como `[DOC_SCORE]` (0–100).
-
----
-
-### 2.2 — Inferir Complexidade da Tarefa
-
-Pergunte ao usuário o que ele quer fazer. Se já houver contexto da mensagem inicial, use-o diretamente.
-
+**Se não for possível inferir:**
 ```
 AskUserQuestion({
-  question: "O que você quer fazer?",
+  question: "Como você quer executar?",
   options: [
-    { label: "Vou descrever", description: "Ex: corrigir bug no login, criar endpoint de pagamento..." }
+    { label: "⚡ Rápido", description: "Executa direto, sem ler documentação do projeto" },
+    { label: "🔵 Completo", description: "Lê docs/, injeta ADRs e contexto completo" }
   ]
 })
 ```
 
-Com base na descrição, classifique a complexidade:
+Armazene como `[EXECUTION_MODE]` (`quick` / `complete`).
 
-| Complexidade | Palavras-chave e sinais |
-|---|---|
-| **LOW** | fix, typo, ajuste, quick, bug simples, texto, estilo, cor, label, tradução |
-| **MEDIUM** | feature, endpoint, component, tela, módulo, integração, API, CRUD |
-| **HIGH** | arquitetura, refactor, sistema, infra, migração, redesign, segurança, performance |
+| Modo | O que injeta | Gates ativos |
+|------|-------------|--------------|
+| `quick` | company.md + session files | GATE-0, GATE-3, GATE-5 |
+| `complete` | Tudo — docs/, ADRs, session files | GATE-0, GATE-3, GATE-5 |
 
-Se não for possível classificar → assuma `MEDIUM`.
-
-Armazene como `[COMPLEXITY]` (LOW / MEDIUM / HIGH).
-
----
-
-### 2.3 — Determinar Execution Mode
-
-Aplique as regras na ordem exata:
-
-| Condição | Execution Mode |
-|---|---|
-| `company.md` não existe e `[DOC_SCORE]` = 0 | **BOOTSTRAP** |
-| `[COMPLEXITY]` = LOW | **BOOTSTRAP** |
-| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` < 40 | **BOOTSTRAP** |
-| `[COMPLEXITY]` = MEDIUM e `[DOC_SCORE]` ≥ 40 | **STANDARD** |
-| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` < 70 | **STANDARD** |
-| `[COMPLEXITY]` = HIGH e `[DOC_SCORE]` ≥ 70 | **STRICT** |
-
-Armazene como `[EXECUTION_MODE]` (BOOTSTRAP / STANDARD / STRICT).
-
----
-
-### 2.4 — Reagir ao Modo
-
-**Se `[EXECUTION_MODE]` = BOOTSTRAP:**
-
-Informe sem bloquear:
+Log ao definir modo:
 ```
-⚡ Bootstrap Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
-
-   Executando com contexto mínimo.
-   Pipelines disponíveis: quick-fix, bug-fix
-
-   Para desbloquear mais pipelines:
-   → /setup:build-tech      (+35 pontos)
-   → /setup:build-business  (+40 pontos)
+⚡ Modo Rápido — executando sem documentação de projeto.
+```
+ou
+```
+🔵 Modo Completo — contexto completo disponível.
 ```
 
 Continue para PASSO 3.
-
-**Se `[EXECUTION_MODE]` = STANDARD:**
-
-Informe e continue:
-```
-🟡 Standard Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
-
-   Contexto parcial disponível. Gates ativos: GATE-0, GATE-ADR, GATE-DECISION.
-```
-
-Continue para PASSO 3.
-
-**Se `[EXECUTION_MODE]` = STRICT:**
-
-Informe e continue:
-```
-🔴 Strict Mode
-   Score de documentação: {DOC_SCORE}/100
-   Complexidade detectada: {COMPLEXITY}
-
-   Contexto completo disponível. Todos os gates ativos. Máxima qualidade.
-```
-
-Continue para PASSO 3.
-
----
-
-### 2.5 — Sugestão de upgrade (STANDARD e STRICT)
-
-Se `[DOC_SCORE]` < 100, exiba ao final qual documentação faltante aumentaria o score:
-
-```
-💡 Documentação disponível pode melhorar o modo:
-   {item ausente} → +{pontos} pontos
-   Score atual: {DOC_SCORE}/100 → precisaria de {threshold} para {próximo modo}
-```
-
-Exiba apenas como informação — nunca bloqueie.
 
 ---
 
@@ -295,83 +219,70 @@ AskUserQuestion({
 
 ## PASSO 4 — MENU PRINCIPAL
 
-**Se existem squads**, monte o menu com AskUserQuestion.
+**Se existem roles ativos (squads)**, monte o menu com AskUserQuestion.
 
-Regra para a opção "Criar novo squad":
-- **Inclua** `{ label: "✨ Criar novo squad", description: "Montar um novo squad do zero" }` **apenas se** `[HAS_TEMPLATES]` = true.
-- **Se** `[HAS_TEMPLATES]` = false, **não inclua** essa opção e adicione um aviso no `question`: `"\n\n⚠️ Criação de squads indisponível — nenhum template instalado. Execute: npx synapos add <template>"`.
+Regra para a opção "Novo role":
+- **Inclua** `{ label: "✨ Novo role", description: "Ativar um novo role para esta tarefa" }` **apenas se** `[HAS_TEMPLATES]` = true.
+- **Se** `[HAS_TEMPLATES]` = false, **não inclua** essa opção e adicione aviso no `question`: `"\n\n⚠️ Criação de roles indisponível — nenhum template instalado. Execute: npx synapos add <template>"`.
 
 ```
 AskUserQuestion({
-  question: "Olá, {nome do usuário}! Qual squad você quer trabalhar?{aviso se sem templates}",
+  question: "Olá, {nome do usuário}! Qual role você quer ativar?{aviso se sem templates}",
   options: [
     { label: "🟢 {slug}", description: "{domain} · {description} (ativo)" },
     { label: "🟡 {slug}", description: "{domain} · {description} (pausado)" },
-    // ✨ Criar novo squad — incluir SOMENTE se [HAS_TEMPLATES] = true
+    // ✨ Novo role — incluir SOMENTE se [HAS_TEMPLATES] = true
   ]
 })
 ```
 
 **Status visual:**
-- 🟢 active — squad em andamento
+- 🟢 active — role em andamento
 - 🟡 paused — pausado, pode retomar
 - ✅ completed — entregue
 
-**Se não existem squads e `[HAS_TEMPLATES]` = true** → vá direto para PASSO 5.
+**Se não existem roles e `[HAS_TEMPLATES]` = true** → vá direto para PASSO 5.
 
-**Se não existem squads e `[HAS_TEMPLATES]` = false** → já foi tratado no PASSO 3.5. Este passo nunca será alcançado nesse estado.
+**Se não existem roles e `[HAS_TEMPLATES]` = false** → já foi tratado no PASSO 3.5. Este passo nunca será alcançado nesse estado.
 
 ---
 
-## PASSO 5 — SELEÇÃO DE DOMÍNIO
+## PASSO 5 — SELEÇÃO DE ROLE
 
 > **Pré-condição:** `[HAS_TEMPLATES]` = true (garantido pelo PASSO 3.5).
 
-Liste **todos** os subdiretórios em `.synapos/squad-templates/` e leia `template.yaml` de cada um.
+**Tente inferir o role automaticamente** a partir do contexto já capturado (mensagem inicial ou onboarding).
 
-Monte a lista numerada completa e exiba como texto antes do AskUserQuestion:
+| Sinal na mensagem | Role inferido |
+|-------------------|---------------|
+| "backend", "API", "endpoint", "banco" | `backend` |
+| "frontend", "tela", "componente", "UI" | `frontend` |
+| "mobile", "app", "iOS", "Android" | `mobile` |
+| "infra", "deploy", "CI/CD", "Docker" | `devops` |
+| "produto", "spec", "PRD", "discovery" | `produto` |
+| "dados", "modelo", "ML", "pipeline de dados" | `ia-dados` |
+| Nenhum sinal claro | perguntar |
 
-```
-Domínios disponíveis:
-
-  1. {icon} {displayName} — {description}
-  2. {icon} {displayName} — {description}
-  3. {icon} {displayName} — {description}
-  4. {icon} {displayName} — {description}
-  5. {icon} {displayName} — {description}
-  6. {icon} {displayName} — {description}
-  7. {icon} {displayName} — {description}
-  8. {icon} {displayName} — {description}
-  9. ✨ Customizado — Monte seu próprio squad
-
-Digite o número ou o nome do domínio:
-```
+**Se não for possível inferir**, liste os templates e pergunte:
 
 ```
 AskUserQuestion({
-  question: "Qual domínio você quer trabalhar?\n\nDomínios disponíveis:\n  1. {icon} {displayName} — {description}\n  2. {icon} {displayName} — {description}\n  3. {icon} {displayName} — {description}\n  4. {icon} {displayName} — {description}\n  5. {icon} {displayName} — {description}\n  6. {icon} {displayName} — {description}\n  7. {icon} {displayName} — {description}\n  8. {icon} {displayName} — {description}\n  9. ✨ Customizado — Monte seu próprio squad\n\nDigite o número ou o nome:",
+  question: "Escolha como quer atuar:",
   options: [
-    { label: "1. {icon} {displayName}", description: "{description}" },
-    { label: "2. {icon} {displayName}", description: "{description}" },
-    { label: "3. {icon} {displayName}", description: "{description}" },
-    { label: "4. {icon} {displayName}", description: "{description}" },
-    { label: "5. {icon} {displayName}", description: "{description}" },
-    { label: "6. {icon} {displayName}", description: "{description}" },
-    { label: "7. {icon} {displayName}", description: "{description}" },
-    { label: "8. {icon} {displayName}", description: "{description}" },
-    { label: "9. ✨ Customizado", description: "Monte seu próprio squad" }
+    { label: "{icon} {displayName}", description: "{description}" },
+    // ... um por template instalado
+    { label: "✨ Customizado", description: "Monte seu próprio role" }
   ]
 })
 ```
 
-> **Importante:** os números dos options acima são gerados dinamicamente — itere sobre todos os subdiretórios encontrados em `.synapos/squad-templates/` em ordem alfabética, atribuindo índice 1, 2, 3… O item "✨ Customizado" é sempre o último.
->
-> O usuário pode responder com o número (ex: `3`) ou com o nome do domínio (ex: `backend`). Ambos são aceitos.
+> Itere sobre `.synapos/squad-templates/` em ordem alfabética. "✨ Customizado" é sempre o último.
+> O usuário pode responder com número ou nome. Ambos são aceitos.
 
 **Roteamento obrigatório — execute apenas UM dos caminhos abaixo:**
 
-- Se o usuário selecionou um template existente (por número ou nome) → **vá para PASSO 6**. Não execute SQUAD CUSTOMIZADO.
-- Se o usuário selecionou "✨ Customizado" ou digitou `9` (ou o índice correspondente) → **vá para SQUAD CUSTOMIZADO**. Não execute PASSO 6.
+- Template existente selecionado (por número ou nome) → **vá para PASSO 6**.
+- "✨ Customizado" → **vá para ROLE CUSTOMIZADO**.
 
 ---
 
@@ -379,18 +290,17 @@ AskUserQuestion({
 
 Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/template.yaml`
 
-> **Restrições por `[EXECUTION_MODE]`:**
+> **Comportamento por `[EXECUTION_MODE]`:**
 >
-> | | BOOTSTRAP | STANDARD | STRICT |
-> |---|---|---|---|
-> | **Pipelines disponíveis** | quick-fix, bug-fix | todos | todos |
-> | **Agents opcionais** | não apresenta | apresenta | apresenta |
-> | **Modo de performance** | fixado em `solo` | apresenta opções | apresenta opções |
-> | **squad.yaml `execution_mode`** | `bootstrap` | `standard` | `strict` |
+> | | Rápido (`quick`) | Completo (`complete`) |
+> |---|---|---|
+> | **Agents opcionais** | não apresenta | apresenta |
+> | **Modo de performance** | fixado em `solo` | apresenta opções |
+> | **squad.yaml `execution_mode`** | `quick` | `complete` |
 
-### 6.1 — Configuração (BOOTSTRAP = ZERO perguntas)
+### 6.1 — Configuração
 
-**BOOTSTRAP: Use defaults automáticas, sem perguntar**
+**Modo Rápido: use defaults automáticas, sem perguntar**
 - Agents: apenas base do template
 - Modo: `solo`
 - Nome: auto-gerado `{domínio}-{NNN}`
@@ -398,11 +308,11 @@ Leia o template do domínio escolhido: `.synapos/squad-templates/{domínio}/temp
 
 Log:
 ```
-⚡ BOOTSTRAP: squad criado com defaults
+⚡ Modo Rápido: squad criado com defaults
    Agents: base | Modo: solo | Pipeline: {default}
 ```
 
-**STANDARD/STRICT:pergunte (máximo 1 AskUserQuestion):**
+**Modo Completo: pergunte (máximo 1 AskUserQuestion):**
 
 ```
 AskUserQuestion({
@@ -411,10 +321,6 @@ AskUserQuestion({
     { label: "✅ Defaults", description: "Agents base + solo + auto-nome" },
     { label: "🔧 Customizar", description: "Escolher agents, modo, nome" }
   ]
-})
-```
-  ],
-  multiSelect: true
 })
 ```
 
@@ -455,15 +361,17 @@ docs/.squads/sessions/{feature-slug}/  ← session da feature (criada pelo pipel
 ```yaml
 name: {squad-slug}
 domain: {domínio}
-displayName: "{displayName do template}"
+displayName: "{displayName do template}"   # nome do role exibido ao usuário
 description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
-execution_mode: {bootstrap | standard | strict}   # determinado pelo Mode Decision System no PASSO 2
-doc_score: {0-100}                                # score de documentação no momento da criação
+execution_mode: {quick | complete}   # determinado no PASSO 2
 created_at: {YYYY-MM-DD}
 feature: ""        # preenchido no PASSO 7.5
 session: ""        # preenchido no PASSO 7.5
+roles:             # papéis simulados neste squad (exibido na UI como "atuando como:")
+  - {papel 1}      # ex: arquiteto, desenvolvedor, revisor
+  - {papel 2}
 agents:
   - {id do agent 1}
   - {id do agent 2}
@@ -506,7 +414,7 @@ Verifique se `docs/_memory/project-learnings.md` existe. Se não existir, crie:
 
 ```
 AskUserQuestion({
-  question: "Squad {squad-slug} criado! 🎉\n\nFeature session:",
+  question: "Role {squad-slug} ativado! 🎉\n\nFeature session:",
   options: [
     { label: "✨ Nova: {auto-slug}", description: "Criar nova feature" },
     { label: "📂 {feature-1}", description: "Usar session existente" },
@@ -536,12 +444,12 @@ Modo: {modo}
 Pipeline: {pipeline}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**BOOTSTRAP:** iniciar direto sem AskUserQuestion
+**Modo Rápido:** iniciar direto sem AskUserQuestion
 ```
 ⚡ Iniciando squad {slug}...
 ```
 
-**STANDARD/STRICT:** pedir confirmação
+**Modo Completo:** pedir confirmação
 ```
 AskUserQuestion({
   question: "Squad pronto. Iniciar execução?",
@@ -648,12 +556,12 @@ AskUserQuestion({
 
 ```
 AskUserQuestion({
-  question: "Squad {squad-slug} carregado.\nFeature: {feature-slug}\n\nSquads que já trabalharam: {lista}\n\nO que você quer fazer?",
+  question: "Role {squad-slug} carregado.\nFeature: {feature-slug}\n\nRoles que já trabalharam: {lista}\n\nO que você quer fazer?",
   options: [
     { label: "🔄 Nova execução", description: "Executar novamente (manter contexto)" },
     { label: "🧠 Ver memória", description: "Abrir memories.md da feature" },
     { label: "📂 Ver arquivos", description: "Ver arquivos da session" },
-    { label: "⏸️ Pausar", description: "Pausar/arquivar squad" }
+    { label: "⏸️ Pausar", description: "Pausar/arquivar role" }
   ]
 })
 ```
@@ -664,28 +572,27 @@ Aguarde a seleção do usuário.
 
 ---
 
-## SQUAD CUSTOMIZADO
+## ROLE CUSTOMIZADO
 
 Quando o usuário escolhe "✨ Customizado" no PASSO 5.
 
 > O domínio já foi identificado como "customizado" — não pergunte novamente.
 
 ### Orientações:
-- **Minimum:** 1 agent (base)
-- **Recommended for feature:** 2-3 agents (base + 1-2 relevantes)
-- **Avoid:** selecionar todos — overhead sem benefício
-- Agents base são sempre incluídos — não precisam ser selecionados
+- Roles base são sempre incluídos — não precisam ser selecionados
+- Recomendado para features: 2-3 roles (base + 1-2 adicionais)
+- Evite selecionar todos — overhead sem benefício
 
-### Passo 1 — Selecionar agents
+### Passo 1 — Selecionar roles adicionais
 
 ```
 AskUserQuestion({
-  question: "Squad Customizado\n\nSelecione agents adicionais (além dos base):",
+  question: "Role Customizado\n\nQue perspectivas você quer ativar (além da base)?",
   options: [
-    { label: "🧑‍💻 Dev Fullstack", description: "Para features integradas" },
+    { label: "🧑‍💻 Fullstack", description: "Para features integradas front + back" },
     { label: "🎨 Designer/UX", description: "Para features com UI" },
     { label: "🔧 DevOps", description: "Para features com infra" },
-    { label: "✅ Nenhum — só base", description: "Agents base apenas" }
+    { label: "✅ Só base", description: "Apenas o role base" }
   ],
   multiSelect: true
 })
@@ -695,7 +602,7 @@ AskUserQuestion({
 
 ```
 AskUserQuestion({
-  question: "Qual pipeline para este squad?",
+  question: "Qual pipeline para este role?",
   options: [
     { label: "Feature Development", description: "Discovery → Arquitetura → Implementação → Review" },
     { label: "Bug Fix", description: "Diagnóstico → Fix → Testes → Review" },
@@ -707,7 +614,8 @@ AskUserQuestion({
 ### Passo 3 — Criar squad.yaml
 
 - Domain: `custom`
-- DisplayName: `Squad Customizado`
+- DisplayName: `Role Customizado`
+- Roles: os selecionados no Passo 1
 - Mode: `solo` (padrão para custom)
 
 ---
@@ -718,9 +626,11 @@ AskUserQuestion({
 |-------|-----------|
 | **SEMPRE use AskUserQuestion** | Qualquer interação com usuário deve usar janela interativa |
 | **Nunca pule o PASSO 1** | Contexto de empresa/usuário é obrigatório |
+| **Infira antes de perguntar** | Modo e role podem ser inferidos do contexto — só pergunte se necessário |
+| **UI usa "role", interno usa "squad"** | Na UI: "role", "ativar role". Em arquivos: squad.yaml, squads/ |
 | **Agents BASE são fixos** | Nunca remova sem confirmação explícita |
 | **Memória persiste** | Sempre carregue memories.md em toda sessão |
-| **Multi-squad é permitido** | Cada squad tem contexto isolado |
+| **Múltiplos roles são permitidos** | Cada squad tem contexto isolado |
 | **Salve estado** | Atualize squad.yaml após mudanças de status |
 | **Fail loud** | Se faltar arquivo de template, informe e pare |
 | **Linguagem** | Siga a preferência em `docs/_memory/preferences.md` |
