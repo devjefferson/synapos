@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Synapos" width="200" />
+</p>
+
 # Synapos
 
 > Workflow system para trabalhar com IA em projetos reais.
@@ -44,21 +48,6 @@ Isso persiste entre conversas, entre roles, entre dias.
       → pipeline executa steps
       → contexto salvo na session
 ```
-
-Roles simulados disponíveis:
-
-```bash
-npx synapos add backend
-npx synapos add frontend
-npx synapos add fullstack
-npx synapos add mobile
-npx synapos add devops
-npx synapos add produto
-npx synapos add ia-dados
-```
-
-Cada role inclui agents especializados (arquiteto, dev, reviewer) que a IA simula durante a execução.
-
 ---
 
 ## Modos de execução
@@ -146,18 +135,11 @@ Compatível com qualquer modelo (Claude, GPT, Gemini, modelos locais).
 ```bash
 npx synapos
 ```
-
-Ou instale um role direto:
-
-```bash
-npx synapos add backend
-```
-
 ---
 
 ## Contribua
 
 Projeto open source em evolução.
 
-👉 [Abra uma issue](https://github.com/devjefferson/synapse/issues)
+👉 [Abra uma issue](https://github.com/devjefferson/synapos/issues)
 👉 Dê uma estrela se achar útil
