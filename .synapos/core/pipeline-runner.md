@@ -215,6 +215,32 @@ docs/.squads/sessions/{feature-slug}/
 {armadilhas conhecidas, abordagens descartadas}
 ```
 
+`plan.md` — estrutura esperada quando gerado por pré-execução:
+
+```markdown
+# Plano: {feature-slug}
+
+> Gerado em: {YYYY-MM-DD} | Squad: {squad-slug}
+
+---
+
+## TODO — Steps do pipeline
+
+- [ ] **{step-id}**: {descrição do que será feito}
+- [ ] **{step-id}**: {descrição do que será feito}
+- [ ] **{step-id}**: {descrição do que será feito}
+
+> Runner marca `[>]` ao iniciar cada step e `[x]` ao concluir. Não adicione steps sem aprovação.
+
+---
+
+## Fases de execução
+
+{descrição das fases — discovery, implementação, review, etc.}
+```
+
+> **Escopo de modificação:** a lista de arquivos autorizados para escrita vive em `architecture.md` (seção de arquivos a modificar/criar), não em `plan.md`. O runner lê architecture.md para derivar o SCOPE GUARD.
+
 `memories.md` inicial:
 ```markdown
 # Memória: {feature-slug}
@@ -421,6 +447,68 @@ Aplique o protocolo do MODEL-ADAPTER sobre o prompt composto antes de enviar ao 
 O adapter atua apenas em steps com `execution: subagent` ou `execution: inline`.
 Steps com `execution: checkpoint` nunca são afetados.
 
+### 2.3b — SCOPE GUARD (apenas steps com `output_files` definido)
+
+Execute este guard **apenas** em steps que declaram `output_files` no pipeline.yaml com `execution: subagent` ou `execution: inline`. Steps sem `output_files` não recebem SCOPE GUARD.
+
+**Ordem de composição do prompt** (quando MODEL-ADAPTER também está ativo):
+```
+1. [MODEL-ADAPTER: CoT Prefix — S1/L3, se capability standard/lite]
+2. [Agent Persona]
+3. [SCOPE LOCK — injetado aqui, após persona]
+4. [Contexto + Instrução do step]
+```
+
+**1. Ler escopo autorizado**
+
+Leia `docs/.squads/sessions/{feature-slug}/architecture.md` e extraia a lista de arquivos a modificar/criar (tipicamente em seção nomeada `## Arquivos a modificar`, `## Arquivos afetados`, `## Escopo de modificação` ou equivalente — a veto condition do pre-execution garante que essa seção existe).
+
+- **Se a lista existe:** use-a como escopo autorizado
+- **Se `architecture.md` não existe ou não tem lista de arquivos:** não injete SCOPE GUARD. Log: `⚠️ [SCOPE] architecture.md sem lista de arquivos — SCOPE GUARD desativado para este step`. Continue normalmente sem restrição.
+
+> **Regra de fallback:** ausência de escopo = sem restrição, não escopo mínimo. Nunca derive escopo de `output_files` do pipeline.yaml — esses são session files, não arquivos do projeto.
+
+**2. Injetar SCOPE GUARD no prompt (após persona do agent)**
+
+```
+⛔ SCOPE GUARD ATIVO
+
+Você SOMENTE pode criar ou modificar estes arquivos do projeto:
+{lista extraída de architecture.md}
+
+PROIBIDO escrever em:
+- Qualquer arquivo fora da lista acima
+- .synapos/** (framework — nunca alterar)
+- docs/ raiz e docs/_memory/ (somente leitura)
+
+Leitura é sempre permitida — nunca há restrição para ler arquivos.
+
+Se perceber necessidade de alterar arquivo fora desta lista:
+→ Sinalize com [DECISÃO PENDENTE] e descreva o motivo.
+→ NUNCA expanda o escopo silenciosamente.
+```
+
+**3. Atualizar TODO do plan.md**
+
+Se `plan.md` existe e contém a seção `## TODO — Steps do pipeline`:
+- Marque o step atual como em andamento: `- [ ] **{step-id}**: ...` → `- [>] **{step-id}**: ...`
+- Log: `📋 [TODO] {step-id} em andamento`
+
+**4. Veto de escopo no output**
+
+Após receber o output do agent, antes de passar para GATE-3, verifique se o output declara explicitamente a intenção de criar ou modificar arquivo fora da lista autorizada (caminhos mencionados no texto do output).
+
+- **Arquivo não autorizado detectado** → veto com retry (contador próprio, separado do GATE-3):
+  ```
+  ⛔ [SCOPE GUARD] Output vetado — arquivo fora do escopo declarado.
+  Arquivo: {arquivo detectado}
+  Tentativa SCOPE {N}/2 — reexecutando com instrução de escopo reforçada.
+  ```
+  Máximo 2 retries de SCOPE GUARD. Na 3ª falha → escale ao usuário (não para GATE-3).
+- **Sem violação** → continue para GATE-3 normalmente.
+
+> **Transparência de retries:** o log distingue `SCOPE {N}/2` de `GATE-3 {N}/2`. O usuário sempre sabe qual camada está reexecutando.
+
 ### 2.4 — Executar por modo
 
 **`execution: checkpoint`** — pausa para decisão do usuário. Use menu interativo:
@@ -569,6 +657,10 @@ Atualize `state.json`:
   "updated_at": "{ISO datetime}"
 }
 ```
+
+Se `plan.md` existe e contém a seção `## TODO — Steps do pipeline`:
+- Marque o step como concluído: `- [>] **{step-id}**: ...` → `- [x] **{step-id}**: ...`
+- Log: `✅ [TODO] {step-id} concluído`
 
 ```
 ✅ {Nome do Step} — concluído
@@ -736,3 +828,8 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Backups simples** | Cria `{filename}.bak` antes de sobrescrever — sem rotação automática |
 | **ADRs são pré-carregados** | ADRs lidos uma vez na FASE 1 — subagents não re-leem docs/ |
 | **Contexto por modo** | Modo Rápido: 5 itens. Modo Completo: 5 itens + docs/ + ADRs + memories |
+| **SCOPE GUARD por architecture.md** | Escopo lido da lista de arquivos em architecture.md — ausência = sem restrição (warning), nunca deriva de pipeline output_files |
+| **SCOPE GUARD só em steps com output_files** | Steps sem output_files não recebem SCOPE GUARD — evita context waste em steps de revisão/formatação |
+| **Escopo expandido = [DECISÃO PENDENTE]** | Se agent precisar de arquivo fora do escopo, sinaliza e aguarda aprovação — nunca expande silenciosamente |
+| **Retries distintos por camada** | SCOPE GUARD tem contador próprio (SCOPE N/2), separado do GATE-3 (GATE-3 N/2) — log sempre indica qual camada está reexecutando |
+| **TODO é rastreado** | plan.md rastreia TODO — runner marca `[>]` ao iniciar e `[x]` ao concluir cada step via 2.3b e 2.8 |

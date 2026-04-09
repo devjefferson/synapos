@@ -1,6 +1,6 @@
 ---
 name: synapos-set-model
-version: 1.1.0
+version: 1.3.0
 description: Altera model_capability e model_name em docs/_memory/preferences.md
 ---
 
@@ -10,7 +10,7 @@ description: Altera model_capability e model_name em docs/_memory/preferences.md
 > Afeta: injeção de contexto, model_tier routing e nível de adaptação de prompts.
 
 **Suporta dois modos:**
-- **Non-interactive:** `/set-model high claude-opus-4-6` → aplica direto
+- **Non-interactive:** `/set-model high claude-opus-4-6` → aplica direto, sem interação
 - **Interactive:** `/set-model` → fluxo guiado com AskUserQuestion
 
 ---
@@ -35,7 +35,7 @@ Se o comando vier com argumentos (ex: `/set-model high claude-opus-4-6`):
 1. Parseie: `{capability} {model_name}` (model_fast e model_powerful são opcionais)
 2. Valide `capability`: deve ser `high`, `standard` ou `lite`
 3. Valide `model_name`: não vazio
-4. Se válido: vá para PASSO 6 (confirmar e salvar)
+4. Se válido: vá diretamente para **PASSO 7 (confirmar e aplicar)** — sem validação de compatibilidade, sem AskUserQuestion
 5. Se inválido: informe erro e sugira interactive mode
 
 **Formatos aceitos:**
@@ -48,10 +48,9 @@ Se o comando vier com argumentos (ex: `/set-model high claude-opus-4-6`):
 
 ---
 
-## PASSO 3 — Modo interativo (se sem argumentos)
+## PASSO 3 — Modo interativo: escolher capability
 
-Exiba estado atual e use **no máximo 2 AskUserQuestion**:
-
+Exiba estado atual:
 ```
 ⚙️  Configuração atual
 model_capability: {valor}
@@ -59,87 +58,6 @@ model_name: {valor}
 model_fast: {valor ou "—"}
 model_powerful: {valor ou "—"}
 ```
-
-```
-AskUserQuestion({
-  question: "Qual capability do modelo?",
-  options: [
-    { label: "high", description: "Claude Opus/Sonnet, GPT-4o, Gemini Pro — contexto completo" },
-    { label: "standard", description: "Claude Haiku, GPT-4o-mini, Gemini Flash — CoT prefix" },
-    { label: "lite", description: "Kimi, MiniMax, Llama — context pruning" }
-  ]
-})
-```
-
-```
-AskUserQuestion({
-  question: "Modelo principal?",
-  options: [
-    { label: "claude-opus-4-6", description: "Anthropic" },
-    { label: "claude-sonnet-4-6", description: "Anthropic" },
-    { label: "gpt-4o", description: "OpenAI" },
-    { label: "gpt-4o-mini", description: "OpenAI" },
-    { label: "gemini-1.5-pro", description: "Google" },
-    { label: "Outro", description: "Vou informar" }
-  ]
-})
-```
-
-Se "Outro": peça input livre.
-
----
-
-## PASSO 4 — Multi-model routing (opcional)
-
-```
-AskUserQuestion({
-  question: "Deseja configurar model_fast e model_powerful separados?",
-  options: [
-    { label: "Não — usar um modelo só", description: "Mais simples" },
-    { label: "Sim — diferenciar por tier", description: "Fast + Powerful" }
-  ]
-})
-```
-
-Se Sim: perguntefast e powerful (máximo 2 AskUserQuestion adicionais).
-
----
-
-## PASSO 5 — Resumo e confirmação
-
-Exiba resumo:
-```
-model_capability: {valor}
-model_name: {valor}
-model_fast: {valor ou "—"}
-model_powerful: {valor ou "—"}
-```
-
-```
-AskUserQuestion({
-  question: "Aplicar esta configuração?",
-  options: [
-    { label: "✅ Confirmar", description: "Salvar em preferences.md" },
-    { label: "↩️ Cancelar", description: "Não alterar" }
-  ]
-})
-```
-
----
-
-## PASSO 6 — Salvar
-
-Atualize `docs/_memory/preferences.md` com os novos valores.
-
----
-
-## PASSO 7 — Efeito por capability
-
-| model_capability | O que muda |
-|---|---|
-| `high` | Contexto completo — sem adaptação |
-| `standard` | CoT prefix + templates |
-| `lite` | Context pruning (~70%) + scope forcing |
 
 ```
 AskUserQuestion({
@@ -157,8 +75,6 @@ Armazene a seleção como `{novo_capability}`.
 ---
 
 ## PASSO 4 — Escolher model_name
-
-Use AskUserQuestion:
 
 ```
 AskUserQuestion({
@@ -181,8 +97,6 @@ Se "Outro": peça o nome via texto livre e armazene como `{novo_model_name}`.
 ---
 
 ## PASSO 5 — Configurar multi-model routing (opcional)
-
-Use AskUserQuestion:
 
 ```
 AskUserQuestion({
@@ -228,7 +142,41 @@ Armazene como `{novo_model_fast}` e `{novo_model_powerful}`.
 
 ---
 
-## PASSO 6 — Confirmar e aplicar
+## PASSO 6 — Validação de compatibilidade (modo interativo apenas)
+
+> **Este passo se aplica apenas ao modo interativo (PASSO 3–5).**
+> No modo non-interactive (PASSO 2), pule direto para PASSO 7.
+
+Avalie se a combinação `{novo_capability}` + `{novo_model_name}` tem risco real de degradação:
+
+**Alerta de sobrecarga** — capability declarada como `high` para modelo comprovadamente limitado:
+
+| Condição | Alerta |
+|----------|--------|
+| `capability: high` + modelo `haiku/mini/flash` | ⚠️ Sobrecarga — contexto completo pode saturar este modelo |
+| `capability: high` + modelo `kimi/llama/minimax` | ⚠️ Sobrecarga — modelos locais geralmente não suportam contexto longo |
+
+Se uma condição da tabela for detectada, exiba:
+
+```
+AskUserQuestion({
+  question: "⚠️  Atenção: {novo_model_name} é tipicamente usado com `standard` ou `lite`.\n\nConfigurar `high` pode degradar qualidade — contexto completo pode saturar este modelo.\n\nContinuar com `high` mesmo assim?",
+  options: [
+    { label: "Sim — entendo o risco", description: "Salvar como `high`" },
+    { label: "Não — alterar para standard", description: "Ajustar automaticamente" }
+  ]
+})
+```
+
+Se o usuário escolher "Não — alterar para standard": atualize `{novo_capability}` para `standard`.
+
+**Sem alerta** quando não há condição de sobrecarga — qualquer combinação de capability com modelo capaz (opus, sonnet, gpt-4o, gemini-pro) é válida e não requer confirmação extra.
+
+> **Regra:** Usuário pode escolher `standard` ou `lite` para qualquer modelo sem alerta. Essas são opções legítimas (economia de tokens, testes, pipelines específicos). Só alerte quando há risco concreto de saturação.
+
+---
+
+## PASSO 7 — Confirmar e aplicar
 
 Apresente o resumo da mudança antes de salvar:
 
@@ -246,7 +194,7 @@ AskUserQuestion({
 
 ---
 
-## PASSO 7 — Salvar em preferences.md
+## PASSO 8 — Salvar em preferences.md
 
 Leia o conteúdo atual de `docs/_memory/preferences.md`.
 
@@ -267,7 +215,7 @@ Formato das linhas:
 
 ---
 
-## PASSO 8 — Confirmar conclusão
+## PASSO 9 — Confirmar conclusão
 
 ```
 ✅ Configuração de modelo atualizada!
@@ -277,8 +225,6 @@ docs/_memory/preferences.md
   model_name       : {novo_model_name}
   model_fast       : {novo_model_fast ou "—"}
   model_powerful   : {novo_model_powerful ou "—"}
-
-Efeito imediato:
 ```
 
 | model_capability | O que muda |

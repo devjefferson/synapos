@@ -11,6 +11,15 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.7.4] — 2026-04-08
+
+### Corrigido
+
+- `set-model.md` v1.3.0 — removido PASSO 0 (auto-detect sem mecanismo real); modo non-interactive vai direto para confirmação sem passar por validação de compatibilidade; alertas de compatibilidade restritos a casos de sobrecarga real (modelos leves com capability `high`); removido alerta de "subutilização leve" que gerava falsos positivos para combinações legítimas como sonnet+standard
+- `pipeline-runner.md` — SCOPE GUARD refatorado: fonte movida de `plan.md` para `architecture.md` (que já tem veto condition garantindo lista de arquivos); fallback sem escopo = sem restrição (nunca bloqueia por padrão); guard aplicado apenas em steps com `output_files` declarado; ordem de composição de prompt explicitada (MODEL-ADAPTER → Persona → SCOPE GUARD); seção de atualização de TODO movida para dentro de 2.8 (executada após conclusão real do step); marcador de progresso trocado de `[~]` para `[>]` (markdown-compatível); contadores de retry separados por camada com log distinto (`SCOPE N/2` vs `GATE-3 N/2`); template de `plan.md` simplificado — removida seção `⛔ SCOPE LOCK` que nunca era populada pela pré-execução
+
+---
+
 ## [2.7.3] — 2026-04-04
 
 ### Adicionado

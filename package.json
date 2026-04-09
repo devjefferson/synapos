@@ -1,6 +1,6 @@
 {
   "name": "synapos",
-  "version": "2.7.3",
+  "version": "2.7.4",
   "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
   "keywords": ["ai", "agents", "claude", "cursor", "framework", "orchestration", "llm"],
   "author": "",
