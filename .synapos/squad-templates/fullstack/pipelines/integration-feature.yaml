@@ -75,6 +75,7 @@ steps:
     agent: renata-revisao-fe
     execution: inline
     model_tier: powerful
+    needs_history: true
     file: pipeline/steps/07-review.md
     depends_on: [06-integracao]
     output_files:

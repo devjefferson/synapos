@@ -1,6 +1,6 @@
 ---
 name: synapos-model-adapter
-version: 1.1.0
+version: 1.2.0
 description: Protocolo de adaptação de prompts para modelos de capacidade inferior — compensa limitações sem alterar os outputs esperados
 ---
 
@@ -13,7 +13,11 @@ description: Protocolo de adaptação de prompts para modelos de capacidade infe
 
 ## QUANDO ATIVAR
 
-Leia `docs/_memory/preferences.md` e verifique o campo `model_capability`:
+> **Binding antecipado:** O adapter é ativado na FASE 1.1e do pipeline-runner — antes de qualquer step.
+> As `[CONTEXT_RULES]` derivadas aqui guiam a montagem de contexto de todos os steps.
+> **Nunca releia `preferences.md` — use `[MODELO_TIER]` recebido do orchestrator.**
+
+Verifique o valor de `[MODELO_TIER]` (derivado em preferences.md pelo orchestrator):
 
 | Valor | Comportamento |
 |---|---|
@@ -103,7 +107,7 @@ Em vez de instruir o agent a "ler toda a pasta docs/", construa e injete um resu
 {se não existir, omita esta seção}
 
 ### Aprendizados do Squad
-{liste os últimos 3 aprendizados de memories.md, se houver}
+{liste os últimos 3 aprendizados do bloco <!-- RECENTES --> de memories.md, se houver}
 {se não houver, escreva: "Nenhum aprendizado registrado ainda."}
 
 ### Aprendizados Transversais
@@ -111,7 +115,10 @@ Em vez de instruir o agent a "ler toda a pasta docs/", construa e injete um resu
 {se não existir, omita esta seção}
 ```
 
-> **Regra:** No modo `lite`, o agent NÃO recebe instrução para "ler toda a pasta docs/". Recebe apenas este resumo. Outputs de steps anteriores (`depends_on`) ainda são fornecidos na íntegra. ADRs são injetados do cache `[ADRS_CARREGADOS]` — nunca instrua o agent a ler docs/ para buscá-los.
+> **Regra:** No modo `lite`, o agent NÃO recebe instrução para "ler toda a pasta docs/". Recebe apenas este resumo.
+> **memories.md:** carregue apenas as últimas 3 entradas do bloco `<!-- RECENTES -->` — nunca o arquivo inteiro.
+> **Outputs de steps anteriores (`depends_on`):** em modo `lite`, forneça um resumo estruturado (não a íntegra), exceto se o step declara `preserve_depends_on: true`.
+> **ADRs:** não injetados em modo `lite` por padrão. Injetados apenas se o step declara `adr_required: true`. Nunca instrua o agent a ler docs/ para buscá-los.
 
 ### L3 — Chain-of-Thought Obrigatório
 
@@ -177,26 +184,27 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 
 ```
 [Agent Persona completa do .agent.md]
-[Contexto Squad: company.md + ADRs pré-carregados (ADRS_CARREGADOS)]
-[Session files: context.md + architecture.md + plan.md]
-[Memória do squad: memories.md]
-[Project Learnings: project-learnings.md, se existir]
+[Contexto Squad: company.md]
+[context.snapshot OU context.md completo]
+[Memories: bloco RECENTES (últimas 5 entradas)]
+[ADRs filtrados por domínio — se modo complete]
+[Project Learnings: project-learnings.md, se existir e modo complete]
 [Outputs anteriores relevantes: depends_on]
 [Instruções do step]
 [Skills ativas]
 ```
 
-> **Nota:** Em modo `high`, o agent **não** recebe instrução de "ler toda a pasta docs/". Os ADRs e docs relevantes são injetados pelo pipeline-runner a partir do cache carregado na FASE 1. Isso evita re-leitura redundante por step.
+> **Nota:** Em modo `high`, o agent **não** recebe instrução de "ler toda a pasta docs/". Os ADRs filtrados são injetados pelo pipeline-runner a partir do cache. architecture.md entra somente via SCOPE GUARD ou `needs_architecture: true`.
 
 ### Modo `standard`
 
 ```
 [CoT Prefix — S1]
 [Agent Persona completa do .agent.md]
-[Contexto Squad: company.md + ADRs pré-carregados (ADRS_CARREGADOS)]
-[Session files: context.md + architecture.md + plan.md]
-[Memória do squad: memories.md]
-[Project Learnings: project-learnings.md, se existir]
+[Contexto Squad: company.md]
+[context.snapshot OU context.md completo]
+[Memories: bloco RECENTES (últimas 5 entradas)]
+[ADRs filtrados por domínio — se modo complete]
 [Outputs anteriores relevantes: depends_on]
 [Instruções do step]
 [Template — S2, se disponível]
@@ -208,8 +216,8 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 ```
 [CoT Obrigatório — L3]
 [Modo Lite da persona OU Quality Criteria como regras — L1]
-[Resumo de contexto — L2]
-[Outputs anteriores relevantes: depends_on — na íntegra]
+[Resumo de contexto — L2] ← inclui últimas 3 entradas de memories RECENTES, nunca arquivo inteiro
+[Outputs anteriores relevantes: depends_on — RESUMO (não íntegra, exceto preserve_depends_on: true)]
 [Instruções do step]
 [Template Obrigatório — L4]
 [Skills ativas]
@@ -239,7 +247,9 @@ Sempre que o adapter estiver ativo, registre antes de executar o step:
 | **Fallback de persona** | Se agent não tem `## Modo Lite`, use Quality Criteria como regras diretas (L1) |
 | **Template é estrutura** | O modelo preenche o conteúdo — o template define apenas a forma |
 | **Scope Forcing é sequencial** | Sub-steps de um step são apresentados um por vez, aguardando output antes do próximo |
-| **Context Pruning preserva depends_on** | Outputs de steps anteriores são sempre fornecidos na íntegra, nunca resumidos |
-| **ADRs vêm do cache** | Em todos os modos, ADRs são injetados do cache ADRS_CARREGADOS — nunca instrua re-leitura de docs/ |
+| **Context Pruning em depends_on** | Em modo `lite`, outputs anteriores recebem resumo estruturado (não íntegra). Use `preserve_depends_on: true` no step para forçar íntegra |
+| **ADRs vêm do cache filtrado** | ADRs são injetados do cache `[ADRS_CARREGADOS]` (filtrado por domínio). Em modo `lite`, somente se `adr_required: true` no step |
+| **Memories windowing** | Em modo `lite`, carregue apenas as 3 entradas mais recentes do bloco RECENTES — nunca o arquivo inteiro |
+| **Binding antecipado** | CONTEXT_RULES derivadas na FASE 1.1e, antes de qualquer step — não ao executar cada step |
 | **Checkpoints não são afetados** | O adapter só atua em steps `subagent` e `inline` — nunca em `checkpoint` |
 | **high é o padrão** | Se `model_capability` não estiver em preferences.md, comportamento é `high` sem log |

@@ -59,7 +59,18 @@ Ao ser ativado, execute este protocolo na ordem exata. Nunca pule passos.
 Verifique se `docs/_memory/company.md` existe.
 
 **Se NÃO existe** → execute o **PROTOCOLO DE ONBOARDING** abaixo.
-**Se existe** → leia `docs/_memory/company.md` e `docs/_memory/preferences.md`, continue para PASSO 2.
+**Se existe** → leia `docs/_memory/company.md` e `docs/_memory/preferences.md`, derive as variáveis abaixo e continue para PASSO 2.
+
+**Após ler preferences.md, derive e armazene em memória — o pipeline-runner nunca relê este arquivo:**
+
+```
+[MODELO_TIER]   ← model_capability de preferences.md (high | standard | lite). Padrão: high
+[LINGUA]        ← linguagem de saída de preferences.md (pt-BR | en-US etc.)
+[MODEL_NAME]    ← model_name de preferences.md (se disponível)
+[TASK_TRACKER]  ← task_tracker de preferences.md (none | jira | linear | etc.). Padrão: none
+```
+
+Esses valores são passados explicitamente ao pipeline-runner no PASSO 8.3.
 
 ### Detecção de Projetos v1 (migração automática)
 
@@ -474,6 +485,12 @@ Após confirmação, leia e siga `.synapos/core/pipeline-runner.md` passando:
 - Squad recém-criado
 - Pipeline padrão do template
 - Agents selecionados
+- `[EXECUTION_MODE]` — derivado no PASSO 2
+- `[MODELO_TIER]` — derivado no PASSO 1 de preferences.md
+- `[LINGUA]` — derivado no PASSO 1 de preferences.md
+- `[TASK_TRACKER]` — derivado no PASSO 1 de preferences.md
+
+> **Regra:** O pipeline-runner não relê `docs/_memory/preferences.md`. Usa exclusivamente os valores recebidos aqui.
 
 ---
 
@@ -568,7 +585,7 @@ AskUserQuestion({
 
 Aguarde a seleção do usuário.
 
-5. Siga a escolha do usuário e execute via `.synapos/core/pipeline-runner.md`.
+5. Siga a escolha do usuário e execute via `.synapos/core/pipeline-runner.md` passando `[EXECUTION_MODE]`, `[MODELO_TIER]` e `[LINGUA]` derivados no PASSO 1.
 
 ---
 

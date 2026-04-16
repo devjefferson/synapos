@@ -39,6 +39,7 @@ steps:
     agent: renata-revisao-fe
     execution: inline
     model_tier: fast
+    needs_history: true
     file: pipeline/steps/bf-04-review.md
     depends_on: [bf-03-fix]
     gate: GATE-5

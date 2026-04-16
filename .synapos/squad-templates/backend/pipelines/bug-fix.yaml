@@ -34,6 +34,7 @@ steps:
     agent: roberto-revisao-be
     execution: inline
     model_tier: powerful
+    needs_history: true
     file: pipeline/steps/bfbe-04-review.md
     depends_on: [bfbe-03-fix]
     output_files:

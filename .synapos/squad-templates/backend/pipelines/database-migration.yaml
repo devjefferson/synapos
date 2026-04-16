@@ -49,6 +49,7 @@ steps:
     agent: roberto-revisao-be
     execution: inline
     model_tier: powerful
+    needs_history: true
     file: pipeline/steps/dm-05-review.md
     depends_on: [dm-04-migration]
     output_files:

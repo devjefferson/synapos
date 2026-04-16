@@ -20,12 +20,27 @@ Três gates ativos. Nada mais.
 
 **Quando usar:** No primeiro step de qualquer pipeline. **Obrigatório.**
 
-**Verifica:**
+**Verifica existência:**
 - [ ] `.synapos/core/orchestrator.md` existe
 - [ ] `.synapos/core/pipeline-runner.md` existe
 - [ ] `docs/_memory/company.md` existe
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe
 - [ ] `.synapos/squads/{slug}/agents/` tem pelo menos um `.agent.md`
+
+**Verifica frescor da session (aviso, não bloqueia):**
+- [ ] `docs/.squads/sessions/{feature-slug}/session.manifest.json` existe
+- [ ] `context.md` foi atualizado há menos de 14 dias (verificar `files.context.md.loaded_at` no manifest)
+
+Se session.manifest.json não existe → aviso: `⚠️ [GATE-0] session.manifest.json ausente — manifest será criado na inicialização`
+Se context.md está stale (> 14 dias desde loaded_at) → aviso:
+```
+⚠️ [GATE-0] context.md pode estar desatualizado
+   Última atualização: {loaded_at do manifest}
+   Recomendação: revise context.md antes de prosseguir ou continue com context.snapshot
+Prosseguindo mesmo assim...
+```
+
+> **Regra:** Frescor é aviso, não bloqueio. O sistema confia no usuário para avaliar se o contexto ainda é válido.
 
 **Se modo Completo:** adicionalmente verifica se `docs/` existe com pelo menos 1 arquivo `.md`.
 

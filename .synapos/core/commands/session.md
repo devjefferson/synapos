@@ -53,9 +53,17 @@ Ao selecionar uma session → execute o protocolo **Com argumento** abaixo.
 
 ### Com argumento `{slug}` — abrir session
 
-1. Leia `docs/.squads/sessions/{slug}/context.md`
-2. Leia `docs/.squads/sessions/{slug}/memories.md`
-3. Leia `docs/.squads/sessions/{slug}/state.json`
+1. Leia `docs/.squads/sessions/{slug}/session.manifest.json` (se existir)
+2. Leia `docs/.squads/sessions/{slug}/context.snapshot` (se existir e hash válido) ou `context.md`
+3. Leia o bloco `<!-- RECENTES -->` de `docs/.squads/sessions/{slug}/memories.md`
+4. Leia `docs/.squads/sessions/{slug}/state.json`
+
+**Calcular frescor do contexto:**
+- Se `session.manifest.json` existe e `files.context.md.loaded_at` está preenchido:
+  - Calcule dias desde `loaded_at`
+  - Se > 14 dias: exibir `⚠️ STALE ({N} dias sem atualização)`
+  - Se ≤ 14 dias: exibir `✅ Atualizado ({N} dias atrás)`
+- Se manifest não existe: exibir `❓ Frescor desconhecido (manifest ausente)`
 
 Exiba resumo e menu de ações:
 
@@ -66,7 +74,8 @@ Session: {feature-slug}
 
 O que é: {primeira linha de context.md ## O que é}
 Decisões: {contagem de itens em ## Decisões tomadas}
-Memórias: {contagem de ## em memories.md} entradas
+Memórias: {entry_count do manifest OU contagem de ## em memories.md} entradas
+Contexto: {✅ Atualizado | ⚠️ STALE | ❓ Frescor desconhecido}
 Roles que trabalharam: {lista do state.json}
 
 Última atividade: {updated_at do state.json}
@@ -103,11 +112,18 @@ Se não houver, liste as sessions e peça ao usuário para escolher.
 
 **Protocolo de consolidação de `memories.md`:**
 
+memories.md usa estrutura de janela deslizante com dois blocos:
+- `<!-- SUMMARY --> ... <!-- /SUMMARY -->` — histórico consolidado
+- `<!-- RECENTES --> ... <!-- /RECENTES -->` — últimas entradas (lidas pelo pipeline-runner)
+
+**Antes de qualquer modificação:** crie backup `memories.md.bak` na mesma pasta. Log: `📦 Backup criado: memories.md.bak`
+
 1. Leia o arquivo completo
-2. Identifique entradas antigas (mais de 7 dias ou mais de 10 entradas)
-3. Crie nova seção no topo:
+2. Identifique entradas no bloco `<!-- RECENTES -->` com mais de 7 dias OU se o bloco tiver mais de 10 entradas
+3. Para cada entrada a consolidar, mova o conteúdo para o bloco `<!-- SUMMARY -->`:
    ```markdown
-   ## Consolidado até {YYYY-MM-DD}
+   <!-- SUMMARY -->
+   (consolidado em: {YYYY-MM-DD})
 
    ### Aprendizados principais
    {resumo estruturado preservando todas as informações relevantes}
@@ -117,9 +133,12 @@ Se não houver, liste as sessions e peça ao usuário para escolher.
 
    ### Decisões registradas
    {decisões que não estão em context.md}
+   <!-- /SUMMARY -->
    ```
-4. Marque entradas consolidadas com `<!-- consolidado {data} -->`
-5. Não delete nenhuma entrada
+4. Remova as entradas consolidadas do bloco `<!-- RECENTES -->` (não delete — elas estão no SUMMARY)
+5. Atualize `session.manifest.json` → `files.memories.md.entry_count` com a contagem atual do bloco RECENTES
+
+> **Legado:** Se memories.md não tem a estrutura de blocos, crie os blocos durante a consolidação: mova tudo para SUMMARY e deixe RECENTES vazio.
 
 **Protocolo de consolidação de `review-notes.md`:**
 
@@ -139,6 +158,8 @@ Se não houver, liste as sessions e peça ao usuário para escolher.
    review-notes.md: {N} entradas → 1 bloco consolidado
    Session: docs/.squads/sessions/{feature-slug}/
 ```
+
+> **`project-learnings.md` não é consolidado aqui** — é um arquivo global do projeto, não da feature. Cresce de forma controlada (append-only, entrada por pipeline concluído). Não há necessidade de consolidação automática.
 
 ---
 

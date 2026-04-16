@@ -77,6 +77,7 @@ steps:
     agent: igor-infra
     execution: inline
     model_tier: powerful
+    needs_history: true
     file: pipeline/steps/07-review.md
     depends_on: [06-observabilidade]
     output_files:
