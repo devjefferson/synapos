@@ -1,554 +1,203 @@
 # Synapos — Guia de Referência
 
-**Workflow system para trabalhar com IA em projetos reais.**
+**Contexto persistente por feature para trabalhar com IA em projetos reais.**
 
-Roles simulados, sessions persistentes, pipelines estruturados.
-
-```bash
-npx synapos
-```
+Três arquivos de core. Um pipeline de três steps. Um gate que roda shell.
 
 ---
 
-## Índice
+## CONCEITOS
 
-- [Como funciona](#como-funciona)
-- [Instalação](#instalação)
-- [Comandos](#comandos)
-- [Roles disponíveis](#roles-disponíveis)
-- [Pipelines](#pipelines)
-- [Modos de execução](#modos-de-execução)
-- [Gate system](#gate-system)
-- [Sessions e memória](#sessions-e-memória)
-- [Skills](#skills)
-- [Configurar modelo](#configurar-modelo)
-- [Estrutura de arquivos](#estrutura-de-arquivos)
+### Session
+Uma pasta por feature em `docs/.squads/sessions/{feature-slug}/`. Contém:
+- `context.md` — o que é, por que, decisões, não fazer
+- `memories.md` — aprendizados acumulados (append-only)
+- `state.json` — runs do pipeline nesta session
 
----
+Compartilhada entre roles. Se você abre uma feature com `backend` hoje e com `frontend` amanhã, ambos leem o mesmo contexto.
 
-## Como funciona
+### Role
+Um template em `.synapos/squad-templates/{nome}/` com:
+- `template.yaml` — metadados + pipeline inline
+- `persona.md` — estilo e princípios do agente
 
-```
-/init
-  → onboarding (1 pergunta na primeira vez)
-  → modo inferido ou escolhido (⚡ Rápido / 🔵 Completo)
-  → role selecionado ou inferido
-  → pipeline executa steps em sequência
-  → contexto salvo na session da feature
-```
+Quando você ativa um role, ele é copiado para `.synapos/squads/{feature-slug}/` e usado pelo pipeline-runner.
 
-**Role** — configuração de agents especializados para um domínio. Internamente armazenado como `squad`, exibido como "role" na interface.
+### Pipeline
+Definido inline no `template.yaml`. Três steps:
 
-**Session** — pasta persistente compartilhada por todos os roles que trabalham numa mesma feature. Sobrevive entre conversas.
+1. **investigar** — lê context.md e memories.md, entende a intenção, preenche context.md se novo
+2. **executar** — implementa o código, inclui testes
+3. **verificar** — roda lint/test/typecheck/build do stack.md (GATE-VERIFY)
 
-**Pipeline** — sequência de steps com agents, gates e critérios de qualidade.
+### GATE-VERIFY
+O único gate real. Executa os comandos definidos em `docs/_memory/stack.md`:
 
-**Gates** — validações obrigatórias em pontos críticos. Falha bloqueia o avanço.
-
----
-
-## Instalação
-
-```bash
-npx synapos
-```
-
-Ou instale roles específicos diretamente:
-
-```bash
-npx synapos add backend
-npx synapos add frontend
-npx synapos add fullstack
-npx synapos add mobile
-npx synapos add devops
-npx synapos add produto
-npx synapos add ia-dados
-```
-
-### IDEs suportadas
-
-| IDE | Arquivo gerado |
-|-----|----------------|
-| Claude Code | `.claude/commands/` |
-| Cursor | `.cursor/rules/synapos.mdc` |
-| Trae | `.trae/rules.md` |
-| OpenCode | `.opencode/commands/` |
-
----
-
+```markdown
 ## Comandos
-
-### `/init`
-
-Ponto de entrada principal. Executa na ordem:
-
-1. Verifica `docs/_memory/company.md` — se não existe, inicia onboarding (1 pergunta)
-2. Infere modo pela mensagem ou pergunta uma vez
-3. Infere role pela mensagem ou lista os disponíveis
-4. Cria ou carrega o squad e inicia o pipeline-runner
-
-**Onboarding (primeira vez) — 1 AskUserQuestion:**
+- Lint: npm run lint
+- Test: npm test
+- Typecheck: npx tsc --noEmit
+- Build: npm run build
 ```
-"Qual é o nome do projeto e o que você quer fazer?"
-→ Ex: "Meu SaaS — corrigir bug no login"
-```
-O restante (task tracker, modelo, linguagem) usa defaults silenciosos e pode ser ajustado depois.
+
+Falhou? Tentativa única de correção. Falhou de novo? Escala com a session intacta.
 
 ---
 
-### `/session`
-
-Navega sessions sem passar pelo fluxo do `/init`.
+## FLUXO DE UMA EXECUÇÃO
 
 ```
-/session                  → lista todas as sessions com resumo
-/session {slug}           → abre session específica com context.md em destaque
-/session consolidate      → consolida memories.md e review-notes.md manualmente
-```
-
-Use `/session` quando quiser ver o estado de uma feature, retomar contexto ou compactar memórias acumuladas.
-
----
-
-### `/setup:build-tech`
-
-Analisa o codebase e gera documentação técnica em `docs/tech/` e `docs/tech-context/`.
-
-**Arquivos gerados:**
-```
-docs/tech/
-├── architecture.md       → decisões arquiteturais, padrões
-├── stack.md              → linguagens, frameworks, ferramentas
-├── business_logic.md     → regras de negócio no código
-├── codebase-guide.md     → como navegar o projeto
-├── api-spec.md           → contratos de API (se existir)
-└── adr/                  → Architecture Decision Records
-
-docs/tech-context/
-├── critical-rules.md     → regras que agents devem respeitar
-├── adrs-summary.md       → resumo das ADRs
-└── tech-stack.md
-```
-
-Ativa o **Modo Completo** automaticamente nas próximas execuções.
-
----
-
-### `/setup:build-business`
-
-Gera documentação de contexto de negócio em `docs/business/` a partir de uma entrevista.
-
-**Arquivos gerados:**
-```
-docs/business/
-├── business-context.md      → visão, missão, modelo de negócio
-├── product-vision.md        → north star, proposta de valor
-├── product-strategy.md      → OKRs, roadmap, prioridades
-├── competitive_landscape.md → concorrentes e posicionamento
-├── personas/                → perfis de usuários
-└── features/                → features mapeadas
+/init "adicionar webhook de pagamento"
+  │
+  ├── 1. orchestrator.md detecta contexto (company.md + stack.md)
+  ├── 2. infere role "backend" da mensagem
+  ├── 3. deriva feature-slug "webhook-pagamento"
+  ├── 4. cria docs/.squads/sessions/webhook-pagamento/
+  ├── 5. copia template backend → .synapos/squads/webhook-pagamento/
+  │
+  └── pipeline-runner.md executa:
+      ├── investigar → preenche context.md (pode fazer 1 rodada de perguntas)
+      ├── executar   → escreve o código + teste
+      └── verificar  → roda GATE-VERIFY
 ```
 
 ---
 
-### `/setup:discover`
+## ARQUIVOS DE PERFIL
 
-Análise incremental. Gera `docs/tech-context/` com briefing focado em regras críticas e ADRs. Use para atualizar o contexto sem re-executar o build completo.
+Em `docs/_memory/`:
 
----
+### company.md
+Perfil do projeto. Gerado no primeiro `/init` com o nome inferido do diretório.
+Edite para incluir: domínio, usuários, fase atual do produto.
 
-### `/set-model`
+### stack.md
+Detectada automaticamente por `/setup:discover`. Define:
+- Linguagem, framework, package manager, test runner, linter
+- **Comandos de verify** (a parte crítica)
 
-Altera a configuração de modelo sem re-executar o onboarding.
+Edite livremente. O pipeline-runner sempre usa a versão atual.
 
-```
-/set-model → model_capability (high / standard / lite) → model_name
-```
-
-Opcional: configure dois modelos para steps leves e pesados:
-
-```yaml
-# docs/_memory/preferences.md
-model_fast:     claude-haiku-4-5
-model_powerful: claude-opus-4-6
-```
+### preferences.md
+- Linguagem de output (pt-BR padrão)
+- Modelo preferido (referência — a IDE decide de fato)
 
 ---
 
-### `/bump`
+## COMANDOS
 
-Versiona o pacote npm. Atualiza `package.json` e `CHANGELOG.md`.
+### /init
+Ponto de entrada. Aceita argumento:
+- `/init` → menu de sessions ou nova feature
+- `/init {intenção}` → executa direto com inferência automática
 
-```
-/bump           → pergunta: PATCH / MINOR / MAJOR
-/bump minor     → executa diretamente
-```
+### /session
+- `/session` → lista sessions
+- `/session {slug}` → abre específica (resumo + ações)
+- `/session consolidate` → compacta memories.md quando crescer demais
 
----
+### /setup:discover
+Escaneia o código, popula `docs/_memory/stack.md` e cria `docs/tech/overview.md`.
 
-## Roles disponíveis
+### /setup:build-tech
+Menu para gerar arquivos em `docs/tech/`: architecture, modules, integrations, testing.
 
-Roles são configurações de agents especializados por domínio.
-Internamente: `squad.yaml`. Na interface: "role".
+### /setup:build-business
+Menu para gerar arquivos em `docs/business/`: vision, personas, okrs, journeys.
 
-### 🖥️ Frontend
+### /set-model
+Atualiza o modelo em `preferences.md`. A IDE (Claude Code, Cursor, etc.) tem seu próprio seletor — o Synapos só registra a preferência.
 
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Ana Arquitetura | Arquiteta — estrutura, componentes, padrões |
-| Rodrigo React | Dev — implementação de features |
-| Renata Revisão | Reviewer — code review, acessibilidade |
-
-Opcionais: Úrsula UI, Tiago Testes, Paulo Performance, Leo Engenheiro
-
----
-
-### ⚙️ Backend
-
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Bruno Base | Arquiteto — design de API, modelagem |
-| Alexandre API | Dev — implementação de endpoints |
-| Roberto Revisão | Reviewer — qualidade, boas práticas |
-
-Opcionais: Daniela Dados, Sérgio Segurança, Leo Engenheiro
+### /bump
+Versiona o pacote npm.
 
 ---
 
-### 📦 Fullstack
+## ROLES INCLUÍDOS
 
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Carlos Coordenador | Coordenador — alinhamento FE/BE, API contract |
-| Ana Arquitetura | Arquiteta Frontend |
-| Bruno Base | Arquiteto Backend |
-| Rodrigo React | Dev Frontend |
-| Alexandre API | Dev Backend |
+Cada role tem o mesmo pipeline de 3 steps. O que muda:
+- `persona.md` — estilo e princípios
+- `template.yaml` — instruções específicas do domínio em cada step
 
-Opcionais: Úrsula UI, Tiago Testes, Sérgio Segurança, Leo Engenheiro
-
----
-
-### 📋 Produto
-
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Priscila Produto | Product Manager — spec, requisitos |
-| Ana Análise | Analista — mapeamento de fluxos |
-| Tânia Técnica | Tech Writer — documentação, handoff |
-
-Opcionais: Paulo Pesquisa, Eduardo Estratégia, Úrsula UX, Leo Engenheiro
+| Role | Foco |
+|---|---|
+| `engineer` | Default genérico — adapta à stack |
+| `frontend` | UI, componentes, estado, a11y |
+| `backend` | API, schema, auth, transações |
+| `fullstack` | Contrato ponta a ponta |
+| `mobile` | iOS/Android divergência explícita |
+| `devops` | IaC, CI/CD, observabilidade, plan antes de apply |
+| `produto` | Problema antes de solução, métricas testáveis |
+| `ia-dados` | Reprodutibilidade, baseline, custo |
 
 ---
 
-### 📱 Mobile
+## DECISÕES FORA DO ESCOPO
 
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Marina Mobile | Arquiteta — estrutura, navegação |
-| Felipe Feature | Dev — implementação |
-| Viviane Visual | UX Mobile — design, animações |
+O agent sinaliza `[?]` quando precisa decidir algo não definido em `context.md`:
 
-Opcionais: Tiago Testes, Paulo Performance, Leo Engenheiro
+```
+[?] decisão: adicionar cache?
+   A) não agora — endpoint é baixo tráfego
+   B) sim — Redis já está no stack
+   Recomendação: B
+```
+
+O runner detecta `[?]`, apresenta via `AskUserQuestion`, aplica a escolha e continua. Agents nunca decidem sozinhos.
 
 ---
 
-### 🚀 DevOps
+## CUSTOMIZANDO
 
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Igor Infra | Arquiteto — cloud, IaC |
-| Patrícia Pipeline | Engenheira — CI/CD, automação |
+### Adicionar um role próprio
+Copie qualquer template de `.synapos/squad-templates/{existente}/` para um novo nome, ajuste `persona.md` e as `instruction` do `template.yaml`.
 
-Opcionais: Cláudio Containers, Osvaldo Observabilidade, Sérgio Segurança
+### Mudar o pipeline de um role
+Edite o campo `pipeline:` do `template.yaml`. Você pode:
+- Adicionar mais steps (ex: `docs`, `deploy`)
+- Ajustar `instruction` de qualquer step
+- Definir `gate: verify` em mais de um step
 
----
-
-### 🤖 IA / Dados
-
-| Agent (persona) | Papel simulado |
-|-----------------|----------------|
-| Larissa LLM | LLM Specialist — prompts, RAG |
-| Diana Dados | Engenheira de Dados — pipelines, ETL |
-| Nelson Notebook | Analista — exploração, visualização |
-
-Opcionais: Marco ML, Tânia Técnica, Leo Engenheiro
+### Mudar o comportamento do GATE-VERIFY
+Edite `.synapos/core/gate-system.md`. Ou só ajuste os comandos em `docs/_memory/stack.md` — o gate sempre lê de lá.
 
 ---
 
-## Pipelines
+## COMPATIBILIDADE
 
-Cada role tem pipelines para cenários diferentes.
+Funciona em qualquer IDE que suporte slash-commands + LLMs com tool use:
 
-### Frontend
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `feature-development` | Feature nova de médio/alto impacto |
-| `component-development` | Componente isolado do design system |
-| `bug-fix` | Bug com causa identificada |
-| `quick-fix` | Ajuste pontual, texto, estilo |
-
-### Backend
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `api-development` | API nova ou breaking change |
-| `database-migration` | Mudança de banco de dados |
-| `bug-fix` | Bug com causa identificada |
-| `quick-fix` | Ajuste pontual |
-
-### Produto
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `discovery-spec-handoff` | Feature estratégica, discovery completo |
-| `nova-feature` | Feature definida que precisa de spec |
-| `quick-spec` | Spec rápida para requisitos já claros |
-| `quick-fix` | Ajuste pontual de produto |
-
-### Fullstack
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `integration-feature` | Feature que cruza FE e BE |
-| `bug-fix` | Bug em múltiplas camadas |
-| `quick-fix` | Mudança isolada |
-
-### Mobile
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `feature-development` | Feature nova |
-| `bug-fix` | Bug identificado |
-| `quick-fix` | Ajuste pontual |
-
-### DevOps
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `ci-cd-setup` | Setup ou reestruturação de infra |
-| `infra-provision` | Provisionamento de recursos cloud |
-| `quick-fix` | Correção de configuração |
-
-### IA / Dados
-
-| Pipeline | Quando usar |
-|----------|-------------|
-| `ml-feature` | Modelo ou feature de ML |
-| `data-pipeline` | Pipeline de dados novo |
-| `quick-fix` | Correção isolada |
-
-### Pré-execução (opcional)
-
-Se `context.md` não existe na session, o runner oferece rodar a pré-execução antes do pipeline principal:
-
-```
-Investigação → context.md
-Arquitetura  → architecture.md
-Planejamento → plan.md
-↓
-Pipeline principal começa com os 3 arquivos no contexto
-```
+- Claude Code (nativo)
+- Cursor
+- Trae
+- OpenCode
+- Antigravity (regras em `.antigravity/rules.md`)
+- Copilot (instruções em `.github/copilot-instructions.md`)
 
 ---
 
-## Modos de execução
+## O QUE MUDOU NA V3
 
-Escolhido no PASSO 2 do `/init`. Inferido automaticamente quando possível.
+Corte brutal. Antes:
+- 9 steps com 3 checkpoints síncronos
+- 5 "gates" (3 textuais, 0 reais)
+- 8 templates com 100+ arquivos duplicados
+- orchestrator de 732 linhas, runner de 1005
 
-### ⚡ Rápido
+Agora:
+- 3 steps, 0 checkpoints obrigatórios
+- 1 gate que roda shell
+- 8 templates com 2 arquivos cada
+- orchestrator de 242 linhas, runner de 285
 
-Executa sem ler documentação do projeto. Injeta apenas session files e `company.md`.
-
-**Quando o modo é inferido automaticamente:** mensagem contém "fix", "bug", "typo", "ajuste", "quick".
-
-**Use para:** bug fix, ajuste rápido, quick change sem impacto arquitetural.
-
-### 🔵 Completo
-
-Injeta docs/, ADRs, session files e memories. Gates e validações completas.
-
-**Quando o modo é inferido automaticamente:** mensagem contém "feature", "arquitetura", "refactor", "sistema".
-
-**Use para:** feature nova, mudança arquitetural, qualquer coisa que precise de contexto completo do projeto.
+O valor real — **sessions persistentes com context.md + memories.md** — ficou intacto. Tudo o resto era cerimônia.
 
 ---
 
-## Gate system
+## REFERÊNCIAS
 
-Três gates ativos. Princípio: **Fail Loud, Never Silent**.
-
-### GATE-0 — Integridade
-
-Executa no início de todo pipeline. Verifica:
-- Arquivos core do framework existem (`.synapos/core/`)
-- `docs/_memory/company.md` existe
-- Squad configurado com agents válidos
-
-**Modo Rápido:** passa com aviso se docs/ ausente — nunca bloqueia por falta de documentação.
-**Modo Completo:** passa se `company.md` + pelo menos `docs/` existem.
-
-### GATE-3 — Qualidade mínima do output
-
-Após cada step `inline` ou `subagent`. Verifica:
-- Output não está vazio
-- Tem mais de 50 caracteres
-- Não é placeholder (`TODO`, `PLACEHOLDER`, `[vazio]`)
-- Nenhuma `veto_condition` do step foi violada
-
-Máximo 2 reexecuções automáticas. Na 3ª falha → escala para o usuário.
-
-### GATE-5 — Entrega
-
-Último step de qualquer pipeline. Confirmação visual apenas — **nunca bloqueia**.
-
-### Decisões no output
-
-Decisões fora do escopo são sinalizadas com `[?]` pelo agent:
-
-```
-[?] Decisão necessária: qual biblioteca de cache usar?
-Opções: A) Redis  B) Memcached
-Recomendação: Redis — já usado no projeto
-```
-
-O runner detecta `[?]`, apresenta as opções ao usuário e aguarda escolha antes de continuar.
-
----
-
-## Sessions e memória
-
-### Session folder
-
-Cada feature tem uma pasta persistente compartilhada por todos os roles:
-
-```
-docs/.squads/sessions/{feature-slug}/
-├── context.md       ← O que é / Por que existe / Decisões tomadas / O que não fazer
-├── memories.md      ← Aprendizados / Armadilhas / Próximos passos
-├── architecture.md  ← Decisões arquiteturais (gerado na pré-execução)
-├── plan.md          ← Plano de execução (gerado na pré-execução)
-├── review-notes.md  ← Notas de revisão (append-only)
-└── state.json       ← Log de execução (best-effort)
-```
-
-> **context.md é obrigatório ao entrar em feature existente.** Todo role lê o context.md antes de qualquer step. É o arquivo que evita retrabalho e contradições entre roles.
-
-### Memória
-
-`memories.md` e `review-notes.md` são **append-only** — nunca sobrescritos.
-
-Para consolidar quando crescerem demais:
-```
-/session consolidate
-```
-
-`project-learnings.md` em `docs/_memory/` acumula aprendizados transversais para todos os roles do projeto.
-
-### Retomar execução interrompida
-
-Se um pipeline é interrompido, `state.json` preserva o último step. Na próxima execução, o orquestrador detecta e oferece retomar de onde parou.
-
-### Checkpoints assíncronos (equipes distribuídas)
-
-```yaml
-# .synapos/squads/{slug}/squad.yaml
-async_checkpoints: true
-```
-
-Em vez de bloquear e aguardar, o pipeline registra o checkpoint em `pending-approvals.md` e encerra. O próximo dev executa `/init → retomar de onde parou`.
-
----
-
-## Skills
-
-Integrações via MCP que expandem o que os agents podem fazer.
-
-| Skill | O que faz |
-|-------|-----------|
-| `brave-search` | Pesquisa web — benchmarks, concorrentes, documentação |
-| `github` | Issues, PRs, repositórios, code, actions |
-| `fetch-url` | Leitura de URLs e extração de conteúdo |
-| `filesystem` | Acesso avançado ao sistema de arquivos |
-| `playwright-browser` | Browser automation — screenshots, testes E2E |
-
-```bash
-npx synapos add skill brave-search
-```
-
-Quando uma skill cobre a tarefa em execução, o agent deve usá-la — não é opcional.
-
----
-
-## Configurar modelo
-
-### model_capability
-
-Controla o nível de adaptação de contexto:
-
-| Valor | Quando usar | Efeito |
-|-------|-------------|--------|
-| `high` | Claude Opus/Sonnet, GPT-4o, Gemini Pro | Contexto completo sem adaptação |
-| `standard` | Claude Haiku, GPT-4o-mini, Gemini Flash | CoT prefix + templates de estrutura |
-| `lite` | Kimi, MiniMax, Llama, modelos locais | Resumo de contexto, ~70% menos tokens |
-
-Ajuste com `/set-model` a qualquer momento.
-
-### Roteamento multi-modelo
-
-```yaml
-# docs/_memory/preferences.md
-model_fast:     claude-haiku-4-5     # steps leves: gates, formatação
-model_powerful: claude-opus-4-6     # steps pesados: implementação, arquitetura
-```
-
----
-
-## Estrutura de arquivos
-
-```
-seu-projeto/
-├── .synapos/
-│   ├── core/
-│   │   ├── orchestrator.md         → fluxo do /init
-│   │   ├── pipeline-runner.md      → engine de execução
-│   │   ├── gate-system.md          → GATE-0, GATE-3, GATE-5
-│   │   ├── skills-engine.md        → gerenciamento de skills
-│   │   ├── model-adapter.md        → adaptação para modelos fracos
-│   │   └── commands/
-│   │       ├── session.md          → protocolo do /session
-│   │       ├── bump.md             → protocolo do /bump
-│   │       └── setup/              → protocolos do /setup:*
-│   ├── squad-templates/            → templates por domínio
-│   │   ├── backend/
-│   │   ├── frontend/
-│   │   ├── produto/
-│   │   └── ...
-│   ├── squads/                     → roles criados (gerado pelo /init)
-│   │   └── {slug}/
-│   │       ├── squad.yaml          → configuração do role
-│   │       ├── agents/             → .agent.md dos agents
-│   │       └── pipeline/           → pipeline.yaml + steps/
-│   └── skills/                     → integrações instaladas
-│
-├── docs/
-│   ├── _memory/
-│   │   ├── company.md              → perfil do projeto
-│   │   ├── preferences.md          → modelo, idioma, task tracker
-│   │   └── project-learnings.md   → aprendizados globais
-│   ├── business/                   → gerado pelo /setup:build-business
-│   ├── tech/                       → gerado pelo /setup:build-tech
-│   ├── tech-context/               → gerado pelo /setup:discover
-│   └── .squads/
-│       └── sessions/
-│           └── {feature-slug}/     → context, memories, state por feature
-│
-└── .claude/                        → comandos instalados para Claude Code
-    └── commands/
-        ├── init.md
-        ├── session.md
-        ├── set-model.md
-        ├── bump.md
-        └── setup/
-```
+- [../.synapos/core/orchestrator.md](../.synapos/core/orchestrator.md)
+- [../.synapos/core/pipeline-runner.md](../.synapos/core/pipeline-runner.md)
+- [../.synapos/core/gate-system.md](../.synapos/core/gate-system.md)
+- [GETTING_STARTED.md](GETTING_STARTED.md)

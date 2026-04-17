@@ -1,74 +1,51 @@
-# Synapos Runtime — Copilot Mode
+# Synapos — Copilot Instructions
 
-> Este projeto usa o **Synapos Framework**. Você está operando como executor do Synapos no modo IDE-native.
-> Protocolo completo: `.synapos/copilot.md`
-
----
-
-## REGRAS OBRIGATÓRIAS
-
-Estas regras são ativas em **toda** interação, sem exceção:
-
-1. **Nunca execute sem contexto mínimo** — leia `docs/_memory/company.md` antes de qualquer ação significativa. Se não existir, inicie o onboarding (veja `.synapos/copilot.md`).
-2. **Nunca tome decisões autônomas** — escolhas de biblioteca, arquitetura, padrão ou framework que não estejam especificadas devem ser sinalizadas com `[?]` no output e aguardar aprovação do usuário antes de continuar.
-3. **Respeite ADRs existentes** — antes de implementar, verifique arquivos com `ADR`, `adr` ou `decisions` no nome em `docs/`. Conflito com ADR = bloqueio obrigatório.
-4. **Use os arquivos como memória** — estado e contexto vivem em `docs/.squads/sessions/{feature-slug}/`. Sempre leia antes de executar.
-5. **Nunca escreva dentro de `.synapos/`** — essa pasta é somente do framework.
+Este projeto usa o **Synapos Framework**. Quando o usuário pedir algo substancial (feature, bug, refactor), siga o protocolo do Synapos.
 
 ---
 
-## COMANDOS DISPONÍVEIS
+## COMO FUNCIONA
 
-Ative via comentário no código ou mensagem no chat:
+O Synapos mantém contexto persistente por feature em `docs/.squads/sessions/{feature-slug}/`. Antes de executar:
+
+1. Leia `docs/_memory/company.md` e `docs/_memory/stack.md`.
+2. Se a mensagem do usuário tem uma intenção clara, derive um `feature-slug` (lowercase, hífens, até 3 palavras-chave).
+3. Abra ou crie `docs/.squads/sessions/{feature-slug}/` com `context.md` + `memories.md`.
+4. Siga o pipeline: **investigar → executar → verificar**.
+
+Documentação do pipeline: `.synapos/core/pipeline-runner.md`.
+
+---
+
+## REGRAS
+
+1. **Leia context.md antes de executar** — se existir, respeite decisões registradas.
+2. **Uma rodada de perguntas**, só se houver ambiguidade crítica.
+3. **Decisões fora do escopo** → sinalize `[?]` e aguarde o usuário.
+4. **Verify no final** → rode os comandos em `docs/_memory/stack.md` (Lint, Test, Typecheck, Build).
+5. **Nunca escreva em `.synapos/`** — pasta do framework.
+6. **Nunca escreva em `docs/_memory/`** — perfil do projeto (edição manual do usuário).
+7. **Respeite ADRs** — se existirem em `docs/`, decisões registradas têm prioridade.
+
+---
+
+## COMANDOS NO CHAT
 
 | Comando | Ação |
-|---------|------|
-| `synapos:init` | Iniciar ou retomar o orquestrador Synapos |
-| `synapos:session` | Listar sessions ativas e navegar contexto de features |
-| `synapos:session slug:{feature}` | Abrir session específica com resumo de context.md |
-| `synapos:session consolidate` | Consolidar memories.md e review-notes.md manualmente |
-| `synapos:squad squad:{domínio} mode:{modo} pipeline:{pipeline}` | Criar e ativar um role |
-| `synapos:step step:{id}` | Executar um step específico do pipeline ativo |
-| `synapos:gate gate:{GATE-N}` | Executar validação de um gate |
-| `synapos:status` | Exibir estado do role e session ativos |
-| `synapos:memory` | Exibir memória da feature ativa |
-
-**Exemplos:**
-```
-// synapos:init
-// synapos:session
-// synapos:session slug:auth-module
-// synapos:squad squad:frontend mode:quick pipeline:bug-fix
-// synapos:step step:01-gate-integridade
-```
+|---|---|
+| `synapos:init {intenção}` | Iniciar ou retomar o fluxo — equivale ao `/init` |
+| `synapos:session` | Listar sessions |
+| `synapos:session {slug}` | Abrir uma session específica |
 
 ---
 
-## MODOS DE EXECUÇÃO
+## CONTEXTO INJETADO POR PADRÃO
 
-| Modo | Quando usar | Comportamento |
-|------|-------------|---------------|
-| `quick` | Bug fix, ajuste, quick change | Contexto mínimo — session files apenas |
-| `complete` | Feature nova, refactor, arquitetura | docs/, ADRs e session files completos |
+Ao executar qualquer step:
+- Persona do role (se aplicável)
+- `docs/_memory/company.md` + `docs/_memory/stack.md`
+- `context.md` + `memories.md` da session
+- Intenção original do usuário
+- Instrução do step
 
-O modo é inferido automaticamente por palavras-chave da mensagem. Veja `.synapos/copilot.md` para a lógica completa.
-
----
-
-## ADAPTAÇÕES COPILOT
-
-No Copilot Mode, as seguintes substituições estão ativas (definidas em `.synapos/core/copilot-adapter.md`):
-
-- **`AskUserQuestion`** → Apresente opções numeradas no chat e aguarde a escolha
-- **`execution: subagent`** → Execute inline na conversa atual
-- **`execution: checkpoint`** → Apresente checklist e aguarde confirmação explícita
-- **Gates automáticos** → Execute como checklist ao final do output
-
----
-
-## CONTEXTO DO PROJETO
-
-<!-- SYNAPOS: CONTEXT START -->
-> Preenchido pelo `/init` ou pelo usuário.
-> Para projetos com docs, este bloco é substituído pelo contexto real de `docs/_memory/company.md`.
-<!-- SYNAPOS: CONTEXT END -->
+Nada de hash, snapshot ou manifest — apenas os arquivos.

@@ -242,7 +242,7 @@ ${bold('EXEMPLOS')}
 
   try {
     installCore(synaposSource, synaposTarget);
-    ok(`.synapos/core instalado ${gray('(orchestrator, pipeline-runner, gates, model-adapter, skills)')}`);
+    ok(`.synapos/core instalado ${gray('(orchestrator, pipeline-runner, gate-system, commands, skills)')}`);
   } catch (e) {
     err(`Erro ao copiar core: ${e.message}`);
     process.exit(1);
@@ -318,8 +318,8 @@ ${bold('EXEMPLOS')}
     console.log(cyan('  →') + dim(`  ${ide.title.padEnd(12)} →  ${ide.hint}`));
   }
   nl();
-  console.log(dim('  Dica: /init detecta automaticamente o contexto do projeto'));
-  console.log(dim('        e escolhe o modo certo (Bootstrap / Standard / Strict)'));
+  console.log(dim('  Dica: /init detecta a stack, cria a session e executa direto.'));
+  console.log(dim('        Edite docs/_memory/stack.md para habilitar lint/test no gate de verify.'));
   nl();
 }
 

@@ -1,68 +1,51 @@
 name: devops
-displayName: "Squad DevOps / Infra"
+displayName: "DevOps"
 icon: "🚀"
-version: "1.0.0"
-description: "CI/CD, containers, cloud, IaC e observabilidade — do código ao deploy confiável"
+domain: devops
+description: "CI/CD, containers, deploy, infra-as-code, observabilidade."
+version: "3.0.0"
 
-agents:
-  base:
-    - id: igor-infra
-      file: agents/igor-infra.agent.md
-      displayName: "Igor Infra"
-      icon: "☁️"
-      role: "Arquiteto de Infra"
-    - id: patricia-pipeline
-      file: agents/patricia-pipeline.agent.md
-      displayName: "Patrícia Pipeline"
-      icon: "🔄"
-      role: "Engenheira de CI/CD"
-  optional:
-    - id: leo-engenheiro
-      file: ../engineer/agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação e Arquitetura"
-    - id: claudio-containers
-      file: agents/claudio-containers.agent.md
-      displayName: "Cláudio Containers"
-      icon: "🐳"
-      role: "Especialista Docker/Kubernetes"
-    - id: osvaldo-observabilidade
-      file: agents/osvaldo-observabilidade.agent.md
-      displayName: "Osvaldo Observabilidade"
-      icon: "📊"
-      role: "Engenheiro de Observabilidade"
-    - id: sergio-seguranca
-      file: ../backend/agents/sergio-seguranca.agent.md
-      displayName: "Sérgio Segurança"
-      icon: "🔒"
-      role: "Engenheiro de Segurança"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md.
 
-pre_pipeline:
-  available: true
-  file: ../../core/pipelines/pre-execution.yaml
-  agent: igor-infra
+      Se é pedido novo:
+      1. Entenda a intenção.
+      2. Mapeie: CI atual, Dockerfile, IaC, observabilidade existente, cloud provider.
+      3. Perguntas (uma rodada): ambiente alvo?, SLA?, segredos?, rollback strategy?
+      4. Preencha context.md: O que é, Por que, Decisões (infra), Não fazer.
 
-pipelines:
-  default: ci-cd-setup
-  available:
-    - id: ci-cd-setup
-      name: "Setup de CI/CD"
-      description: "Infra → Containers → Pipeline → Observabilidade → Review"
-      file: pipelines/ci-cd-setup.yaml
-    - id: infra-provision
-      name: "Provisionamento de Infra"
-      description: "Design → IaC → Validação → Aprovação → Apply"
-      file: pipelines/infra-provision.yaml
-    - id: quick-fix
-      name: "Quick Fix"
-      description: "Ajuste pontual de infra ou CI/CD — sem aprovações intermediárias"
-      file: pipelines/quick-fix.yaml
+      Respeite políticas de compliance e segurança do projeto.
+    output: context.md
 
-performance_modes:
-  alta:
-    description: "Infra completa, containers, pipeline com todos os stages, observabilidade e segurança"
-  economico:
-    description: "Arquiteto de infra + CI/CD — para configurações focadas"
-  solo:
-    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Implemente a mudança de infra/CI:
+      - Dockerfile, compose ou manifesto k8s conforme necessidade.
+      - Workflow de CI (GitHub Actions, GitLab CI, etc.) seguindo o padrão do projeto.
+      - IaC (Terraform, Pulumi, CDK) se aplicável.
+      - Segredos via vault/secret manager — nunca em plaintext.
+      - Logs estruturados e métricas mínimas expostas.
+      - Documentação das variáveis de ambiente necessárias.
+
+      `[?]` para decisões que afetam custo, segurança ou SLA.
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Rode validação local dos manifestos/workflows quando possível:
+      - `docker build` para imagens.
+      - `terraform validate` / `terraform plan` (sem apply) para IaC.
+      - Lint de workflow (actionlint, etc.) se disponível.
+      - Comandos de stack.md aplicáveis.
+
+      Uma tentativa de correção. Nunca faça apply/deploy de produção sem aprovação do usuário.
+
+      Ao final, resuma:
+      - Arquivos de infra criados/modificados
+      - Segredos novos necessários
+      - Passos manuais restantes (apply, rotação, etc.)
+    gate: verify

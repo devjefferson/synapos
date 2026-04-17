@@ -1,68 +1,48 @@
 name: ia-dados
-displayName: "Squad IA / Dados"
+displayName: "IA / Dados"
 icon: "🤖"
-version: "1.0.0"
-description: "ML, pipelines de dados, LLMs e análise — da exploração ao modelo em produção"
+domain: ia-dados
+description: "ML, pipelines de dados, LLM apps, ETL. Foco em reprodutibilidade e qualidade de dados."
+version: "3.0.0"
 
-agents:
-  base:
-    - id: larissa-llm
-      file: agents/larissa-llm.agent.md
-      displayName: "Larissa LLM"
-      icon: "🧠"
-      role: "LLM Specialist"
-    - id: diana-dados
-      file: agents/diana-dados.agent.md
-      displayName: "Diana Dados"
-      icon: "🗄️"
-      role: "Engenheira de Dados"
-    - id: nelson-notebook
-      file: agents/nelson-notebook.agent.md
-      displayName: "Nelson Notebook"
-      icon: "📊"
-      role: "Analista de Dados"
-  optional:
-    - id: leo-engenheiro
-      file: ../engineer/agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação e Arquitetura"
-    - id: marco-ml
-      file: agents/marco-ml.agent.md
-      displayName: "Marco ML"
-      icon: "🔬"
-      role: "ML Engineer"
-    - id: tania-tecnica
-      file: ../produto/agents/tania-tecnica.agent.md
-      displayName: "Tânia Técnica"
-      icon: "📝"
-      role: "Tech Writer"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md.
 
-pre_pipeline:
-  available: true
-  file: ../../core/pipelines/pre-execution.yaml
-  agent: larissa-llm
+      Se é pedido novo:
+      1. Entenda a intenção.
+      2. Mapeie: dados disponíveis, schema, volume, frequência, qualidade atual.
+      3. Perguntas (uma rodada): métrica-alvo?, baseline?, latência aceitável?, custo?
+      4. Preencha context.md: O que é, Por que, Decisões (modelo, arquitetura), Não fazer.
 
-pipelines:
-  default: ml-feature
-  available:
-    - id: ml-feature
-      name: "Feature de IA / ML"
-      description: "Exploração → Design → Implementação → Avaliação → Deploy"
-      file: pipelines/ml-feature.yaml
-    - id: data-pipeline
-      name: "Pipeline de Dados"
-      description: "Design → Implementação → Qualidade → Validação → Deploy"
-      file: pipelines/data-pipeline.yaml
-    - id: quick-fix
-      name: "Quick Fix"
-      description: "Ajuste pontual em modelo, prompt ou pipeline — sem aprovações intermediárias"
-      file: pipelines/quick-fix.yaml
+      Considere trade-offs de custo, latência e precisão.
+    output: context.md
 
-performance_modes:
-  alta:
-    description: "Exploração completa, ML engineering, pipelines de dados, documentação e análise"
-  economico:
-    description: "LLM specialist + dados + análise — para features de IA focadas"
-  solo:
-    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Implemente o pipeline/modelo:
+      - Código reprodutível (seed fixa, requirements pinnados, versões de dados).
+      - Separação clara de: ingestão, transformação, treino/inferência, avaliação.
+      - Validação de schema na entrada (great_expectations, pandera, pydantic).
+      - Testes de funções puras de transformação.
+      - Para LLM apps: prompts versionados, fallback para erro de tool, tracing.
+      - Métrica registrada em local previsível (MLflow, W&B, ou log estruturado).
+
+      `[?]` para decisões de modelo/custo fora do escopo.
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Rode lint/test/typecheck de stack.md.
+      Se há baseline de métrica: confirme que a mudança não regrediu.
+      Para LLM apps: rode suite de casos de teste se existir.
+      Uma tentativa de correção.
+
+      Ao final, resuma:
+      - Pipeline/modelo alterado
+      - Métricas observadas (antes/depois)
+      - Considerações de custo e latência
+    gate: verify

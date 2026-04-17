@@ -1,77 +1,49 @@
 name: frontend
-displayName: "Squad de Frontend"
+displayName: "Frontend"
 icon: "🖥️"
-version: "1.0.0"
-description: "Especialistas em desenvolvimento frontend com foco em qualidade, performance e experiência do usuário"
+domain: frontend
+description: "UI, componentes, estado, estilo. Adapta-se ao framework detectado (React/Vue/Svelte/etc.)"
+version: "3.0.0"
 
-agents:
-  base:
-    - id: ana-arquitetura-fe
-      file: agents/ana-arquitetura-fe.agent.md
-      displayName: "Ana Arquitetura"
-      icon: "🏗️"
-      role: "Arquiteta Frontend"
-    - id: rodrigo-react
-      file: agents/rodrigo-react.agent.md
-      displayName: "Rodrigo React"
-      icon: "⚛️"
-      role: "Dev Frontend"
-    - id: renata-revisao-fe
-      file: agents/renata-revisao-fe.agent.md
-      displayName: "Renata Revisão"
-      icon: "🔍"
-      role: "Reviewer Frontend"
-  optional:
-    - id: ursula-ui
-      file: agents/ursula-ui.agent.md
-      displayName: "Úrsula UI"
-      icon: "🎨"
-      role: "UX/UI Designer"
-    - id: tiago-testes-fe
-      file: agents/tiago-testes-fe.agent.md
-      displayName: "Tiago Testes"
-      icon: "🧪"
-      role: "Engenheiro de Testes"
-    - id: paulo-performance
-      file: agents/paulo-performance.agent.md
-      displayName: "Paulo Performance"
-      icon: "⚡"
-      role: "Engenheiro de Performance"
-    - id: leo-engenheiro
-      file: ../engineer/agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação e Arquitetura"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md da session.
 
-pre_pipeline:
-  available: true
-  file: ../../core/pipelines/pre-execution.yaml
-  agent: ana-arquitetura-fe
+      Se context.md está vazio ou o usuário pediu algo novo:
+      1. Entenda a intenção.
+      2. Analise componentes, rotas, estado e design existentes.
+      3. Se houver ambiguidade (ex: qual comportamento em mobile, estados de erro), pergunte — uma rodada só.
+      4. Preencha context.md com: O que é, Por que, Decisões de UX/UI, Não fazer.
 
-pipelines:
-  default: feature-development
-  available:
-    - id: feature-development
-      name: "Desenvolvimento de Feature"
-      description: "Discovery → Arquitetura → Implementação → Review → Testes → Docs"
-      file: pipelines/feature-development.yaml
-    - id: component-design
-      name: "Design de Componente"
-      description: "Spec → Implementação → Review → Storybook"
-      file: pipelines/component-development.yaml
-    - id: bug-fix
-      name: "Correção de Bug"
-      description: "Diagnóstico → Fix → Testes → Review"
-      file: pipelines/bug-fix.yaml
-    - id: quick-fix
-      name: "Quick Fix"
-      description: "Mudança pontual e documentada — sem aprovações intermediárias"
-      file: pipelines/quick-fix.yaml
+      Se context.md já está populado e a intenção cabe: apenas confirme e anote decisões novas.
 
-performance_modes:
-  alta:
-    description: "Arquitetura detalhada, implementação completa, testes, docs e review de performance"
-  economico:
-    description: "Implementação direta + review — ideal para tasks bem definidas"
-  solo:
-    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+      Respeite a stack (React/Vue/Svelte/etc.) detectada em stack.md.
+    output: context.md
+
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Implemente a UI decidida:
+      - Componentes novos ou modificados.
+      - Estilos seguindo o padrão existente (CSS modules, Tailwind, styled-components, etc.).
+      - Estado local ou global conforme a arquitetura do projeto.
+      - A11y básica: labels, roles, contraste, foco visível.
+      - Responsividade se o design original prevê.
+
+      Testes de componente quando a stack suporta (Vitest, Jest, Testing Library).
+
+      Sinalize `[?]` para decisões fora do escopo (ex: nova lib de UI, mudança de design system).
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Rode os comandos de stack.md: Lint, Typecheck, Test, Build.
+      Se falhar: corrija (uma tentativa) e rode de novo.
+
+      Ao final, resuma:
+      - Componentes criados/modificados
+      - Testes adicionados
+      - Pontos de atenção visual (se aplicável)
+    gate: verify

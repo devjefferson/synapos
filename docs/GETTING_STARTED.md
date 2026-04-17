@@ -1,136 +1,129 @@
 # Synapos — Getting Started
 
-> Guia rápido para começar a usar o Synapos.
+> Guia rápido para começar.
 
 ---
 
-## Começo em 3 interações
+## Instalar
 
-### Primeiro uso (sem nada configurado)
-
-```
-/init
-→ "Meu SaaS — corrigir bug no login"   ← nome do projeto + o que quer fazer
-→ Escolha o role: backend               ← inferido automaticamente ou você escolhe
-→ Pipeline roda
+```bash
+npx synapos
 ```
 
-Pronto. O Synapos configura o ambiente, cria a session e executa.
-
-### Retorno (projeto já configurado)
-
-```
-/init
-→ Escolha o role ativo ou crie novo
-→ Pipeline roda
-```
-
-Uma interação.
+Escolha a IDE. O Synapos copia `.synapos/` + templates para o seu projeto e cria os slash-commands.
 
 ---
 
-## Qual modo escolher
+## Primeiro uso
 
-| Situação | Modo |
-|----------|------|
-| Bug fix, ajuste, quick change | ⚡ **Rápido** — inferido automaticamente |
-| Feature nova, refactor, arquitetura | 🔵 **Completo** — injeta docs/ e ADRs |
-| Dúvida | Rápido — você pode reexecutar em Completo depois |
+```
+/init "descreva o que quer fazer"
+```
 
-O modo é inferido pela mensagem. Se não der para inferir, o Synapos pergunta uma vez.
+Exemplos:
+- `/init corrigir bug do login`
+- `/init adicionar endpoint de webhook`
+- `/init refatorar query de pedidos para usar índice composto`
+
+Na primeira execução:
+1. O Synapos detecta sua stack (package.json, Cargo.toml, go.mod, etc.).
+2. Cria `docs/_memory/` com `company.md`, `stack.md`, `preferences.md`.
+3. Escolhe um role com base na sua mensagem.
+4. Cria `docs/.squads/sessions/{feature-slug}/`.
+5. Executa o pipeline: **investigar → executar → verificar**.
 
 ---
 
-## Qual role escolher
+## Configurar o gate de verify
 
-| Você quer... | Role |
-|---|---|
-| API, endpoint, banco | `backend` |
-| Componente, tela, UI | `frontend` |
-| Feature que cruza FE + BE | `fullstack` |
-| App iOS/Android | `mobile` |
-| Infra, CI/CD, deploy | `devops` |
-| Spec, discovery, produto | `produto` |
-| ML, dados, pipeline | `ia-dados` |
+Edite `docs/_memory/stack.md`:
 
-O role também é inferido da mensagem quando possível.
+```markdown
+## Comandos
+- Install: npm install
+- Lint: npm run lint
+- Test: npm test
+- Typecheck: npx tsc --noEmit
+- Build: npm run build
+```
+
+O último step do pipeline roda esses comandos. Se algum falhar, o Synapos tenta corrigir uma vez, depois escala.
+
+Sem comandos preenchidos: verify é pulado com aviso.
+
+---
+
+## Retomar uma feature
+
+```
+/init            → menu com sessions ativas
+/session         → listar
+/session {slug}  → abrir diretamente
+```
 
 ---
 
 ## Cenários comuns
 
-### Tenho um projeto existente
-
+### Projeto existente, sem docs
 ```
-1. /init → onboarding (1 pergunta: nome + o que quer fazer)
-2. /setup:build-tech  → gera docs/tech/ a partir do código
-3. /setup:build-business → gera docs/business/ (opcional, mas melhora muito)
-4. /init → escolha o role → Modo Completo
+/init                → onboarding automático
+/setup:discover      → gera stack.md a partir do código
+/setup:build-tech    → gera docs/tech/ (opcional)
 ```
 
-### Estou começando do zero
-
+### Começando do zero
 ```
-1. /init → onboarding
-2. /setup:build-business → visão, personas, OKRs
-3. /setup:build-tech → stack, arquitetura inicial
-4. /init → role produto → pipeline discovery-spec-handoff
-5. /init → role backend ou frontend → implementação
+/init
+/setup:build-business → visão, personas, OKRs
+/setup:build-tech     → arquitetura inicial
+/init "primeira feature"
 ```
 
-### Tenho uma task no backlog
+### Bug fix rápido
+```
+/init corrigir {descrição}
+```
 
-```
-/init → role → ⚡ Rápido → quick-fix
-```
-
-### Sou dev solo sem documentação
-
-```
-/init → "nome do projeto — o que quer fazer" → ⚡ Rápido → executa
-```
-Sem documentação, sem bloqueio — contexto mínimo.
+Sem checkpoints, sem cerimônia — investiga, corrige, verifica.
 
 ---
 
-## Sessions: o que persiste
+## Roles disponíveis
 
-Cada feature cria uma pasta que sobrevive entre conversas:
+| Role | Quando |
+|---|---|
+| `engineer` | Genérico — default |
+| `frontend` | UI, componentes |
+| `backend` | APIs, schema |
+| `fullstack` | Front + back |
+| `mobile` | Apps |
+| `devops` | CI/CD, infra |
+| `produto` | PRD, spec, discovery |
+| `ia-dados` | ML, pipelines, LLM apps |
 
-```
-docs/.squads/sessions/{feature}/
-├── context.md     ← O que é, por que existe, decisões, o que não fazer
-├── memories.md    ← Aprendizados acumulados
-├── architecture.md
-└── plan.md
-```
-
-Para navegar sessions sem abrir o `/init`:
-
-```
-/session                  → lista todas as features ativas
-/session auth-module      → abre o contexto de uma feature
-/session consolidate      → compacta memories quando crescer demais
-```
+Role é inferido da mensagem. Se ambíguo, o Synapos pergunta uma vez.
 
 ---
 
-## GATE-0 bloqueou — o que fazer
+## O que vai pra session
 
-GATE-0 verifica se os arquivos core do framework existem. Se bloqueou:
+Cada `/init` cria (ou retoma):
 
-| Arquivo faltando | Como resolver |
-|-----------------|---------------|
-| `docs/_memory/company.md` | `/init` cria automaticamente no onboarding |
-| Arquivos core do `.synapos/` | Reinstale: `npx synapos add backend` |
+```
+docs/.squads/sessions/{feature-slug}/
+├── context.md    ← preenchido no step "investigar"
+├── memories.md   ← aprendizados (append-only)
+└── state.json    ← histórico de runs
+```
 
-No Modo Rápido, GATE-0 passa com aviso — nunca bloqueia por falta de docs.
+Persiste entre conversas.
 
 ---
 
 ## Referências
 
+- [../.synapos/core/orchestrator.md](../.synapos/core/orchestrator.md) — fluxo de entrada
+- [../.synapos/core/pipeline-runner.md](../.synapos/core/pipeline-runner.md) — execução
+- [../.synapos/core/gate-system.md](../.synapos/core/gate-system.md) — GATE-VERIFY
 - [GUIDE.md](GUIDE.md) — referência completa
-- [orchestrator.md](../.synapos/core/orchestrator.md) — fluxo de init
-- [gate-system.md](../.synapos/core/gate-system.md) — gates disponíveis
-- [pipeline-runner.md](../.synapos/core/pipeline-runner.md) — execução de pipelines

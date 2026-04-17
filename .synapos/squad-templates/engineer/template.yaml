@@ -1,56 +1,55 @@
 name: engineer
-displayName: "Squad Engineer"
+displayName: "Engineer"
 icon: "🧠"
-version: "1.0.0"
-description: "Feature engineering completo: investigação → arquitetura → planejamento → execução guiada por ADRs"
+domain: engineer
+description: "Role genérico para feature, bug, refactor — adapta-se ao stack detectado"
+version: "3.0.0"
 
-agents:
-  base:
-    - id: leo-engenheiro
-      file: agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação, Arquitetura e Planejamento"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md da session.
 
-  optional:
-    - id: bruno-base
-      file: ../backend/agents/bruno-base.agent.md
-      displayName: "Bruno Base"
-      icon: "🏗️"
-      role: "Arquiteto Backend"
-    - id: ana-arquitetura-fe
-      file: ../frontend/agents/ana-arquitetura-fe.agent.md
-      displayName: "Ana Arquitetura"
-      icon: "🏗️"
-      role: "Arquiteta Frontend"
-    - id: carlos-coordenador
-      file: ../fullstack/agents/carlos-coordenador.agent.md
-      displayName: "Carlos Coordenador"
-      icon: "🔗"
-      role: "Coordenador Fullstack"
-    - id: alexandre-api
-      file: ../backend/agents/alexandre-api.agent.md
-      displayName: "Alexandre API"
-      icon: "⚙️"
-      role: "Dev Backend"
-    - id: rodrigo-react
-      file: ../frontend/agents/rodrigo-react.agent.md
-      displayName: "Rodrigo React"
-      icon: "⚛️"
-      role: "Dev Frontend"
+      Se context.md está vazio ou o usuário pediu algo novo que não está descrito:
+      1. Entenda a intenção do usuário (ver [USER_INTENT]).
+      2. Analise o código relevante (Grep/Glob/Read).
+      3. Se houver ambiguidade crítica, faça no máximo 3 perguntas — em UMA só rodada.
+      4. Preencha context.md com: O que é, Por que, Decisões, Não fazer.
 
-pipelines:
-  default: feature-development
-  available:
-    - id: feature-development
-      name: "Feature Development"
-      description: "Investigação → Arquitetura → Planejamento → Execução (guiada por ADRs, aprovação por fase)"
-      file: pipelines/feature-development.yaml
+      Se context.md já tem o essencial e a intenção cabe nele:
+      - Apenas confirme a direção, não reescreva o arquivo.
+      - Adicione uma linha em "## Decisões" se houver decisão nova.
 
-performance_modes:
-  alta:
-    description: "Leo + arquitetos especializados (BE/FE) para features complexas fullstack"
-  economico:
-    description: "Leo Engenheiro + docs e revisão essenciais — ideal para features de domínio único"
-  solo:
-    description: "Para dev solo — checkpoints de aprovação mantidos (gates de integridade), execução direta entre fases"
+      Respeite ADRs, preferências do projeto e stack.md.
+    output: context.md
+
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Execute o que foi decidido em context.md.
+
+      Regras:
+      - Edite código onde fizer sentido (Read primeiro, depois Edit/Write).
+      - Inclua ou atualize testes quando a mudança exigir.
+      - Siga a stack: imports, conventions e paths conforme docs/_memory/stack.md.
+      - Se descobrir algo inesperado que muda o plano, pare e sinalize com `[?]`.
+      - Não escreva em .synapos/ nem em docs/_memory/.
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Rode os comandos de verify conforme docs/_memory/stack.md:
+      Lint, Test, Typecheck, Build (apenas os preenchidos).
+
+      Se algum falhar:
+      - Mostre a saída.
+      - Corrija (uma tentativa).
+      - Re-rode.
+      - Se falhar de novo, pare e escale.
+
+      Ao final, resuma em 3 bullets:
+      - O que foi feito
+      - Arquivos modificados
+      - O que ainda falta (se aplicável)
+    gate: verify

@@ -1,164 +1,104 @@
 ---
 name: synapos-gate-system
-description: Sistema de quality gates — validação em pontos críticos do pipeline
+version: 3.0.0
+description: Gate único — executa os comandos de verify do stack.md no fim do pipeline
 ---
 
-# SYNAPOS GATE SYSTEM v2.0.0
+# SYNAPOS GATE SYSTEM v3.0.0
 
-> Gates são pontos de validação obrigatórios. Falha em um gate bloqueia o avanço.
-> Princípio: **Fail Loud, Never Silent** — nunca ignore uma falha de gate.
-
----
-
-## GATES DISPONÍVEIS
-
-Três gates ativos. Nada mais.
+> Um gate real. Roda comandos de verdade. Bloqueia de verdade quando falham.
+>
+> Antes tínhamos 3 gates que eram checagens textuais no output do LLM — teatro.
+> Agora só existe **GATE-VERIFY**, que executa lint/test/typecheck/build via shell.
 
 ---
 
-### GATE-0 — Integridade do Framework
+## GATE-VERIFY
 
-**Quando usar:** No primeiro step de qualquer pipeline. **Obrigatório.**
+### Quando usar
 
-**Verifica existência:**
-- [ ] `.synapos/core/orchestrator.md` existe
-- [ ] `.synapos/core/pipeline-runner.md` existe
-- [ ] `docs/_memory/company.md` existe
-- [ ] `.synapos/squads/{slug}/squad.yaml` existe
-- [ ] `.synapos/squads/{slug}/agents/` tem pelo menos um `.agent.md`
+Aplicado no último step do pipeline (declarado no yaml como `gate: verify`).
 
-**Verifica frescor da session (aviso, não bloqueia):**
-- [ ] `docs/.squads/sessions/{feature-slug}/session.manifest.json` existe
-- [ ] `context.md` foi atualizado há menos de 14 dias (verificar `files.context.md.loaded_at` no manifest)
+### O que faz
 
-Se session.manifest.json não existe → aviso: `⚠️ [GATE-0] session.manifest.json ausente — manifest será criado na inicialização`
-Se context.md está stale (> 14 dias desde loaded_at) → aviso:
+1. Lê os comandos da seção `## Comandos` em `docs/_memory/stack.md`.
+2. Executa cada comando não vazio (Lint, Test, Typecheck, Build — o que estiver preenchido).
+3. Se todos retornam código 0: aprovado.
+4. Se algum falha:
+   - Exibe o output do comando.
+   - Pede ao step anterior para corrigir, passando a saída do erro como contexto.
+   - Re-executa os comandos.
+   - **Uma tentativa de correção apenas.**
+   - Se falhar de novo: escala ao usuário com session preservada.
+
+### Saídas
+
+**Aprovado:**
 ```
-⚠️ [GATE-0] context.md pode estar desatualizado
-   Última atualização: {loaded_at do manifest}
-   Recomendação: revise context.md antes de prosseguir ou continue com context.snapshot
-Prosseguindo mesmo assim...
-```
-
-> **Regra:** Frescor é aviso, não bloqueio. O sistema confia no usuário para avaliar se o contexto ainda é válido.
-
-**Se modo Completo:** adicionalmente verifica se `docs/` existe com pelo menos 1 arquivo `.md`.
-
-**Falha de framework (qualquer modo):** liste os arquivos faltantes e pare.
-
-**Modo Rápido — docs ausentes:**
-```
-⚡ GATE-0 (Modo Rápido) — executando sem documentação de projeto.
-   Para resultados melhores: execute /setup:build-tech e /setup:build-business
-Prosseguindo...
+✅ GATE-VERIFY aprovado
+   lint:      ok
+   test:      ok (42 testes)
+   typecheck: ok
 ```
 
-**Modo Completo — docs presentes:**
+**Corrigindo:**
 ```
-✅ GATE-0 — aprovado
-```
-
----
-
-### GATE-3 — Qualidade Mínima do Output
-
-**Quando usar:** Após cada step com `execution: subagent` ou `execution: inline`.
-
-**Verifica:**
-- [ ] Output não está vazio
-- [ ] Output tem mais de 50 caracteres
-- [ ] Output não é placeholder (`TODO`, `PLACEHOLDER`, `[vazio]`, `[...]`)
-- [ ] Nenhuma `veto_condition` do step foi violada
-
-**Falha:**
-```
-🚫 GATE-3 — output inválido
-
-Motivo: {output vazio | placeholder | veto violado}
-Reexecutando step...
+⚠️  GATE-VERIFY falhou
+   Comando: {comando}
+   Tentando correção (1/1)...
 ```
 
-Máximo 2 reexecuções automáticas. Na 3ª falha → escale para o usuário.
-
-**Gate passando:**
+**Escalado:**
 ```
-✅ GATE-3 — output aprovado
+🚫 GATE-VERIFY falhou após correção automática
+   Comando: {comando}
+   Saída: {stderr resumido}
+
+   Session: docs/.squads/sessions/{feature-slug}/
+   Arquivos modificados estão intactos. Corrija manualmente e rode /init novamente.
+```
+
+**Sem comandos configurados:**
+```
+⚠️  GATE-VERIFY pulado — nenhum comando em docs/_memory/stack.md
+   Adicione comandos na seção "## Comandos" para habilitar verify.
 ```
 
 ---
 
-### GATE-5 — Entrega / Handoff
+## COMO CONFIGURAR
 
-**Quando usar:** Último step de qualquer pipeline antes de marcar como `completed`.
+Em `docs/_memory/stack.md`:
 
-**Comportamento:** apenas confirmação visual. **Nunca bloqueia.**
+```markdown
+## Comandos
+- Install: npm install
+- Lint: npm run lint
+- Test: npm test
+- Typecheck: npx tsc --noEmit
+- Build: npm run build
+```
 
-**Se tudo OK:**
-```
-✅ GATE-5 — Pronto para entrega
-   Squad pode ser marcado como completed.
-```
-
-**Se itens pendentes (warning, não bloqueia):**
-```
-⚠️  GATE-5 — Itens pendentes detectados:
-   {lista}
-   Squad será finalizado mesmo assim.
-```
+Cada linha `- {Nome}: {comando}` vira um check. `-` ou vazio significa pular.
 
 ---
 
-## DECISÕES NO OUTPUT
+## POR QUE SÓ UM GATE
 
-Não existe mais GATE-DECISION como gate bloqueante.
+Gates que são checagens textuais do output do LLM (ex: "output não está vazio", "output não contém TODO") não garantem nada — o modelo pode gerar 51 caracteres de lixo e passar. Também não previnem bugs reais.
 
-Quando um agent precisar tomar uma decisão além do escopo do step, ele deve sinalizar no output com `[?]`:
+O único gate que importa é: **o código compila, passa no lint, passa nos testes?**
 
-```
-[?] Decisão necessária: {descrição curta}
-Opções: A) {opção A}  B) {opção B}
-Recomendação: {opção e motivo}
-```
-
-O pipeline-runner detecta `[?]` no output e apresenta ao usuário para resolução antes de prosseguir. Não reexecuta o step — apenas aguarda a escolha e continua com ela como contexto.
+Se sim, aprova. Se não, corrige ou escala. Sem cerimônia intermediária.
 
 ---
 
-## COMO USAR NOS PIPELINES
+## REGRAS
 
-```yaml
-steps:
-  - id: gate-integridade
-    name: "Verificar Integridade"
-    execution: checkpoint
-    gate: GATE-0
-
-  - id: implementacao
-    name: "Implementar Feature"
-    agent: backend-dev
-    depends_on: [gate-integridade]
-    gate: GATE-3
-    veto_conditions:
-      - "output sem código implementado"
-```
-
----
-
-## MENSAGENS PADRÃO
-
-**Gate passando:**
-```
-✅ GATE-{N} — aprovado
-```
-
-**Gate falhando:**
-```
-🚫 GATE-{N} — FALHA
-
-Motivo: {descrição específica}
-Itens faltantes:
-  ✗ {item 1}
-  ✗ {item 2}
-
-Resolva e execute novamente.
-```
+| Regra | Por quê |
+|---|---|
+| **Zero gates bloqueantes por texto** | LLM pode vencer qualquer checagem textual trivialmente |
+| **Verify roda shell** | É o único "gate" que não pode ser enganado |
+| **Uma correção automática** | Mais que isso vira loop caro e geralmente piora o código |
+| **Escala preserva session** | Nunca deleta arquivos, nunca reverte. Só para e avisa. |
+| **Stack.md vazio = skip com aviso** | Projeto novo sem comandos configurados não deve ser bloqueado |

@@ -1,8 +1,8 @@
 {
   "name": "synapos",
-  "version": "2.8.0",
-  "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
-  "keywords": ["ai", "agents", "claude", "cursor", "framework", "orchestration", "llm"],
+  "version": "3.0.0",
+  "description": "Contexto persistente por feature para trabalhar com IA em projetos reais",
+  "keywords": ["ai", "claude", "cursor", "llm", "context", "workflow", "agents"],
   "author": "",
   "license": "MIT",
   "repository": {

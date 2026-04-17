@@ -4,9 +4,9 @@
 
 # Synapos
 
-> Workflow system para trabalhar com IA em projetos reais.
+> Contexto persistente por feature para trabalhar com IA em projetos reais.
 
-Synapos organiza **como você usa LLMs no desenvolvimento** — não é um agente mágico, é uma estrutura que faz a IA trabalhar melhor no seu projeto específico.
+A IA esquece tudo entre conversas. O Synapos resolve isso com uma pasta por feature que acumula **o que é, por que existe, decisões tomadas e o que não fazer** — lida por qualquer role de IA antes de começar.
 
 ```bash
 npx synapos
@@ -14,119 +14,143 @@ npx synapos
 
 ---
 
-## O que é
-
-Synapos resolve um problema concreto: **a IA esquece tudo entre conversas**.
-
-Cada feature do seu projeto ganha uma **session** — uma pasta com contexto persistente que qualquer role de IA lê antes de começar a trabalhar. O resultado é uma IA que sabe o que foi decidido, por que, e o que não fazer.
-
-```
-docs/.squads/sessions/{feature}/
-├── context.md       ← o que é, por que existe, decisões tomadas, o que não fazer
-├── memories.md      ← aprendizados acumulados
-├── architecture.md  ← desenho técnico
-└── plan.md          ← plano de execução
-```
-
-Isso persiste entre conversas, entre roles, entre dias.
-
----
-
-## O que não é
-
-- ❌ Não é multi-agent real — os roles são simulados sequencialmente pelo mesmo modelo
-- ❌ Não garante execução determinística — é tão bom quanto o modelo que você usa
-- ❌ Não substitui código ou decisões de arquitetura — estrutura o ambiente para a IA trabalhar melhor
-
----
-
 ## Como funciona
 
 ```
-/init → escolhe um role (backend, frontend, produto...)
-      → escolhe modo (⚡ Rápido ou 🔵 Completo)
-      → pipeline executa steps
-      → contexto salvo na session
-```
----
-
-## Modos de execução
-
-| Modo | Quando usar | O que injeta |
-|------|-------------|--------------|
-| ⚡ Rápido | Bug fix, ajuste, quick change | Contexto da session apenas |
-| 🔵 Completo | Feature nova, refactor, arquitetura | Session + docs/ do projeto + ADRs |
-
----
-
-## O diferencial real: sessions
-
-A maioria das ferramentas de IA trata cada conversa como um começo do zero.
-
-Com Synapos, cada feature acumula contexto ao longo do tempo:
-
-- **Decisões registradas** → a IA não repropõe o que já foi descartado
-- **Armadilhas documentadas** → erros não se repetem
-- **Contexto compartilhado** → qualquer role que entrar na feature lê o mesmo contexto
-
-```bash
-/session              # lista todas as features ativas
-/session auth-module  # abre o contexto de uma feature específica
-/session consolidate  # compacta memórias quando o arquivo crescer
+/init "corrigir bug do login"
+  → detecta stack
+  → abre ou cria docs/.squads/sessions/bug-login/
+  → executa pipeline: investigar → executar → verificar
 ```
 
----
-
-## Qualidade integrada
-
-Três gates ativos em todas as execuções:
-
-- **GATE-0** → arquivos obrigatórios existem antes de começar
-- **GATE-3** → output não está vazio ou é placeholder
-- **GATE-5** → confirmação visual de entrega
-
-Decisões fora do escopo são sinalizadas com `[?]` no output — o role para e aguarda sua aprovação antes de continuar.
+**Três steps. Um gate real.** No final, o Synapos roda `lint/test/typecheck/build` conforme `docs/_memory/stack.md`. Se falha, tenta corrigir uma vez. Se falha de novo, escala com a session preservada.
 
 ---
 
-## Skills (integrações)
-
-```bash
-npx synapos add skill brave-search
-npx synapos add skill playwright
-npx synapos add skill github
-```
-
-Skills injetam ferramentas ou instruções no contexto do agent durante a execução.
-
----
-
-## Estrutura gerada
+## O que persiste
 
 ```
-.synapos/               → core do framework (não edite)
-  squads/               → configuração dos roles ativos
-  squad-templates/      → templates por domínio
-  skills/               → integrações instaladas
+docs/.squads/sessions/{feature}/
+├── context.md     ← o que é, por que, decisões, o que não fazer
+├── memories.md    ← aprendizados acumulados
+└── state.json     ← runs do pipeline nesta session
+```
+
+Entre conversas, entre roles, entre dias.
+
+---
+
+## Roles disponíveis
+
+| Role | Domínio |
+|---|---|
+| `engineer` | Genérico — feature, bug, refactor (default para qualquer stack) |
+| `frontend` | UI, componentes, estado |
+| `backend` | APIs, schema, auth |
+| `fullstack` | Features integradas front + back |
+| `mobile` | React Native, Flutter, iOS, Android |
+| `devops` | CI/CD, containers, IaC, observabilidade |
+| `produto` | PRDs, specs, discovery |
+| `ia-dados` | ML, pipelines de dados, LLM apps |
+
+O role é inferido da sua mensagem. Se não for claro, o Synapos pergunta uma vez.
+
+---
+
+## Comandos
+
+```
+/init              → ponto de entrada principal
+/session           → navegar sessions
+/session {slug}    → abrir uma session específica
+/session consolidate → compactar memories.md quando crescer demais
+
+/setup:discover    → escanear o código e gerar docs/_memory/stack.md
+/setup:build-tech  → gerar docs/tech/
+/setup:build-business → gerar docs/business/
+
+/set-model         → mudar modelo em preferences.md
+/bump              → versionar o pacote
+```
+
+---
+
+## Qualidade integrada — GATE-VERIFY
+
+Um gate. Real. Roda shell.
+
+No último step do pipeline, executa os comandos definidos em `docs/_memory/stack.md`:
+
+```markdown
+## Comandos
+- Lint: npm run lint
+- Test: npm test
+- Typecheck: npx tsc --noEmit
+- Build: npm run build
+```
+
+Falhou? Tenta corrigir uma vez. Falhou de novo? Para e avisa. Sem teatro, sem loop infinito.
+
+---
+
+## Decisões fora do escopo
+
+O agent **nunca decide sozinho** o que está fora do escopo definido em `context.md`. Em vez disso, sinaliza:
+
+```
+[?] decisão: adicionar cache em memória ou usar Redis?
+   A) em memória — simples, perde em restart
+   B) Redis — persiste, adiciona dependência
+   Recomendação: B, o projeto já tem Redis para sessions
+```
+
+O usuário decide. O pipeline segue.
+
+---
+
+## Estrutura instalada
+
+```
+.synapos/
+├── core/
+│   ├── orchestrator.md       ← fluxo de entrada
+│   ├── pipeline-runner.md    ← executa os steps
+│   ├── gate-system.md        ← GATE-VERIFY
+│   └── commands/             ← /session, /setup, /set-model, /bump
+├── skills/                   ← integrações opcionais (brave-search, github, etc.)
+├── squad-templates/          ← 8 roles, cada um com template.yaml + persona.md
+└── squads/                   ← roles ativos da sua feature atual
+
 docs/
-  _memory/              → perfil do projeto e preferências
-  .squads/sessions/     → contexto persistente por feature
-  tech/                 → documentação técnica (opcional)
-  business/             → documentação de negócio (opcional)
+├── _memory/                  ← perfil + stack + preferências (edição manual)
+├── .squads/sessions/         ← sessions por feature (contexto persistente)
+├── tech/                     ← opcional, gerado por /setup:build-tech
+└── business/                 ← opcional, gerado por /setup:build-business
 ```
 
 ---
 
 ## Compatibilidade
 
-Funciona em qualquer IDE com suporte a agentes:
+Funciona com qualquer IDE que suporte slash-commands em LLMs:
 
 - Claude Code
 - Cursor
 - Trae
 - OpenCode
+- Antigravity
+- GitHub Copilot (via `synapos:init`)
 
-Compatível com qualquer modelo (Claude, GPT, Gemini, modelos locais).
+Qualquer modelo: Claude, GPT, Gemini, DeepSeek, Qwen, modelos locais.
+
+---
+
+## O que o Synapos NÃO é
+
+- ❌ Não é multi-agent real — roles são personas sequenciais no mesmo modelo.
+- ❌ Não garante execução determinística — é tão bom quanto o modelo escolhido.
+- ❌ Não substitui decisões humanas — estrutura o contexto para a IA trabalhar melhor.
+- ❌ Não executa por você — chama as ferramentas que o IDE já expõe.
 
 ---
 
@@ -135,6 +159,24 @@ Compatível com qualquer modelo (Claude, GPT, Gemini, modelos locais).
 ```bash
 npx synapos
 ```
+
+Seleciona IDE, copia `.synapos/` + templates, cria os slash-commands.
+
+```bash
+npx synapos frontend backend   # só templates específicos
+npx synapos --help
+```
+
+---
+
+## Filosofia
+
+Um pipeline. Três steps. Um gate real. Nada de cerimônia.
+
+Versões anteriores tinham 9 steps, 3 checkpoints síncronos, 5 "gates" textuais e 8 templates duplicados. Isso era fricção disfarçada de disciplina.
+
+O que permanece: contexto persistente por feature. É o único valor real.
+
 ---
 
 ## Contribua

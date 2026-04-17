@@ -1,93 +1,45 @@
 name: fullstack
-displayName: "Squad Fullstack"
+displayName: "Fullstack"
 icon: "📦"
-version: "1.0.0"
-description: "Frontend + Backend integrados com agente de coordenação de contratos de API"
+domain: fullstack
+description: "Features integradas front + back. Pensa no contrato ponta a ponta."
+version: "3.0.0"
 
-agents:
-  base:
-    - id: carlos-coordenador
-      file: agents/carlos-coordenador.agent.md
-      displayName: "Carlos Coordenador"
-      icon: "🔗"
-      role: "Coordenador Fullstack"
-    - id: ana-arquitetura-fe
-      file: ../frontend/agents/ana-arquitetura-fe.agent.md
-      displayName: "Ana Arquitetura"
-      icon: "🏗️"
-      role: "Arquiteta Frontend"
-    - id: rodrigo-react
-      file: ../frontend/agents/rodrigo-react.agent.md
-      displayName: "Rodrigo React"
-      icon: "⚛️"
-      role: "Dev Frontend"
-    - id: bruno-base
-      file: ../backend/agents/bruno-base.agent.md
-      displayName: "Bruno Base"
-      icon: "🏗️"
-      role: "Arquiteto Backend"
-    - id: alexandre-api
-      file: ../backend/agents/alexandre-api.agent.md
-      displayName: "Alexandre API"
-      icon: "⚙️"
-      role: "Dev Backend"
-  optional:
-    - id: leo-engenheiro
-      file: ../engineer/agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação e Arquitetura"
-    - id: ursula-ui
-      file: ../frontend/agents/ursula-ui.agent.md
-      displayName: "Úrsula UI"
-      icon: "🎨"
-      role: "UX/UI Designer"
-    - id: tiago-testes-fe
-      file: ../frontend/agents/tiago-testes-fe.agent.md
-      displayName: "Tiago Testes"
-      icon: "🧪"
-      role: "Engenheiro de Testes"
-    - id: sergio-seguranca
-      file: ../backend/agents/sergio-seguranca.agent.md
-      displayName: "Sérgio Segurança"
-      icon: "🔒"
-      role: "Engenheiro de Segurança"
-    - id: renata-revisao-fe
-      file: ../frontend/agents/renata-revisao-fe.agent.md
-      displayName: "Renata Revisão"
-      icon: "🔍"
-      role: "Reviewer Frontend"
-    - id: roberto-revisao-be
-      file: ../backend/agents/roberto-revisao-be.agent.md
-      displayName: "Roberto Revisão"
-      icon: "🔎"
-      role: "Reviewer Backend"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md da session.
 
-pre_pipeline:
-  available: true
-  file: ../../core/pipelines/pre-execution.yaml
-  agent: carlos-coordenador
+      Se é pedido novo:
+      1. Entenda a intenção (ver [USER_INTENT]).
+      2. Mapeie front (UI, estado) E back (endpoints, schema) envolvidos.
+      3. Perguntas (uma rodada): contratos, formatos de resposta, tratamento de erro no front, loading/empty states.
+      4. Preencha context.md: O que é, Por que, Decisões (front + back), Não fazer.
 
-pipelines:
-  default: integration-feature
-  available:
-    - id: integration-feature
-      name: "Feature Fullstack Integrada"
-      description: "Contrato API → Checkpoint → Frontend → Backend → Integração → Review"
-      file: pipelines/integration-feature.yaml
-    - id: bug-fix
-      name: "Correção de Bug"
-      description: "Diagnóstico → Fix (FE/BE) → Integração → Review"
-      file: pipelines/bug-fix.yaml
-    - id: quick-fix
-      name: "Quick Fix"
-      description: "Mudança pontual e documentada — sem aprovações intermediárias"
-      file: pipelines/quick-fix.yaml
+      Respeite ADRs, stack.md e convenções do monorepo/repo.
+    output: context.md
 
-performance_modes:
-  alta:
-    description: "Coordenação completa, frontend e backend em paralelo, segurança, testes e review duplo"
-  economico:
-    description: "Coordenador + dev frontend + dev backend + review — ideal para features pequenas"
-  solo:
-    description: "Para dev solo — sem checkpoints de aprovação, execução direta do início ao fim"
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Implemente ponta a ponta:
+      - Backend: endpoint + validação + auth + migration (se houver) + teste.
+      - Frontend: componente/tela + fetch/mutation + estados (loading/error/empty) + teste.
+      - Contrato único: um tipo compartilhado ou espelhado fielmente entre os lados.
+      - Tratamento de erro coerente: 4xx no back vira mensagem útil no front.
+
+      `[?]` para decisões que afetam escopo (ex: adicionar cache, mudar formato de resposta).
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Rode lint, typecheck, test, build tanto no front quanto no back (conforme stack.md).
+      Teste manualmente o fluxo ponta a ponta se o projeto tem ambiente local rodando.
+      Uma tentativa de correção.
+
+      Ao final, resuma:
+      - Endpoints + componentes tocados
+      - Contrato compartilhado (se criado)
+      - Pontos de teste manual recomendados
+    gate: verify

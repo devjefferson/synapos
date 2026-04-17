@@ -1,91 +1,56 @@
 name: produto
-displayName: "Squad de Produto"
+displayName: "Produto"
 icon: "📋"
-version: "2.0.0"
-description: "Refina e versiona a documentação de produto. Requer docs/business/ criada pelo /setup:build-business. Nunca sobrescreve — apenas versiona."
+domain: produto
+description: "Discovery, spec, PRD, pesquisa. Transforma ideia solta em documento acionável."
+version: "3.0.0"
 
-agents:
-  base:
-    - id: priscila-produto
-      file: agents/priscila-produto.agent.md
-      displayName: "Priscila Produto"
-      icon: "📋"
-      role: "Product Manager"
-    - id: ana-analise
-      file: agents/ana-analise.agent.md
-      displayName: "Ana Análise"
-      icon: "📊"
-      role: "Analista de Negócio"
-    - id: tania-tecnica
-      file: agents/tania-tecnica.agent.md
-      displayName: "Tânia Técnica"
-      icon: "✍️"
-      role: "Tech Writer"
-  optional:
-    - id: leo-engenheiro
-      file: ../engineer/agents/leo-engenheiro.agent.md
-      displayName: "Leo Engenheiro"
-      icon: "🧠"
-      role: "Lead Engineer — Investigação e Arquitetura"
-    - id: paulo-pesquisa
-      file: agents/paulo-pesquisa.agent.md
-      displayName: "Paulo Pesquisa"
-      icon: "🔍"
-      role: "Pesquisador"
-    - id: eduardo-estrategia
-      file: agents/eduardo-estrategia.agent.md
-      displayName: "Eduardo Estratégia"
-      icon: "🎯"
-      role: "Estrategista"
-    - id: ursula-ux
-      file: agents/ursula-ux.agent.md
-      displayName: "Úrsula UX"
-      icon: "🎨"
-      role: "UX Researcher"
+pipeline:
+  - id: investigar
+    name: "Investigar"
+    instruction: |
+      Leia context.md e memories.md.
 
-pre_pipeline:
-  available: true
-  file: ../../core/pipelines/pre-execution.yaml
-  agent: priscila-produto
+      Se é pedido novo:
+      1. Entenda a intenção (ver [USER_INTENT]).
+      2. Mapeie: personas relevantes, jornada atual, dor identificada, métricas existentes.
+      3. Perguntas (uma rodada): quem é o usuário?, qual a métrica-alvo?, qual escopo mínimo?
+      4. Preencha context.md: O que é, Por que (problema), Hipótese, Não fazer.
 
-pipelines:
-  default: nova-feature
-  available:
-    - id: nova-feature
-      name: "Nova Feature"
-      description: "Valida requisito → verifica docs → gera spec versionada → handoff para dev"
-      file: pipelines/nova-feature.yaml
-    - id: refinar-docs
-      name: "Refinar Docs"
-      description: "Versiona um doc existente em docs/business/ preservando o original"
-      file: pipelines/refinar-docs.yaml
-    - id: discovery-spec-handoff
-      name: "Discovery → Spec → Handoff"
-      description: "Fluxo completo de discovery: pesquisa de mercado, personas, spec completa e handoff para dev"
-      file: pipelines/discovery-spec-handoff.yaml
-    - id: quick-spec
-      name: "Spec Rápida"
-      description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff"
-      file: pipelines/quick-spec.yaml
-    - id: quick-fix
-      name: "Quick Fix"
-      description: "Decisão ou ajuste pontual de produto — contexto → decisão → registro"
-      file: pipelines/quick-fix.yaml
+      Respeite OKRs e pesquisa existente em docs/business/ se houver.
+    output: context.md
 
-performance_modes:
-  alta:
-    description: "Verificação aprofundada de restrições, spec completa com todos os campos, handoff detalhado"
-    docs:
-      - docs/specs/{feature-slug}-v1.md
-      - docs/specs/{feature-slug}-handoff.md
-      - docs/business/index.md        # append
-      - docs/CHANGELOG.md             # append
-  economico:
-    description: "Spec essencial com RFs, critérios de aceite e handoff mínimo"
-    docs:
-      - docs/specs/{feature-slug}-v1.md
-      - docs/CHANGELOG.md             # append
-  solo:
-    description: "Para dev solo — sem checkpoints de aprovação, decisões diretas documentadas"
-    docs:
-      - docs/specs/{feature-slug}-v1.md
+  - id: executar
+    name: "Executar"
+    instruction: |
+      Produza o artefato pedido (PRD, spec, one-pager, RFC de produto):
+
+      Estrutura sugerida:
+      - Problema e usuário afetado
+      - Hipótese / resultado esperado
+      - Escopo mínimo (o que entra, o que fica fora)
+      - Critérios de aceitação
+      - Métricas de sucesso
+      - Riscos e dependências
+      - Perguntas abertas
+
+      Salve como arquivo na session (spec.md, prd.md, etc.) ou no diretório correto do projeto.
+
+      `[?]` para decisões que precisam de dono de negócio.
+
+  - id: verificar
+    name: "Verificar"
+    instruction: |
+      Releitura crítica:
+      - O problema está nomeado e é verificável?
+      - Existe métrica clara de sucesso?
+      - O escopo mínimo é pequeno o suficiente?
+      - Os critérios de aceitação são testáveis?
+
+      Se houver comando de lint de markdown configurado em stack.md, rode.
+
+      Ao final, resuma:
+      - Artefato produzido
+      - Decisões explícitas tomadas
+      - Perguntas abertas que precisam de resposta antes do engineering
+    gate: verify
