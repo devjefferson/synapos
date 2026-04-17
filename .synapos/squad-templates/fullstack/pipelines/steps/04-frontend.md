@@ -30,6 +30,6 @@ Leia `.synapos/squads/{slug}/agents/rodrigo-react.agent.md` e execute como Rodri
 ## Critérios de Qualidade
 
 - [ ] Todo componente async com loading + error + empty + success
-- [ ] Props tipadas (sem `any` não justificado)
+- [ ] Props/tipos definidos sem tipos genéricos não justificados
 - [ ] Mock do contrato implementado para desenvolvimento paralelo
 - [ ] Integração com API seguindo o contrato aprovado

@@ -55,12 +55,14 @@ docs/.squads/sessions/{feature-slug}/session.manifest.json
 
 ### `files.{arquivo}.hash`
 
-String derivada de tamanho do arquivo + data de modificação.
-Não requer cálculo SHA — apenas uma chave de invalidação baseada em metadados.
+String derivada de tamanho do arquivo + data de modificação com granularidade de **segundos**.
+Não requer cálculo SHA — é uma chave de invalidação baseada em metadados.
 
-**Formato sugerido:** `"{tamanho_bytes}-{YYYY-MM-DDTHH:MM}"`
+**Formato:** `"{tamanho_bytes}-{YYYY-MM-DDTHH:MM:SS}"`
 
-**Exemplo:** `"4821-2026-04-16T09:30"`
+**Exemplo:** `"4821-2026-04-16T09:30:42"`
+
+> **Limitação conhecida:** edições que resultam no mesmo tamanho de arquivo dentro do mesmo segundo não são detectadas (colisão de hash). Isso é um edge case aceitável — o sistema não perde dados, apenas reutiliza um snapshot levemente desatualizado. Para forçar regeneração, edite e salve novamente ou exclua `context.snapshot`.
 
 ### `files.{arquivo}.snapshot_valid`
 
@@ -102,7 +104,7 @@ Evita recarregar ADRs do mesmo domínio se já estão no cache.
 O pipeline-runner valida o hash na FASE 1.1a:
 
 ```
-hash_atual = "{tamanho_atual}-{data_modificacao_atual}"
+hash_atual = "{tamanho_atual}-{data_modificacao_atual_com_segundos}"  # ex: "4821-2026-04-16T09:30:42"
 
 Se hash_atual == manifest.files.context.md.hash:
   → arquivo não mudou → usar context.snapshot (se snapshot_valid: true)

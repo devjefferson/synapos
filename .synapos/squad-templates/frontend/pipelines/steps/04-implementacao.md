@@ -8,8 +8,8 @@ veto_conditions:
   - "Componente async sem estado de loading tratado"
   - "Componente async sem estado de error tratado"
   - "Componente async sem estado empty tratado"
-  - "Prop 'any' sem justificativa no TypeScript"
-  - "Lista sem key estável"
+  - "Tipo genérico não seguro (any, object, interface{}) sem justificativa"
+  - "Lista sem key/identificador estável"
 on_reject: 04-implementacao
 ---
 
@@ -28,34 +28,32 @@ Você é **Rodrigo React**. Leia seu `.agent.md` para aplicar sua persona e prin
 
 Implementar a feature exatamente conforme a arquitetura aprovada.
 
+> **Stack:** Os exemplos abaixo usam React/TypeScript como referência.
+> Adapte sintaxe, componentes e padrões para o framework em `docs/_memory/stack.md`
+> (Vue, Svelte, Angular, React Native, etc.)
+
 ## Regras de implementação
 
 ### Obrigatórias (veto se violadas)
 
 **1. Todos os 4 estados em componentes assíncronos:**
-```typescript
-if (isLoading) return <Skeleton />
-if (error) return <ErrorMessage error={error} onRetry={refetch} />
-if (!data || data.length === 0) return <EmptyState />
-return <ConteúdoPrincipal data={data} />
+```
+// loading → mostrar indicador de carregamento
+// error   → mostrar mensagem de erro com opção de retry
+// empty   → estado vazio explícito (não confundir com error)
+// data    → conteúdo principal
 ```
 
-**2. TypeScript sem `any` não justificado:**
-```typescript
-// ❌ nunca
-const handler = (e: any) => {}
-
-// ✅ sempre
-const handler = (e: React.ChangeEvent<HTMLInputElement>) => {}
+**2. Tipagem segura (sem tipos genéricos não justificados):**
+```
+// ❌ nunca: any, object sem tipo, interface{} não tipada
+// ✅ sempre: tipos específicos para props, estado e eventos
 ```
 
-**3. Keys estáveis em listas:**
-```typescript
-// ❌ nunca em listas dinâmicas
-items.map((item, index) => <Item key={index} />)
-
-// ✅ sempre
-items.map((item) => <Item key={item.id} />)
+**3. Keys/identificadores estáveis em listas:**
+```
+// ❌ nunca: índice do array como key em listas dinâmicas
+// ✅ sempre: id único do item (ex: item.id, item.uuid)
 ```
 
 **4. Acessibilidade mínima:**

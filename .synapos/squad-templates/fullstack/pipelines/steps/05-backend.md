@@ -23,7 +23,7 @@ Leia `.synapos/squads/{slug}/agents/alexandre-api.agent.md` e execute como Alexa
 ## Tarefa
 
 1. Implemente os endpoints exatamente como definidos no contrato
-2. Valide todos os inputs com schema (Zod ou Joi)
+2. Valide todos os inputs com schema (lib de validação da stack do projeto)
 3. Trate todos os casos de erro documentados no contrato
 4. Adicione log estruturado com correlationId
 

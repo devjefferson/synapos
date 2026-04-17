@@ -5,9 +5,9 @@ agent: alexandre-api
 execution: subagent
 model_tier: powerful
 veto_conditions:
-  - "Input externo sem validação de schema (Zod/Joi)"
-  - "Erro capturado silenciosamente (catch vazio ou só console.log)"
-  - "Query SQL com concatenação de string"
+  - "Input externo sem validação de schema (Zod, Pydantic, dry-validation ou equivalente)"
+  - "Erro capturado silenciosamente (catch vazio ou equivalente)"
+  - "Query SQL com concatenação de string (SQL injection)"
   - "Operação atômica sem transação de banco"
   - "Log sem correlationId"
 on_reject: 04-implementacao
@@ -27,12 +27,17 @@ Você é **Alexandre API**. Leia seu `.agent.md` para aplicar sua persona e prin
 
 Implementar exatamente o contrato definido, respeitando a estrutura de camadas.
 
+> **Stack:** Os exemplos abaixo usam TypeScript/Node.js como referência.
+> Adapte a sintaxe, libs e estrutura de pastas para a linguagem e framework em `docs/_memory/stack.md`.
+
 ## Regras de implementação (veto se violadas)
 
 ### 1. Validação de input obrigatória
 
+Use a lib de validação da stack (Zod, Pydantic, dry-validation, serde, etc.) no controller/handler, antes de qualquer lógica.
+
 ```typescript
-// Sempre com Zod — no controller, antes de qualquer lógica
+// Referência TypeScript/Zod
 const schema = z.object({
   email: z.string().email(),
   name: z.string().min(2).max(100),
@@ -50,8 +55,8 @@ if (!result.success) {
 
 ```typescript
 // ❌ nunca
-try { ... } catch (e) {} // silencioso
-try { ... } catch (e) { console.log(e) } // não é tratamento
+try { ... } catch (e) {}                        // silencioso
+try { ... } catch (e) { console.log(e) }        // não é tratamento
 
 // ✅ sempre — erros de domínio tipados
 try {
@@ -74,6 +79,7 @@ db.query(`SELECT * FROM users WHERE email = '${email}'`)
 
 // ✅ sempre
 db.query('SELECT * FROM users WHERE email = $1', [email])
+// ou ORM com bindings: where({ email })
 ```
 
 ### 4. Transações para operações atômicas
@@ -100,11 +106,11 @@ logger.info('User created', {
 ## Estrutura de entrega
 
 Para cada arquivo implementado:
-- **Caminho:** `src/{camada}/{recurso}/{Arquivo}.ts`
+- **Caminho:** `src/{camada}/{recurso}/{Arquivo}.{ext}`
 - **O que faz:** {1 linha}
 
 Ao final, confirme:
-- [ ] Validação de input com Zod/schema
+- [ ] Validação de input com schema (Zod/Pydantic/equivalente)
 - [ ] Todos os erros tratados explicitamente
 - [ ] Sem SQL por concatenação
 - [ ] Transações onde necessário

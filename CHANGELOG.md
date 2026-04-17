@@ -11,6 +11,42 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.8.0] — 2026-04-16
+
+### Adicionado
+
+- `session-manifest.md` — novo documento de referência do `session.manifest.json`: índice de cache leve por session com rastreamento de hashes, timestamps e contagem de entradas de memories
+- `adr-standard.md` — padrão de ADR com frontmatter `domain` para filtragem por squad no pipeline-runner
+- `/session migrate-manifest` — novo comando para criar `session.manifest.json` em sessions legadas (individual ou em lote, idempotente)
+- `stack.md` (Tier 0) — novo arquivo `docs/_memory/stack.md` gerado pelo `/setup:discover`; injetado em todos os agents pelo pipeline-runner antes de qualquer instrução técnica
+- Stack Adaptation Rule em todos os templates de agent (~30 arquivos) — agents adaptam exemplos, imports e estrutura de pastas para a linguagem/framework do projeto
+- `/session {slug}` — menu agora exibe opção "Criar manifest" quando session não tem `session.manifest.json`
+
+### Alterado
+
+- `pipeline-runner.md` v2.3.0 — sistema de memória otimizado:
+  - Carregamento de contexto lazy: `context.snapshot` (hash-based) em vez de `context.md` completo por padrão; `architecture.md` on-demand via `output_files` ou `needs_architecture: true`
+  - memories.md com janela deslizante (`<!-- SUMMARY -->` + `<!-- RECENTES -->`): pipeline-runner carrega apenas últimas 5 entradas por padrão; `needs_history: true` no step para receber SUMMARY
+  - Auto-migração de `memories.md` legado: blocos adicionados automaticamente sem intervenção manual
+  - ADRs filtrados por domínio do squad em modo `complete` (ADRs sem `domain:` tratados como `domain: ["*"]`)
+  - Escrita atômica de `state.json` via `state.tmp.json`
+  - `preferences.md` lido uma vez pelo orchestrator; `[MODELO_TIER]`, `[LINGUA]`, `[TASK_TRACKER]` passados como variáveis — pipeline-runner nunca relê o arquivo
+  - Warning de `stack.md` ausente emitido uma única vez no início do pipeline (não por step/agent)
+- `orchestrator.md` — detecção automática de stack na inicialização; deriva e passa variáveis de preferências ao pipeline-runner
+- `session.md` — memories.md com estrutura de blocos; cálculo de frescor via manifest; `/session consolidate` atualiza manifest após consolidação
+- `discover.md` (Fase 4 expandida) — detecção granular de stack por linguagem: Python, Rust, Ruby, Go, Node.js/TS, PHP, Java/Kotlin, Elixir, C#/.NET, Dart/Flutter; gera `docs/_memory/stack.md` como primeira saída
+- `model-adapter.md` v1.2.0 — binding antecipado na FASE 1.1f; `CONTEXT_RULES` derivadas antes dos steps; memories windowing em modo `lite` (máx 3 entradas)
+- `gate-system.md` — GATE-0 verifica frescor de session via manifest (aviso, não bloqueio)
+- `02-design-api.md` e `02-arquitetura.md` — adicionado `needs_history: true` para steps de arquitetura receberem histórico consolidado de memories
+- `session-manifest.md` — hash com granularidade de segundos (`{tamanho}-{YYYY-MM-DDTHH:MM:SS}`); documentada limitação residual de colisão como edge case aceitável
+
+### Corrigido
+
+- `04-implementacao.md` (backend) — exemplos TypeScript/Zod concretos restaurados; stack adaptation agora é aditiva (exemplos de referência + nota de adaptação); veto conditions com precisão restaurada: `"(Zod, Pydantic, dry-validation ou equivalente)"`
+- Stack Adaptation Rule em todos os agents — removida instrução `"leia docs/_memory/stack.md"` (agents não leem arquivos; recebem contexto injetado); removida emissão de `⚠️` por agent quando stack.md ausente
+
+---
+
 ## [2.7.4] — 2026-04-08
 
 ### Corrigido

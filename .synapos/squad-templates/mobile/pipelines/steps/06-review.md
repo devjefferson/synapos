@@ -15,11 +15,13 @@ gate: GATE-5
 
 ## Escopo
 
+> Use a stack definida em `docs/_memory/stack.md` para referências de performance e tipagem.
+
 - Qualidade do código e componentes
 - Tratamento de estados (loading/error/empty/success)
-- Performance (FlatList, memo, useCallback)
-- Tipagem TypeScript
-- Padrões de plataforma respeitados
+- Performance (virtualização de listas, memoization quando aplicável)
+- Tipagem segura (sem tipos genéricos não justificados)
+- Padrões de plataforma respeitados (iOS/Android quando relevante)
 
 ## Formato
 

@@ -13,6 +13,19 @@ tasks:
   - performance-planning
 ---
 
+## Stack Adaptation Rule
+
+> O pipeline-runner injeta `docs/_memory/stack.md` no contexto antes de qualquer output.
+> Use as informações de stack disponíveis para adaptar TODOS os exemplos de código, imports,
+> estruturas de pastas e referências a ferramentas para a linguagem e framework do projeto.
+>
+> **Princípios e critérios de qualidade → imutáveis**
+> **Exemplos concretos, imports, paths, nomes de libs → sempre na stack do projeto**
+>
+> Se informações de stack não estiverem no contexto: use exemplos genéricos sem emitir aviso.
+
+---
+
 ## Persona
 
 ### Role

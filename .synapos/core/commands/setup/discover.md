@@ -158,7 +158,119 @@ Escanear e detectar:
 
 ## Fase 4: Detectar Stack Tecnológico (Silencioso)
 
-> Armazene em `[STACK_DETECTED]` para Fase 5.
+Escaneie arquivos raiz e manifests do projeto para identificar linguagem, framework e ferramentas.
+
+### 4.1 — Identificar Linguagem Principal
+
+Verifique a existência dos seguintes arquivos (em ordem de prioridade):
+
+| Arquivo | Linguagem | Próximo passo |
+|---|---|---|
+| `pyproject.toml` / `requirements.txt` / `setup.py` / `setup.cfg` | Python | → 4.2a |
+| `Cargo.toml` | Rust | → 4.2b |
+| `Gemfile` | Ruby | → 4.2c |
+| `go.mod` | Go | → 4.2d |
+| `package.json` | Node.js / JS / TS | → 4.2e |
+| `composer.json` | PHP | → 4.2f |
+| `build.gradle` / `pom.xml` / `build.gradle.kts` | Java / Kotlin | → 4.2g |
+| `mix.exs` | Elixir | → 4.2h |
+| `*.csproj` / `*.sln` | C# / .NET | → 4.2i |
+| `pubspec.yaml` | Dart / Flutter | → 4.2j |
+
+Se múltiplos arquivos detectados: liste todos, marque o principal pelo que está na raiz do repositório.
+
+### 4.2 — Extrair Ferramentas por Linguagem
+
+#### 4.2a — Python
+Leia `pyproject.toml` (seções `[project]`, `[tool.poetry.dependencies]`, `[project.optional-dependencies]`) ou `requirements.txt`:
+- **Framework:** fastapi, django, flask, litestar, starlette, tornado, falcon → registre o detectado
+- **ORM:** sqlalchemy, django.db, tortoise-orm, peewee, piccolo → registre o detectado
+- **Validação:** pydantic, marshmallow, cerberus, voluptuous → registre o detectado
+- **Test Runner:** pytest, unittest → verifique `pyproject.toml [tool.pytest]` ou presença de `pytest.ini` / `setup.cfg [tool:pytest]`
+- **Linter/Formatter:** ruff, black, flake8, pylint, isort, mypy → registre os detectados
+- **Package Manager:** verifique `poetry.lock` (Poetry), `pdm.lock` (PDM), `uv.lock` (uv), `Pipfile` (pipenv), fallback `pip`
+- **Versão:** leia `python_requires` ou `.python-version`
+
+#### 4.2b — Rust
+Leia `Cargo.toml` seção `[dependencies]`:
+- **Framework web:** axum, actix-web, rocket, warp, tide → registre o detectado
+- **ORM / DB:** diesel, sqlx, sea-orm, rusqlite → registre o detectado
+- **Validação:** validator, garde → registre se presente
+- **Test Runner:** `cargo test` (nativo)
+- **Linter:** clippy (nativo), rustfmt
+
+#### 4.2c — Ruby
+Leia `Gemfile`:
+- **Framework:** rails, sinatra, hanami, grape, roda → registre o detectado
+- **ORM:** activerecord, sequel, rom → registre o detectado
+- **Test Runner:** rspec, minitest, test-unit → registre o detectado
+- **Linter:** rubocop, standardrb → registre o detectado
+- **Package Manager:** bundler (sempre)
+
+#### 4.2d — Go
+Leia `go.mod` seção `require`:
+- **Framework web:** gin, echo, fiber, chi, gorilla/mux, httprouter → registre o detectado
+- **ORM / DB:** gorm, sqlx, ent, bun → registre o detectado
+- **Test Runner:** `go test` (nativo)
+- **Linter:** golangci-lint → verifique `.golangci.yml`
+
+#### 4.2e — Node.js / TypeScript
+Leia `package.json` campos `dependencies` e `devDependencies`:
+- **Linguagem:** verifique presença de `typescript`, `tsconfig.json` → TypeScript; senão JavaScript
+- **Framework:** express, fastify, nestjs, hono, koa, hapi → registre o detectado
+- **ORM / DB:** prisma, drizzle-orm, typeorm, sequelize, knex, mongoose → registre o detectado
+- **Validação:** zod, joi, yup, valibot, class-validator → registre o detectado
+- **Test Runner:** jest, vitest, mocha, ava → registre o detectado
+- **Linter/Formatter:** eslint, biome, prettier → registre os detectados
+- **Package Manager:** verifique `pnpm-lock.yaml` (pnpm), `yarn.lock` (yarn), `bun.lockb` (bun), fallback `package-lock.json` (npm)
+- **Runtime:** verifique `package.json` campo `engines.node`, ou `.nvmrc`, ou `.node-version`
+
+#### 4.2f — PHP
+Leia `composer.json`:
+- **Framework:** laravel, symfony, slim, lumen → registre o detectado
+- **ORM:** eloquent, doctrine → registre o detectado
+- **Test Runner:** phpunit, pest → registre o detectado
+- **Linter:** phpcs, phpstan, psalm → registre os detectados
+
+#### 4.2g — Java / Kotlin
+Leia `pom.xml` ou `build.gradle` / `build.gradle.kts`:
+- **Framework:** spring-boot, quarkus, micronaut, vert.x → registre o detectado
+- **ORM:** hibernate, spring-data-jpa, jooq → registre o detectado
+- **Test Runner:** junit5, testng → registre o detectado
+- **Build:** maven, gradle → pelo arquivo detectado
+
+#### 4.2h — Elixir
+Leia `mix.exs` seção `deps`:
+- **Framework:** phoenix → registre se presente
+- **ORM:** ecto → registre se presente
+- **Test Runner:** exunit (nativo)
+- **Linter:** credo, dialyxir → registre os detectados
+
+#### 4.2i — C# / .NET
+Leia `*.csproj`:
+- **Framework:** aspnetcore, blazor, minimal-api → registre o detectado
+- **ORM:** entity-framework, dapper → registre o detectado
+- **Test Runner:** xunit, nunit, mstest → registre o detectado
+
+#### 4.2j — Dart / Flutter
+Leia `pubspec.yaml`:
+- **Tipo:** flutter (se `flutter:` presente) ou Dart puro
+- **Test Runner:** flutter test / dart test
+
+### 4.3 — Detectar Estrutura de Pastas
+
+Escaneie os diretórios de 1º nível do projeto (excluindo `.git`, `node_modules`, `vendor`, `target`, `dist`, `build`, `.synapos`).
+
+Liste os diretórios encontrados para incluir em `stack.md`.
+
+### 4.4 — Detectar Banco de Dados e Infraestrutura
+
+Verifique presença de:
+- `docker-compose.yml` / `docker-compose.yaml` → registre serviços de banco detectados (postgres, mysql, mongodb, redis, etc.)
+- `.env` ou `.env.example` → leia variáveis `DATABASE_URL`, `DB_*`, `REDIS_*` (não registre valores, apenas tipos inferidos)
+- Migrations: `migrations/`, `db/migrate/`, `alembic/`, `prisma/migrations/` → registre se existe sistema de migrations
+
+> Armazene tudo em `[STACK_DETECTED]` para Fase 5.
 
 ---
 
@@ -195,6 +307,45 @@ AskUserQuestion({
 ## Fase 6: Geração dos Arquivos do Briefing
 
 **SÓ execute após validação completa.**
+
+### 6.0 — Gerar `docs/_memory/stack.md`
+
+**Sempre execute antes dos demais arquivos.**
+
+Este arquivo é carregado como Tier 0 pelo pipeline-runner — é ele que permite que agents se adaptem ao stack do projeto.
+
+```markdown
+---
+gerado: {YYYY-MM-DD}
+auto_detectado: false
+---
+# Stack do Projeto
+
+**Linguagem:** {linguagem.validada}
+**Runtime/Versão:** {versao.validada | "não detectado"}
+**Framework:** {framework.validado | "não detectado"}
+**Package Manager:** {package_manager.validado | "não detectado"}
+**ORM / Banco:** {orm.validado | "não detectado"}
+**Validação:** {validacao.validada | "não detectada"}
+**Test Runner:** {test_runner.validado | "não detectado"}
+**Linter / Formatter:** {linter.validado | "não detectado"}
+
+## Estrutura de Pastas
+
+```
+{estrutura.validada}
+```
+
+## Banco de Dados e Infraestrutura
+
+{infra.validada | "não detectado"}
+
+## Notas
+
+> Gerado por /setup:discover em {data}.
+> Agents usam este contexto para adaptar exemplos, imports e estruturas de pastas ao projeto real.
+> Para atualizar: edite este arquivo ou execute /setup:discover novamente.
+```
 
 ### 6.1 Criar pasta
 
@@ -377,6 +528,7 @@ AskUserQuestion({
 ✅ Project Discovery concluído!
 
 📁 Arquivos gerados:
+- docs/_memory/stack.md  ← NOVO — agents usam para adaptar ao projeto
 - CLAUDE.md (raiz)
 - docs/tech-context/project-briefing.md
 - docs/tech-context/briefing/critical-rules.md
@@ -386,10 +538,10 @@ AskUserQuestion({
 - docs/tech-context/briefing/tech-stack.md
 
 📊 Análise:
+- Stack: {linguagem} / {framework} / {test_runner}
 - ADRs: {N} (ativas: {N})
 - Frontend: {tipo.validado}
 - Backend: {caminho.validado}
-- Stack: {stack.validada}
 
 ⚠️ Itens pendentes de validação:
 {listar items marcados como "não detectado" ou "A VALIDAR"}

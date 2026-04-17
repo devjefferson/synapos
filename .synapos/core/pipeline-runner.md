@@ -64,7 +64,12 @@ Leia obrigatoriamente:
 ```
 .synapos/squads/{squad-slug}/squad.yaml   → configuração do squad
 docs/_memory/company.md                   → perfil da empresa/usuário (Tier 0)
+docs/_memory/stack.md                     → stack do projeto (Tier 0) — se existir
 ```
+
+> **Se `docs/_memory/stack.md` não existir:** continue normalmente. Emita **uma única vez** no início do pipeline:
+> `⚠️ [STACK] stack.md não encontrado — agents usarão exemplos genéricos. Execute /setup:discover para gerar.`
+> Não repita este aviso por step ou por agent.
 
 Leia `execution_mode` do `squad.yaml` e configure o runner:
 
@@ -88,7 +93,7 @@ Log ao iniciar:
 1. Leia `docs/.squads/sessions/{feature-slug}/session.manifest.json`
 
 2. **Se o manifest existe:**
-   - Compare o hash registrado de `context.md` com o tamanho atual do arquivo + data de modificação
+   - Compare o hash registrado de `context.md` com o hash atual: `"{tamanho_bytes}-{mtime_com_segundos}"`
    - **Se hash válido (arquivo não mudou):** carregue `context.snapshot` — não carregue `context.md`
    - **Se hash inválido (arquivo mudou):** carregue `context.md` completo, regenere `context.snapshot`, atualize o manifest
    - Log (se snapshot usado): `📦 [MANIFEST] context.snapshot carregado — context.md inalterado`
@@ -104,10 +109,25 @@ Log ao iniciar:
 #### 1.1b — Carregar memories (janela deslizante)
 
 Leia `docs/.squads/sessions/{feature-slug}/memories.md`:
-- Carregue **apenas o bloco `<!-- RECENTES -->`** (últimas 5 entradas)
-- **Não carregue** o bloco `<!-- SUMMARY -->` por padrão
-- Se o arquivo não tem estrutura de blocos (formato legado), carregue as últimas 5 entradas pelo marcador `## [` mais recentes
-- Se `session.manifest.json` registra `entry_count > 10` e não há bloco SUMMARY: sugira consolidação no log: `⚠️ [MEMORY] memories.md com {entry_count} entradas sem SUMMARY — execute /session consolidate`
+
+**Detecção de formato:**
+- Se o arquivo contém `<!-- RECENTES -->`: formato novo — carregue apenas o bloco `<!-- RECENTES -->` (últimas 5 entradas)
+- Se o arquivo **não** contém `<!-- RECENTES -->`: formato legado — **migre automaticamente**:
+  1. Adicione os blocos ao arquivo (sem mover conteúdo):
+     ```markdown
+     <!-- SUMMARY -->
+     <!-- /SUMMARY -->
+
+     <!-- RECENTES -->
+     {conteúdo legado existente vai aqui}
+     <!-- /RECENTES -->
+     ```
+  2. Log: `🔄 [MEMORY] memories.md legado — estrutura de blocos adicionada automaticamente`
+  3. Carregue as últimas 5 entradas pelo marcador `## [` mais recentes
+
+**Nunca carregue** o bloco `<!-- SUMMARY -->` por padrão.
+
+Se `entry_count > 10` e o bloco RECENTES não foi consolidado: log `⚠️ [MEMORY] memories.md com {N} entradas — execute /session consolidate`
 
 Log:
 ```
@@ -877,14 +897,15 @@ O contexto injetado depende do `execution_mode` do squad.
 
 1. **Persona do agent** (conteúdo do `.agent.md` — ou versão Modo Lite se `[MODELO_TIER]: lite`)
 2. **Contexto do squad** (`company.md` + descrição do squad + roles[])
-3. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo (se inválido ou `needs_full_context: true`)
-4. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
-5. **Outputs anteriores relevantes** (definidos em `depends_on`)
-6. **Instrução do step** + base path do squad
-7. **[CONTEXT_RULES]** aplicado sobre os blocos acima se `[MODELO_TIER]: standard` ou `lite`
+3. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
+4. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo (se inválido ou `needs_full_context: true`)
+5. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
+6. **Outputs anteriores relevantes** (definidos em `depends_on`)
+7. **Instrução do step** + base path do squad
+8. **[CONTEXT_RULES]** aplicado sobre os blocos acima se `[MODELO_TIER]: standard` ou `lite`
 
 ```
-[Agent Persona] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Agent Persona] + [Stack do Projeto] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
 ```
 
 > **Não inclui por padrão:** `architecture.md`, `plan.md`, `review-notes.md`, `docs/`, ADRs.
@@ -894,14 +915,15 @@ O contexto injetado depende do `execution_mode` do squad.
 
 1. **Persona do agent** (conteúdo do `.agent.md`)
 2. **Contexto do squad** (`company.md` + descrição + roles[])
-3. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo
-4. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
-5. **ADRs filtrados** — do cache `[ADRS_CARREGADOS]` (somente domínio do squad). Conflito com ADR aceita = output vetado.
-6. **project-learnings.md** (se existir)
-7. **Outputs anteriores relevantes** + **Instrução do step** + base path
+3. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
+4. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo
+5. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
+6. **ADRs filtrados** — do cache `[ADRS_CARREGADOS]` (somente domínio do squad). Conflito com ADR aceita = output vetado.
+7. **project-learnings.md** (se existir)
+8. **Outputs anteriores relevantes** + **Instrução do step** + base path
 
 ```
-[Agent Persona] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [ADRs filtrados] + [Project Learnings] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Agent Persona] + [Stack do Projeto] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [ADRs filtrados] + [Project Learnings] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
 ```
 
 > **Skills:** quando ativas, o agent DEVE usá-las — não são opcionais.
@@ -972,6 +994,8 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Manifest controla cache** | session.manifest.json rastreia hashes — evita re-leitura de arquivos inalterados |
 | **architecture.md é on-demand** | Nunca carregado na FASE 1.1. Entra apenas via SCOPE GUARD (output_files) ou needs_architecture |
 | **preferences.md lido uma vez** | Orchestrator lê e passa [MODELO_TIER] + [LINGUA]. Pipeline-runner nunca relê preferences.md |
+| **stack.md é Tier 0** | Carregado na FASE 1.1 junto com company.md. Injetado em TODOS os agents, antes de qualquer instrução técnica. Agents adaptam linguagem, exemplos e estrutura de pastas ao stack detectado |
+| **Stack adaptation é obrigatória** | Se stack.md existe, agents NÃO usam exemplos hardcoded — adaptam para a linguagem/framework declarados. Princípios são imutáveis; exemplos concretos seguem o stack |
 | **state.json vs plan.md** | state.json é fonte de verdade do progresso. plan.md é exibição visual. Em divergência, state.json prevalece |
 | **SCOPE GUARD por architecture.md** | Escopo lido da lista de arquivos em architecture.md — ausência = sem restrição (warning), nunca deriva de pipeline output_files |
 | **SCOPE GUARD só em steps com output_files** | Steps sem output_files não recebem SCOPE GUARD — evita context waste em steps de revisão/formatação |

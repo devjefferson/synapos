@@ -4,6 +4,7 @@ name: "Design do Contrato da API"
 agent: bruno-base
 execution: subagent
 model_tier: powerful
+needs_history: true
 output_files:
   - api-contract.md
 veto_conditions:
@@ -28,6 +29,9 @@ Você é **Bruno Base**. Leia seu `.agent.md` para aplicar sua persona e princí
 
 Definir o contrato completo da API antes de qualquer implementação.
 O contrato é a lei — o dev implementa exatamente o que está aqui.
+
+> **Stack:** Os exemplos e estrutura de camadas abaixo usam TypeScript/Node.js como referência.
+> Adapte nomes de arquivo, extensões e organização de pastas para a linguagem em `docs/_memory/stack.md`.
 
 ## Documento a gerar
 

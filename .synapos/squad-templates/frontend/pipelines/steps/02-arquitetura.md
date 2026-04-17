@@ -4,6 +4,7 @@ name: "Decisão de Arquitetura"
 agent: ana-arquitetura-fe
 execution: subagent
 model_tier: powerful
+needs_history: true
 output_files:
   - architecture-decision.md
 veto_conditions:
@@ -27,6 +28,9 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md` para aplicar sua persona e pr
 ## Sua missão
 
 Antes de qualquer linha de código, defina a estrutura arquitetural da feature.
+
+> **Stack:** Os exemplos abaixo usam React/TypeScript como referência (`.tsx`, hooks, React Query).
+> Adapte estrutura de pastas, extensões e padrões de estado para o framework em `docs/_memory/stack.md`.
 
 ## Documento a gerar
 

@@ -91,7 +91,7 @@ ADRs aplicáveis nesta fase:
 - [ ] Substituir por hook/fetch real
 - [ ] Adicionar loading state
 - [ ] Adicionar error handling
-- [ ] Validar tipos TypeScript match
+- [ ] Validar tipos/contratos match (TypeScript, types, schemas)
 ```
 
 ## 3. Verificar consistência com architecture.md

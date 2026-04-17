@@ -14,9 +14,10 @@ description: Gerenciamento de feature sessions — listar, visualizar, retomar e
 ## USO
 
 ```
-/session              → lista todas as sessions ativas
-/session {slug}       → abre a session de uma feature específica
-/session consolidate  → consolida memories.md e review-notes.md da session ativa
+/session                    → lista todas as sessions ativas
+/session {slug}             → abre a session de uma feature específica
+/session consolidate        → consolida memories.md e review-notes.md da session ativa
+/session migrate-manifest   → cria session.manifest.json para sessions que não têm
 ```
 
 ---
@@ -63,7 +64,7 @@ Ao selecionar uma session → execute o protocolo **Com argumento** abaixo.
   - Calcule dias desde `loaded_at`
   - Se > 14 dias: exibir `⚠️ STALE ({N} dias sem atualização)`
   - Se ≤ 14 dias: exibir `✅ Atualizado ({N} dias atrás)`
-- Se manifest não existe: exibir `❓ Frescor desconhecido (manifest ausente)`
+- Se manifest não existe: exibir `⚙️ Sem manifest` (e incluir opção "Criar manifest" no menu abaixo)
 
 Exiba resumo e menu de ações:
 
@@ -90,6 +91,8 @@ AskUserQuestion({
     { label: "📄 Ver context.md", description: "Ler contexto completo da feature" },
     { label: "🧠 Ver memories.md", description: "Ver aprendizados acumulados" },
     { label: "🗜 Consolidar", description: "Compactar memories e review-notes" },
+    // incluir esta opção apenas se manifest não existe:
+    { label: "⚙️ Criar manifest", description: "Inicializar session.manifest.json para esta session" },
     { label: "↩ Voltar", description: "Voltar à lista de sessions" }
   ]
 })
@@ -99,6 +102,53 @@ AskUserQuestion({
 - **Ver context.md** → exiba o conteúdo do arquivo inline
 - **Ver memories.md** → exiba o conteúdo do arquivo inline
 - **Consolidar** → execute o protocolo de consolidação abaixo
+
+---
+
+### Com argumento `migrate-manifest` — criar manifest para sessions legadas
+
+> Use para sessions criadas antes da v2.3 que não têm `session.manifest.json`.
+> Pode ser executado em uma session específica ou em todas de uma vez.
+
+**Se executado sem slug:** pergunte qual session migrar (ou "todas"):
+```
+AskUserQuestion({
+  question: "Migrar manifest para qual session?",
+  options: [
+    // uma opção por session sem manifest detectada
+    { label: "📂 {slug}", description: "Sem manifest" },
+    { label: "🔄 Todas sem manifest ({N} sessions)", description: "Criar manifest para todas" },
+    { label: "↩ Cancelar", description: "" }
+  ]
+})
+```
+
+**Protocolo por session:**
+1. Leia `context.md` — calcule hash: `"{tamanho}-{mtime_com_segundos}"`
+2. Leia `memories.md` — conte entradas no bloco `<!-- RECENTES -->` (ou pelo marcador `## [` se legado)
+3. Crie `session.manifest.json`:
+   ```json
+   {
+     "feature": "{slug}",
+     "manifest_version": 2,
+     "created_at": "{agora ISO}",
+     "migrated_from_legacy": true,
+     "files": {
+       "context.md":      { "hash": "{hash calculado}", "snapshot_valid": false, "loaded_at": null },
+       "architecture.md": { "hash": null, "snapshot_valid": false, "loaded_at": null },
+       "memories.md":     { "entry_count": {N}, "last_entry_at": null }
+     },
+     "adrs": { "loaded_domains": [], "loaded_at": null }
+   }
+   ```
+4. `snapshot_valid: false` força pipeline-runner a carregar `context.md` completo na próxima execução (snapshot será gerado então)
+
+**Log:**
+```
+✅ manifest criado: docs/.squads/sessions/{slug}/session.manifest.json
+   context.md hash: {hash}
+   memories: {N} entradas detectadas
+```
 
 ---
 
@@ -167,7 +217,8 @@ memories.md usa estrutura de janela deslizante com dois blocos:
 
 | Regra | Descrição |
 |-------|-----------|
-| **Leitura apenas** | `/session` nunca modifica arquivos — exceto `/session consolidate` |
+| **Leitura apenas** | `/session` nunca modifica arquivos — exceto `consolidate` e `migrate-manifest` |
 | **Consolidar é manual** | Nunca consolide automaticamente — só quando o usuário executar `/session consolidate` |
+| **Migrar é seguro** | `/session migrate-manifest` é idempotente — não sobrescreve manifest existente |
 | **context.md é a estrela** | Sempre exiba o resumo de context.md no cabeçalho da session |
 | **Sem pipeline** | `/session` não inicia pipeline — apenas navega e organiza |

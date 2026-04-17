@@ -12,15 +12,18 @@ model_tier: powerful
 
 ## Tarefa
 
+> **Stack:** Use a framework mobile definida em `docs/_memory/stack.md` (React Native, Flutter, Swift/UIKit, Kotlin, etc.).
+> Adapte componentes, padrões de estado e gerenciamento de lista para a plataforma detectada.
+
 1. Implemente as telas e componentes seguindo a arquitetura e UX definidas
-2. Integre com a API usando React Query
+2. Integre com a API usando a solução de state/data-fetching da stack do projeto
 3. Trate todos os estados: loading, error, empty, success
-4. Otimize listas com FlatList (keyExtractor, getItemLayout)
-5. TypeScript strict — sem `any` não justificado
+4. Otimize listas para performance (virtualização, keys estáveis, lazy loading)
+5. Tipagem segura — sem tipos genéricos não justificados
 
 ## Critérios
 
-- [ ] Todos os estados async tratados em cada tela
-- [ ] FlatList otimizada para listas longas
-- [ ] Tipos corretos (sem any não justificado)
-- [ ] React Query para server state
+- [ ] Todos os estados async tratados em cada tela (loading, error, empty, data)
+- [ ] Listas otimizadas para performance (virtualização quando aplicável)
+- [ ] Tipagem correta sem tipos genéricos não justificados
+- [ ] State/data-fetching usando padrão da stack do projeto
