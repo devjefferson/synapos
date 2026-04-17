@@ -11,6 +11,55 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.0.0] — 2026-04-17
+
+> **BREAKING** — corte brutal. Arquitetura inteira reescrita para remover cerimônia sem valor real.
+> Sessions existentes (v2.x) continuam funcionando; squads ativos precisam ser recriados com os novos templates.
+
+### Removido
+
+- **Arquivos de core** (deletados integralmente):
+  - `model-adapter.md`, `copilot-adapter.md`, `copilot.md` — compensação de prompt para modelos menores; decidimos: se o modelo não aguenta, o usuário troca
+  - `skills-engine.md` — abstração vazia, skills seguem funcionando como SKILL.md simples
+  - `session-manifest.md`, manifest JSON por session, `context.snapshot`, hashes fake — cache que não cachava nada verificável
+  - `adr-standard.md`, `versioning.md` — documentação sobre documentação
+  - `pipelines/pre-execution.yaml` — duplicava os primeiros steps do pipeline principal
+  - `rules/product-agent.mdc`, `best-practices/**` (11 arquivos) — catálogo órfão sem consumidor
+  - `commands/migrate/v1-to-v2.md`, `commands/debug/session.md`, `commands/setup/from-code.md` — comandos legados não mais referenciados
+- **Gates teatrais**: GATE-2, GATE-ADR, GATE-DECISION (referenciados em pipelines, nunca definidos) e GATE-3 (checagem textual de `>50 chars`) removidos; fica GATE-VERIFY real
+- **Conceitos duplicados**: plan.md como fonte paralela ao state.json, SCOPE GUARD textual, `execution: checkpoint/inline/subagent`, `mode: alta/economico/solo`, `execution_mode: quick/complete`
+- **~200 arquivos de squad-templates**: cada um dos 8 roles tinha 10-20 arquivos (agents/, pipelines/, steps/); tudo colapsado para `template.yaml` + `persona.md`
+- `docs/REFACTOR-PLAN.md`, `docs/pre-prd/`, `docs/user-testing/` — docs internos do processo v2
+
+### Alterado
+
+- **`orchestrator.md` v3.0.0** — 732 → 242 linhas. Fluxo linear: detectar contexto → detectar intenção → escolher role → definir session → ativar role → executar pipeline. Onboarding cria 3 arquivos com defaults silenciosos, sem perguntas bloqueantes.
+- **`pipeline-runner.md` v3.0.0** — 1005 → 285 linhas. Leitura de arquivos direta (sem manifest/hash/snapshot). Persona + company + stack + context + memories + intent + instrução. Três steps: investigar → executar → verificar.
+- **`gate-system.md` v3.0.0** — 165 → 104 linhas. Um gate real: GATE-VERIFY executa `Lint/Test/Typecheck/Build` via shell conforme `docs/_memory/stack.md`. Uma tentativa de correção, depois escala com session preservada.
+- **`commands/session.md` v3.0.0** — 225 → 147 linhas. Listar / abrir / consolidar. Sem manifest, sem migrate.
+- **`commands/set-model.md` v3.0.0** — 236 → 55 linhas. Pergunta modelo, atualiza preferences.md. A IDE tem o próprio seletor; Synapos só registra referência.
+- **`commands/setup/*.md`** — todos reescritos (start, discover, build-tech, build-business): menus interativos curtos, geração baseada em templates, zero invenção.
+- **Squad templates unificados** (8 roles × 2 arquivos):
+  - `engineer`, `frontend`, `backend`, `fullstack`, `mobile`, `devops`, `produto`, `ia-dados`
+  - Cada um: `template.yaml` com pipeline inline de 3 steps + `persona.md` com princípios do domínio
+  - Pipeline é o mesmo formato para todos; instruções adaptadas ao domínio
+- **`.github/copilot-instructions.md`** e **`.antigravity/rules.md`** — reescritos para refletir o novo core (sem refs a model-adapter/skills-engine/copilot-adapter)
+- **README.md**, **docs/GETTING_STARTED.md**, **docs/GUIDE.md** — reescritos do zero; posicionamento honesto sobre o que o Synapos é e não é
+- `package.json` — v2.8.0 → v3.0.0; description atualizada
+- `.synapos/.manifest.json` e `.synapos/VERSION` → 3.0.0
+
+### Adicionado
+
+- **`[?] decisão:`** — sintaxe curta para o agent sinalizar escolhas fora do escopo (substitui `[DECISÃO PENDENTE]` verboso). Runner detecta, pergunta ao usuário, aplica e continua.
+- **Detecção automática de intenção no onboarding** — orchestrator infere role a partir de palavras-chave na mensagem inicial, evitando menus desnecessários.
+- **GATE-VERIFY real** — roda `docs/_memory/stack.md` via shell. Sem comandos configurados: pula com aviso, não bloqueia.
+
+### Filosofia
+
+Três steps. Um gate. Oito personas. O valor real — **contexto persistente por feature em `context.md` + `memories.md`** — ficou intacto. Tudo o resto era fricção disfarçada de disciplina.
+
+---
+
 ## [2.8.0] — 2026-04-16
 
 ### Adicionado
