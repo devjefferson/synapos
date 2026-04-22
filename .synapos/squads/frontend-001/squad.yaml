@@ -1,0 +1,27 @@
+name: frontend-001
+domain: frontend
+displayName: "Squad de Frontend"
+description: "Simulação de teste completo do fluxo Synapos"
+status: active
+mode: solo
+execution_mode: quick
+created_at: 2026-04-22
+feature: teste-simulado-001
+session: docs/.squads/sessions/teste-simulado-001
+roles:
+  - Arquiteta Frontend
+  - Dev Frontend
+  - Reviewer Frontend
+agents:
+  - ana-arquitetura-fe
+  - rodrigo-react
+  - renata-revisao-fe
+pipeline:
+  default: feature-development
+  file: pipeline/pipeline.yaml
+project_context:
+  company: docs/_memory/company.md
+  docs_business: docs/business/
+  docs_tech: docs/tech/
+  docs_context: docs/tech-context/
+  session: docs/.squads/sessions/teste-simulado-001

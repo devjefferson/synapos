@@ -1,6 +1,6 @@
 name: "Pré-Execução: Investigação + Arquitetura + Planejamento"
 description: "Pipeline universal de preparação. Roda antes de qualquer pipeline principal de qualquer squad. Gera context.md, architecture.md e plan.md que são injetados automaticamente na execução principal."
-version: "1.0.0"
+version: "2.0.0"
 
 # agent_override: quando definido em squad.yaml como pre_pipeline.agent,
 # sobrescreve {lead_agent} para usar o agente do squad em vez de leo-engenheiro.
@@ -13,6 +13,9 @@ session_files:
   architecture: architecture.md
   plan: plan.md
 
+# v2.0: Checkpoints intermediários (pós-contexto, pós-arquitetura, pós-plano)
+# foram consolidados em um único checkpoint final. A IA muda de papel sem
+# pedir aprovação a cada transição — humano revisa os 3 artefatos juntos.
 steps:
   - id: pre-01-gate
     name: "Verificação de Integridade"
@@ -42,20 +45,13 @@ steps:
       - "context.md sem Meta mensurável"
       - "context.md sem seção de ADRs Relevantes"
 
-  - id: pre-04-checkpoint-contexto
-    name: "Aprovação do Contexto"
-    execution: checkpoint
-    gate: GATE-CONTEXT
-    file: ../../squad-templates/engineer/pipeline/steps/04-checkpoint-contexto.md
-    depends_on: [pre-03-investigacao]
-
   - id: pre-05-arquitetura
     name: "Estruturação Arquitetural"
     agent: "{lead_agent}"
     execution: subagent
     model_tier: powerful
     file: ../../squad-templates/engineer/pipeline/steps/05-arquitetura.md
-    depends_on: [pre-04-checkpoint-contexto]
+    depends_on: [pre-03-investigacao]
     output_files:
       - architecture.md
     veto_conditions:
@@ -78,21 +74,13 @@ steps:
       - "Contraste não declarado para nenhum componente com texto"
     skip_condition: "Nenhum agent do squad tem tasks de design-system, component-spec ou ux-review"
 
-  - id: pre-06-checkpoint-arquitetura
-    name: "Aprovação da Arquitetura"
-    execution: checkpoint
-    gate: GATE-ARCH
-    # GATE-DESIGN também é verificado neste checkpoint quando visual-spec.md foi gerado
-    file: ../../squad-templates/engineer/pipeline/steps/06-checkpoint-arquitetura.md
-    depends_on: [pre-05b-visual-spec]
-
   - id: pre-07-planejamento
     name: "Planejamento de Execução"
     agent: "{lead_agent}"
     execution: subagent
     model_tier: powerful
     file: ../../squad-templates/engineer/pipeline/steps/07-planejamento.md
-    depends_on: [pre-06-checkpoint-arquitetura]
+    depends_on: [pre-05b-visual-spec]
     output_files:
       - plan.md
     veto_conditions:
@@ -100,8 +88,9 @@ steps:
       - "Alguma fase excede estimativa de 2h sem justificativa"
       - "plan.md sem referência a context.md e architecture.md"
 
-  - id: pre-08-checkpoint-plano
-    name: "Aprovação do Plano"
+  - id: pre-checkpoint-final
+    name: "Aprovação Consolidada"
     execution: checkpoint
-    file: ../../squad-templates/engineer/pipeline/steps/08-checkpoint-plano.md
+    gate: GATE-ADR
+    file: ../../squad-templates/engineer/pipeline/steps/checkpoint-final.md
     depends_on: [pre-07-planejamento]

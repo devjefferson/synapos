@@ -1,0 +1,77 @@
+name: "Desenvolvimento de Feature"
+description: "Fluxo completo de feature frontend: arquitetura → checkpoint → implementação → review → docs."
+version: "1.0.0"
+
+steps:
+  - id: 01-gate-integridade
+    name: "Verificação de Integridade"
+    execution: checkpoint
+    gate: GATE-0
+    file: pipeline/steps/01-gate-integridade.md
+
+  - id: 02-arquitetura
+    name: "Decisão de Arquitetura"
+    agent: ana-arquitetura-fe
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/02-arquitetura.md
+    depends_on: [01-gate-integridade]
+    output_files:
+      - architecture-decision.md
+    veto_conditions:
+      - "Estrutura de componentes não documentada"
+      - "Decisão de estado sem justificativa (local vs server vs global)"
+      - "ADR ausente para decisão que afeta mais de 1 componente"
+
+  - id: 03-checkpoint-design
+    name: "Aprovação do Approach"
+    execution: checkpoint
+    file: pipeline/steps/03-checkpoint-design.md
+    depends_on: [02-arquitetura]
+
+  - id: 04-implementacao
+    name: "Implementação"
+    agent: rodrigo-react
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/04-implementacao.md
+    depends_on: [03-checkpoint-design]
+    veto_conditions:
+      - "Componente async sem estado de loading tratado"
+      - "Componente async sem estado de error tratado"
+      - "Componente async sem estado empty tratado"
+      - "Prop 'any' sem justificativa no TypeScript"
+      - "Lista sem key estável (não usar index em listas dinâmicas)"
+    on_reject: 04-implementacao
+
+  - id: 05-review
+    name: "Code Review"
+    agent: renata-revisao-fe
+    execution: inline
+    model_tier: powerful
+    needs_history: true
+    file: pipeline/steps/05-review.md
+    depends_on: [04-implementacao]
+    output_files:
+      - review-notes.md
+    veto_conditions:
+      - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
+      - "BLOCKER sem fix sugerido"
+    on_reject: 04-implementacao
+
+  - id: 06-docs
+    name: "Documentação da Feature"
+    agent: ana-arquitetura-fe
+    execution: subagent
+    model_tier: fast
+    file: pipeline/steps/06-docs.md
+    depends_on: [05-review]
+    gate: GATE-5
+    output_files:
+      - feature-notes.md
+
+  - id: update-task
+    name: "Atualizar Tarefa"
+    execution: checkpoint
+    file: ../../core/shared-steps/update-task.md
+    depends_on: [06-docs]
