@@ -17,7 +17,7 @@ on_reject: 05-spec
 
 # Product Vision e Spec
 
-Você é **Priscila Produto**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Priscila Produto**.
 
 ## Contexto disponível
 
@@ -27,7 +27,7 @@ Leia todos antes de escrever:
 - `docs/personas/user-personas.md`
 - `docs/research/user-research.md`
 - `docs/business/business-context.md`
-- `_memory/memories.md` — preferências e ajustes do usuário
+- `docs/.squads/sessions/{feature-slug}/memories.md` — preferências e ajustes do usuário
 
 ## Documentos a gerar
 

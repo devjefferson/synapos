@@ -1,7 +1,7 @@
 ---
 description: Master Prompt - Assistente de Gestão de Projetos AI AI Frontiers
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Assistente de PM

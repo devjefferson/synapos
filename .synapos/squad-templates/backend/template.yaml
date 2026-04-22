@@ -1,7 +1,7 @@
 name: backend
 displayName: "Squad de Backend"
 icon: "⚙️"
-version: "1.0.0"
+version: "1.3.0"
 description: "Especialistas em desenvolvimento backend com foco em APIs robustas, segurança e escalabilidade"
 
 agents:

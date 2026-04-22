@@ -6,7 +6,7 @@ execution: subagent
 model_tier: powerful
 output_files:
   - handoff.md
-gate: GATE-2
+gate: GATE-5
 veto_conditions:
   - "Handoff sem link para a spec aprovada"
   - "Critério de aceite ausente no checklist"
@@ -15,14 +15,14 @@ veto_conditions:
 
 # Handoff para Desenvolvimento
 
-Você é **Tânia Técnica**. Leia seu `.agent.md` para aplicar sua persona completa.
+Você é **Tânia Técnica**..
 
 ## Contexto disponível
 
 - `docs/specs/{feature-slug}-v1.md` ← spec aprovada
 - `docs/tech-context/briefing/critical-rules.md` ← regras que o dev deve seguir
 - `docs/tech-context/briefing/tech-stack.md` ← stack do projeto
-- `_memory/memories.md` ← contexto da sessão
+- `docs/.squads/sessions/{feature-slug}/memories.md` ← contexto da sessão
 
 ## Documento a gerar
 

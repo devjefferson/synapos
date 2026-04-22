@@ -15,12 +15,11 @@ on_reject: 04-implementacao
 
 # Implementação Backend
 
-Você é **Alexandre API**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Alexandre API**.
 
 ## Contexto disponível
 
 - Contrato da API: `docs/api-contract.md` ← **leia antes de qualquer código**
-- Memória do squad: `_memory/memories.md`
 - **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← aplique todas as regras durante a implementação
 
 ## Sua missão

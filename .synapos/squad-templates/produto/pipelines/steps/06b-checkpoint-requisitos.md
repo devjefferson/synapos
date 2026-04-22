@@ -41,9 +41,9 @@ As prioridades e requisitos estão corretos?
 [4] Remover requisito — algo está além do escopo
 ```
 
-**Se [2], [3] ou [4]:** Registre o ajuste em `_memory/memories.md`, retorne ao step 06-requisitos com o feedback.
+**Se [2], [3] ou [4]:** Registre o ajuste em `docs/.squads/sessions/{feature-slug}/memories.md`, retorne ao step 06-requisitos com o feedback.
 
-**Se [1]:** Registre em `_memory/memories.md`:
+**Se [1]:** Registre em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Requisitos aprovados — {YYYY-MM-DD}
 P0 confirmados: {lista breve}

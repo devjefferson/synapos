@@ -19,7 +19,7 @@ on_reject: 07-arquitetura
 
 # Arquitetura, Decisões e Planejamento
 
-Você é **Tânia Técnica**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Tânia Técnica**.
 
 ## Contexto disponível
 

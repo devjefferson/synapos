@@ -84,8 +84,8 @@ steps:
       - "Sem estratégia de monitoramento de drift"
       - "Sem plano de rollback"
 
-  - id: atualizar-tarefa
+  - id: update-task
     name: "Atualizar Tarefa"
     execution: checkpoint
-    file: pipeline/steps/atualizar-tarefa.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [07-deploy]

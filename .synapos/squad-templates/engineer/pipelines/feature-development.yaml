@@ -100,8 +100,8 @@ steps:
     depends_on: [08-checkpoint-plano]
     gate: GATE-5
 
-  - id: atualizar-tarefa
+  - id: update-task
     name: "Atualizar Tarefa no Linear"
     execution: checkpoint
-    file: pipeline/steps/atualizar-tarefa.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [09-execucao]

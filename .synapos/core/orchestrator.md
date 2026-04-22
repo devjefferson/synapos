@@ -596,24 +596,37 @@ Use quando um PM, agent ou usuário encontra uma decisão que não pode resolver
    
    requires_escalation: true
    escalation_owner: {A DEFINIR — preencha com o responsável}
+   default_decision: {opção recomendada — usada se squad continuar sem resolução explícita}
    status: pending
    ```
-3. Bloqueie o squad: `status → "blocked"`
-4. Informe:
+3. Apresente ao usuário via AskUserQuestion **antes de bloquear**:
    ```
-   ⏸ SQUAD BLOQUEADO — Escalation necessário
-   
-   Decisão pendente: {feature-slug}-{N}
-   Arquivo: docs/.squads/sessions/{feature-slug}/open-decisions.md
-   
-   Preencha `escalation_owner` e resolva a decisão.
-   Retome com /init → selecionar squad → "Retomar de onde parou".
+   AskUserQuestion({
+     question: "Escalation necessária para continuar.\nDecisão: {feature-slug}-{N}\n\n{descrição curta da decisão}\n\nO que você quer fazer?",
+     options: [
+       { label: "✍️ Resolver agora", description: "Escolher opção A ou B e continuar" },
+       { label: "▶️ Usar decisão padrão", description: "{default_decision} — registrado como pendente de validação" },
+       { label: "⏸ Bloquear squad", description: "Pausar até resolver com stakeholder" }
+     ]
+   })
    ```
+   - Se **Resolver agora**: apresente as opções A/B, registre a escolha, marque `status: resolved`, continue o pipeline sem bloquear.
+   - Se **Usar decisão padrão**: registre a decisão padrão no campo `resolved_with: default`, marque `status: resolved`, continue o pipeline sem bloquear. Log: `⚡ [ESCALATION] Continuando com decisão padrão: {default_decision}`
+   - Se **Bloquear squad**: marque `status → "blocked"` e informe:
+     ```
+     ⏸ SQUAD BLOQUEADO — Escalation necessária
+     
+     Decisão pendente: {feature-slug}-{N}
+     Arquivo: docs/.squads/sessions/{feature-slug}/open-decisions.md
+     
+     Preencha `escalation_owner` e resolva a decisão.
+     Retome com /init → selecionar squad → "Retomar de onde parou".
+     ```
 
 **Ao retomar squad com status "blocked":**
 1. Verifique `open-decisions.md`
 2. Liste decisões com `status: pending`
-3. Para cada uma: peça resolução ao usuário
+3. Para cada uma: use o mesmo AskUserQuestion acima (Resolver agora / Usar padrão / Manter bloqueado)
 4. Ao resolver: atualize `status: resolved` + registre a decisão tomada
 5. Mude squad para `status: running` e retome
 

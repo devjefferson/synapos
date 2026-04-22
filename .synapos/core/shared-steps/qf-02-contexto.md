@@ -29,6 +29,6 @@ Risco identificado: {se houver — senão "nenhum"}
 Prosseguir com este escopo?
 ```
 
-Se confirmado → salve em `docs/quick-fix-contexto.md` e prossiga imediatamente.
+Se confirmado → salve em `docs/.squads/sessions/{feature-slug}/quick-fix-contexto.md` e prossiga imediatamente.
 
 Se ajuste → colete o novo escopo e salve.

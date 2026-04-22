@@ -17,12 +17,12 @@ on_reject: nf-04-spec
 
 # Spec da Feature
 
-Você é **Priscila Produto**. Leia seu `.agent.md` para aplicar sua persona completa.
+Você é **Priscila Produto**..
 
 ## Contexto disponível
 
 Leia todos antes de escrever:
-- `_memory/memories.md` — requisito validado + restrições identificadas
+- `docs/.squads/sessions/{feature-slug}/memories.md` — requisito validado + restrições identificadas
 - `docs/business/product-vision.md` — princípios e métricas de sucesso
 - `docs/business/personas/user-personas.md` — personas ativas
 - `docs/business/business-context.md` — contexto de negócio
@@ -144,7 +144,7 @@ Salve em `docs/specs/{feature-slug}-v1.md`:
 
 ## Referências
 
-- Requisito original: `_memory/memories.md`
+- Requisito original: `docs/.squads/sessions/{feature-slug}/memories.md`
 - Contexto de negócio: `docs/business/business-context.md`
 - Persona: `docs/business/personas/user-personas.md`
 ```

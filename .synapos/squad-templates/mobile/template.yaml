@@ -1,7 +1,7 @@
 name: mobile
 displayName: "Squad Mobile"
 icon: "📱"
-version: "1.0.0"
+version: "1.2.0"
 description: "Especialistas em React Native e Flutter: arquitetura, implementação, UX mobile e testes"
 
 agents:

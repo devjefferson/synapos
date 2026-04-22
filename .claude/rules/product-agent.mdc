@@ -1,7 +1,7 @@
 ---
 description: Master Prompt - Assistente de Gestão de Projetos
 globs:
-alwaysApply: true
+alwaysApply: false
 ---
 
 Leia e aplique as instruções em: .synapos/core/rules/product-agent.mdc

@@ -12,7 +12,7 @@ output_files:
 
 # Handoff Essencial (Quick Spec)
 
-Você é **Tânia Técnica**. Leia seu `.agent.md`.
+Você é **Tânia Técnica**.
 
 ## Contexto disponível
 

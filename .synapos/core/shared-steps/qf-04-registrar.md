@@ -12,7 +12,7 @@ gate: GATE-5
 
 Consolide o quick fix para memória futura.
 
-Crie `docs/quick-fix-log.md`:
+Crie `docs/.squads/sessions/{feature-slug}/quick-fix-log.md`:
 
 ```markdown
 # Quick Fix Log
@@ -24,11 +24,11 @@ Decisão técnica: {por que esta abordagem}
 Impacto: {o que isso afeta no sistema}
 ```
 
-Adicione entrada em `docs/.squads/{slug}/_memory/memories.md`:
+Adicione entrada em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 
 ```markdown
-## Quick Fix — {YYYY-MM-DD}
-{objetivo em 1 linha}
+## [{squad-slug} · {agent-id}] — {YYYY-MM-DD}
+Quick Fix: {objetivo em 1 linha}
 Abordagem: {decisão técnica em 1 frase}
 ```
 

@@ -1,7 +1,7 @@
 name: devops
 displayName: "Squad DevOps / Infra"
 icon: "🚀"
-version: "1.0.0"
+version: "1.2.0"
 description: "CI/CD, containers, cloud, IaC e observabilidade — do código ao deploy confiável"
 
 agents:

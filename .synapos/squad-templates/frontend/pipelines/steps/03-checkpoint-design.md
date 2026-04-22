@@ -38,6 +38,6 @@ O approach está alinhado com o que você esperava?
 [3] Simplificar — remover partes que não são necessárias agora
 ```
 
-**Se [2] ou [3]:** Atualize `docs/architecture-decision.md` com o ajuste e registre em `_memory/memories.md`. Retorne ao step 02-arquitetura se necessário.
+**Se [2] ou [3]:** Atualize `docs/architecture-decision.md` com o ajuste e registre em `docs/.squads/sessions/{feature-slug}/memories.md`. Retorne ao step 02-arquitetura se necessário.
 
 **Se [1]:** Prossiga para implementação.

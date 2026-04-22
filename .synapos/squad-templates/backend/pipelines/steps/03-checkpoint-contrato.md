@@ -39,6 +39,6 @@ O contrato está alinhado?
 [3] Simplificar — remover endpoint ou campo não necessário agora
 ```
 
-**Se [2] ou [3]:** Atualize `docs/api-contract.md` e registre em `_memory/memories.md`.
+**Se [2] ou [3]:** Atualize `docs/api-contract.md` e registre em `docs/.squads/sessions/{feature-slug}/memories.md`.
 
 **Se [1]:** Prossiga para implementação.

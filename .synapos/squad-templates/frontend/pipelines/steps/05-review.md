@@ -14,13 +14,12 @@ on_reject: 04-implementacao
 
 # Code Review Frontend
 
-Você é **Renata Revisão**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Renata Revisão**.
 
 ## Contexto disponível
 
 - Implementação do step anterior (código entregue por Rodrigo React)
 - Arquitetura aprovada: `docs/architecture-decision.md`
-- Memória do squad: `_memory/memories.md`
 
 ## Sua missão
 

@@ -366,6 +366,9 @@ docs/.squads/sessions/{feature-slug}/
 > Aprendizados acumulados de todos os roles que trabalharam nesta feature.
 > O pipeline-runner carrega apenas o bloco RECENTES por padrão.
 > Para expandir o histórico completo: use /session consolidate.
+>
+> [DECISÃO CRÍTICA] — use este marcador em entradas que NUNCA devem ser comprimidas.
+> Entradas com [DECISÃO CRÍTICA] são permanentes — não são movidas para SUMMARY.
 
 <!-- SUMMARY -->
 <!-- /SUMMARY -->
@@ -377,8 +380,9 @@ docs/.squads/sessions/{feature-slug}/
 
 > **Regra de append:** Novas entradas vão sempre dentro de `<!-- RECENTES -->`, antes do marcador `<!-- /RECENTES -->`.
 > **Janela:** Ao atingir mais de 10 entradas em RECENTES, o pipeline-runner avisa para consolidar via `/session consolidate`.
-> **Consolidação:** Move entradas antigas do bloco RECENTES para o SUMMARY e regenera o resumo.
+> **Consolidação:** Move entradas antigas do bloco RECENTES para o SUMMARY — exceto entradas com `[DECISÃO CRÍTICA]`.
 > **Leitura padrão:** Pipeline-runner carrega apenas o bloco RECENTES. Steps com `needs_history: true` recebem também o SUMMARY.
+> **[DECISÃO CRÍTICA]:** Entradas com este marcador nunca são comprimidas. Use para decisões arquiteturais, requisitos regulatórios ou escolhas com impacto de segurança.
 
 `review-notes.md` inicial:
 ```markdown
@@ -630,16 +634,27 @@ Se `plan.md` existe e contém a seção `## TODO — Steps do pipeline`:
 
 Após receber o output do agent, antes de passar para GATE-3, verifique se o output declara explicitamente a intenção de criar ou modificar arquivo fora da lista autorizada (caminhos mencionados no texto do output).
 
-- **Arquivo não autorizado detectado** → veto com retry (contador próprio, separado do GATE-3):
+- **Arquivo não autorizado detectado** → não auto-rejeita. Apresente ao usuário imediatamente via AskUserQuestion:
   ```
-  ⛔ [SCOPE GUARD] Output vetado — arquivo fora do escopo declarado.
-  Arquivo: {arquivo detectado}
-  Tentativa SCOPE {N}/2 — reexecutando com instrução de escopo reforçada.
+  ⚠️ [SCOPE GUARD] O agent precisa modificar um arquivo fora do escopo atual.
+  
+  Arquivo solicitado: {arquivo detectado}
+  Escopo autorizado (de architecture.md): {lista atual}
   ```
-  Máximo 2 retries de SCOPE GUARD. Na 3ª falha → escale ao usuário (não para GATE-3).
+  ```
+  AskUserQuestion({
+    question: "O agent quer tocar em '{arquivo}' que não está no escopo de architecture.md.\n\nO que fazer?",
+    options: [
+      { label: "✅ Autorizar — adicionar ao escopo e continuar", description: "Atualiza architecture.md e prossegue" },
+      { label: "🔄 Rejeitar — reexecutar dentro do escopo atual", description: "Máximo 1 retry com instrução reforçada" },
+      { label: "📝 Atualizar architecture.md — editar manualmente", description: "Pausa até o usuário editar e retomar" }
+    ]
+  })
+  ```
+  - Se **Autorizar**: adicione o arquivo à lista de arquivos autorizados em `architecture.md` e continue para GATE-3.
+  - Se **Rejeitar**: reexecute o step com instrução de escopo reforçada. Máximo 1 retry. Se falhar novamente, escale.
+  - Se **Atualizar**: registre `suspended_at` com o step atual, oriente o usuário a editar `architecture.md` e retomar via `/init`.
 - **Sem violação** → continue para GATE-3 normalmente.
-
-> **Transparência de retries:** o log distingue `SCOPE {N}/2` de `GATE-3 {N}/2`. O usuário sempre sabe qual camada está reexecutando.
 
 ### 2.4 — Executar por modo
 
@@ -699,9 +714,9 @@ async_checkpoints: true   # padrão: false
 - Apresente o output formatado
 - Se `output_file` definido → salve o resultado
 
-**Step `atualizar-tarefa`** — Antes de executar qualquer step com id contendo `atualizar-tarefa`, verifique `[TASK_TRACKER]` recebido do orchestrator:
+**Step `update-task`** — Antes de executar qualquer step com id contendo `update-task`, verifique `[TASK_TRACKER]` recebido do orchestrator:
 - Se `[TASK_TRACKER]` for `none` ou não informado → pule o step automaticamente.
-- Log: `⚡ Task tracker não configurado — step 'atualizar-tarefa' ignorado`
+- Log: `⚡ Task tracker não configurado — step 'update-task' ignorado`
 - Continue para o próximo step.
 
 **`execution: subagent`** — agent executa como subagente:
@@ -1000,5 +1015,5 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **SCOPE GUARD por architecture.md** | Escopo lido da lista de arquivos em architecture.md — ausência = sem restrição (warning), nunca deriva de pipeline output_files |
 | **SCOPE GUARD só em steps com output_files** | Steps sem output_files não recebem SCOPE GUARD — evita context waste em steps de revisão/formatação |
 | **Escopo expandido = [DECISÃO PENDENTE]** | Se agent precisar de arquivo fora do escopo, sinaliza e aguarda aprovação — nunca expande silenciosamente |
-| **Retries distintos por camada** | SCOPE GUARD tem contador próprio (SCOPE N/2), separado do GATE-3 (GATE-3 N/2) — log sempre indica qual camada está reexecutando |
+| **SCOPE GUARD pergunta, não rejeita** | Violação de escopo → AskUserQuestion imediato (autorizar / rejeitar / editar architecture.md). Nunca auto-rejeita — a decisão é sempre do humano |
 | **TODO é rastreado** | plan.md rastreia TODO — runner marca `[>]` ao iniciar e `[x]` ao concluir cada step via 2.3b e 2.8 |

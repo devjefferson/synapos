@@ -83,7 +83,7 @@ Essas são as bases da spec. Posso prosseguir?
 
 **Se [2]:** Registre o ajuste, atualize o resumo e repita.
 
-**Se [1]:** Registre em `_memory/memories.md`:
+**Se [1]:** Registre em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Direção estratégica aprovada — {YYYY-MM-DD}
 {resumo das decisões confirmadas}

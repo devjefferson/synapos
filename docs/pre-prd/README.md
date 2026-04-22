@@ -63,7 +63,7 @@ O **synapOS** é um framework de gerenciamento e orquestração de agentes proje
 
 **2a. Modo Solo**
 *   **Ativação:** `mode: solo` no `squad.yaml`.
-*   **Comportamento:** Checkpoints de aprovação intermediários são pulados automaticamente. GATE-0 opera em modo permissivo. Step `atualizar-tarefa` ignorado quando `task_tracker: none`.
+*   **Comportamento:** Checkpoints de aprovação intermediários são pulados automaticamente. GATE-0 opera em modo permissivo. Step `update-task` ignorado quando `task_tracker: none`.
 *   **Pipeline Quick Fix:** 3 steps (gate → contexto → executar → registrar), sem nenhum checkpoint de aprovação. Disponível em todos os 7 domínios.
 
 **2b. Memória Transversal**

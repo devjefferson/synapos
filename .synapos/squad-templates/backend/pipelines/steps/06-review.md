@@ -15,7 +15,7 @@ on_reject: 04-implementacao
 
 # Code Review Backend
 
-Você é **Roberto Revisão**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Roberto Revisão**.
 
 ## Contexto disponível
 

@@ -8,7 +8,7 @@ model_tier: powerful
 
 # Analisar Delta e Propor Mudança
 
-Você é **Ana Análise**. Leia seu `.agent.md` para aplicar sua persona completa.
+Você é **Ana Análise**..
 
 ## REGRA FUNDAMENTAL
 
@@ -17,7 +17,7 @@ O objetivo é um delta cirúrgico — apenas o que mudou, com justificativa clar
 
 ## Contexto disponível
 
-- `_memory/memories.md` — doc selecionado e descrição da mudança
+- `docs/.squads/sessions/{feature-slug}/memories.md` — doc selecionado e descrição da mudança
 - O arquivo selecionado (leia seu conteúdo completo)
 - `docs/business/product-vision.md` — para verificar consistência
 
@@ -65,7 +65,7 @@ Aguarde aprovação antes de prosseguir.
 
 Se o usuário ajustar, refine a proposta e reapresente. Não crie nenhum arquivo antes da aprovação.
 
-Salve delta aprovado em `_memory/memories.md`:
+Salve delta aprovado em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Delta aprovado — {YYYY-MM-DD}
 Doc: {caminho}

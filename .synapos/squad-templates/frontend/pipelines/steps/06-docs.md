@@ -11,7 +11,7 @@ output_files:
 
 # Documentação da Feature
 
-Você é **Ana Arquitetura**. Leia seu `.agent.md`.
+Você é **Ana Arquitetura**.
 
 ## Contexto disponível
 
@@ -44,7 +44,7 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md`.
 {sugestões do review que ficaram para depois — e por quê}
 ```
 
-Registre em `_memory/memories.md` qualquer padrão aprovado nesta sessão que deve ser mantido:
+Registre em `docs/.squads/sessions/{feature-slug}/memories.md` qualquer padrão aprovado nesta sessão que deve ser mantido:
 ```markdown
 ## Padrão aprovado — {YYYY-MM-DD}
 {descrição do padrão para usar em próximas sessões}

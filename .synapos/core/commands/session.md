@@ -170,7 +170,8 @@ memories.md usa estrutura de janela deslizante com dois blocos:
 
 1. Leia o arquivo completo
 2. Identifique entradas no bloco `<!-- RECENTES -->` com mais de 7 dias OU se o bloco tiver mais de 10 entradas
-3. Para cada entrada a consolidar, mova o conteúdo para o bloco `<!-- SUMMARY -->`:
+3. **Antes de mover qualquer entrada:** filtre entradas com `[DECISÃO CRÍTICA]` no conteúdo — estas **nunca são movidas**. Se houver entradas críticas antigas acumulando, mova-as para uma seção permanente `## Decisões Críticas` no **topo** do arquivo (acima dos blocos SUMMARY e RECENTES), fora de ambos os blocos. Isso garante que permanecem visíveis e nunca sejam comprimidas.
+4. Para cada entrada **sem** `[DECISÃO CRÍTICA]` a consolidar, mova o conteúdo para o bloco `<!-- SUMMARY -->`:
    ```markdown
    <!-- SUMMARY -->
    (consolidado em: {YYYY-MM-DD})
@@ -185,8 +186,8 @@ memories.md usa estrutura de janela deslizante com dois blocos:
    {decisões que não estão em context.md}
    <!-- /SUMMARY -->
    ```
-4. Remova as entradas consolidadas do bloco `<!-- RECENTES -->` (não delete — elas estão no SUMMARY)
-5. Atualize `session.manifest.json` → `files.memories.md.entry_count` com a contagem atual do bloco RECENTES
+5. Remova as entradas consolidadas (sem `[DECISÃO CRÍTICA]`) do bloco `<!-- RECENTES -->` (não delete — elas estão no SUMMARY)
+6. Atualize `session.manifest.json` → `files.memories.md.entry_count` com a contagem atual do bloco RECENTES
 
 > **Legado:** Se memories.md não tem a estrutura de blocos, crie os blocos durante a consolidação: mova tudo para SUMMARY e deixe RECENTES vazio.
 

@@ -87,8 +87,8 @@ steps:
       - "Review sem BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
 
-  - id: atualizar-tarefa
+  - id: update-task
     name: "Atualizar Tarefa"
     execution: checkpoint
-    file: pipeline/steps/atualizar-tarefa.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [07-review]

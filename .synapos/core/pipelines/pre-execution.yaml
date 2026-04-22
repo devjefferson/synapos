@@ -45,7 +45,7 @@ steps:
   - id: pre-04-checkpoint-contexto
     name: "Aprovação do Contexto"
     execution: checkpoint
-    gate: GATE-2
+    gate: GATE-CONTEXT
     file: ../../squad-templates/engineer/pipeline/steps/04-checkpoint-contexto.md
     depends_on: [pre-03-investigacao]
 
@@ -81,7 +81,7 @@ steps:
   - id: pre-06-checkpoint-arquitetura
     name: "Aprovação da Arquitetura"
     execution: checkpoint
-    gate: GATE-ADR
+    gate: GATE-ARCH
     # GATE-DESIGN também é verificado neste checkpoint quando visual-spec.md foi gerado
     file: ../../squad-templates/engineer/pipeline/steps/06-checkpoint-arquitetura.md
     depends_on: [pre-05b-visual-spec]

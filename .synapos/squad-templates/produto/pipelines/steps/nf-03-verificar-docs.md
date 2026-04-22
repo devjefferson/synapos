@@ -8,7 +8,7 @@ model_tier: powerful
 
 # Verificar Docs e Restrições
 
-Você é **Ana Análise**. Leia seu `.agent.md` para aplicar sua persona completa.
+Você é **Ana Análise**..
 
 ## Contexto disponível
 
@@ -19,7 +19,7 @@ Leia todos antes de analisar:
 - `docs/business/competitive_landscape.md` — posicionamento competitivo
 - `docs/tech-context/briefing/critical-rules.md` — regras técnicas não-negociáveis
 - `docs/tech-context/briefing/adrs-summary.md` — decisões arquiteturais registradas
-- `_memory/memories.md` — requisito validado no step anterior
+- `docs/.squads/sessions/{feature-slug}/memories.md` — requisito validado no step anterior
 
 ## Sua missão
 
@@ -61,7 +61,7 @@ VERIFICAÇÃO DE DOCS
 
 Se houver conflito crítico com docs existentes, pause e apresente ao usuário antes de prosseguir. Só continue se o usuário pedir explicitamente.
 
-Salve contexto em `_memory/memories.md`:
+Salve contexto em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Verificação de docs — {YYYY-MM-DD}
 Restrições aplicáveis: {lista}

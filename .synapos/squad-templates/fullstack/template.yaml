@@ -1,7 +1,7 @@
 name: fullstack
 displayName: "Squad Fullstack"
 icon: "📦"
-version: "1.0.0"
+version: "1.2.0"
 description: "Frontend + Backend integrados com agente de coordenação de contratos de API"
 
 agents:

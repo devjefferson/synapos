@@ -7,7 +7,7 @@ gate: GATE-0
 
 # Verificação de Integridade — GATE-0
 
-Verifique antes de prosseguir:
+Verifique cada item antes de prosseguir:
 
 - [ ] `.synapos/core/orchestrator.md` existe
 - [ ] `docs/_memory/company.md` existe
@@ -27,7 +27,7 @@ Apresente ao usuário:
 ```
 Squad: {name} | Modo: {modo}
 Objetivo: {description}
-Agents: {lista}
+Agents: {lista com ícones}
 ```
 
 ## Tarefas em aberto
@@ -35,7 +35,7 @@ Agents: {lista}
 Antes de perguntar sobre a task, verifique:
 
 1. Procure arquivos `docs/specs/*-tasks.md` e liste itens `- [ ]` pendentes
-2. Leia `_memory/memories.md` — se houver `Platform:` registrado:
+2. Leia `docs/.squads/sessions/{feature-slug}/memories.md` — se houver `Platform:` registrado:
    - **GitHub**: execute `gh issue list --label "feature" --state open`
    - **Linear / Jira**: exiba as tarefas registradas no memories.md
 
@@ -56,7 +56,7 @@ O que vamos implementar nesta sessão?
 (descreva o endpoint, feature ou módulo — inclua contexto: rota, método, regra de negócio principal)
 ```
 
-Salve em `_memory/memories.md`:
+Salve em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 ```markdown
 ## Sessão {YYYY-MM-DD}
 Task: {tarefa selecionada ou descrita}

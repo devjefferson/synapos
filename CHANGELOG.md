@@ -390,7 +390,7 @@ Agents atualizados:
 #### Core — Task Tracker Configurável
 - `_memory/preferences.md` — campo `task_tracker: none | github | linear | jira`
 - `core/orchestrator.md` — onboarding agora coleta preferência de task tracker
-- `core/pipeline-runner.md` — step `atualizar-tarefa` ignorado automaticamente quando `task_tracker: none`
+- `core/pipeline-runner.md` — step `update-task` ignorado automaticamente quando `task_tracker: none`
 
 #### Pipelines — Quick Fix (7 domínios)
 - Pipeline `quick-fix` adicionado a todos os templates: frontend, backend, produto, fullstack, mobile, devops, ia-dados

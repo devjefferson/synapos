@@ -1,7 +1,7 @@
 name: produto
 displayName: "Squad de Produto"
 icon: "📋"
-version: "2.0.0"
+version: "2.2.0"
 description: "Refina e versiona a documentação de produto. Requer docs/business/ criada pelo /setup:build-business. Nunca sobrescreve — apenas versiona."
 
 agents:
