@@ -25,7 +25,7 @@ Leia `.synapos/squads/{slug}/agents/rodrigo-react.agent.md` e execute como Rodri
 1. Implemente os componentes e páginas seguindo o contrato de API
 2. Use mock do contrato enquanto o backend ainda não está disponível
 3. Trate todos os estados: loading, error, empty, success
-4. Siga a arquitetura definida (se houver `docs/architecture-decision.md`)
+4. Siga a arquitetura definida em `docs/.squads/sessions/{feature-slug}/architecture.md`
 
 ## Critérios de Qualidade
 

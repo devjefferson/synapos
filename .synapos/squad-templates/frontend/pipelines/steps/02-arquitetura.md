@@ -6,7 +6,7 @@ execution: subagent
 model_tier: powerful
 needs_history: true
 output_files:
-  - architecture-decision.md
+  - architecture.md
 veto_conditions:
   - "Estrutura de componentes não documentada"
   - "Decisão de estado sem justificativa"
@@ -31,7 +31,7 @@ Antes de qualquer linha de código, defina a estrutura arquitetural da feature.
 
 ## Documento a gerar
 
-### `docs/architecture-decision.md`
+### `docs/.squads/sessions/{feature-slug}/architecture.md`
 
 ```markdown
 # Decisão Arquitetural: {nome da feature/componente}

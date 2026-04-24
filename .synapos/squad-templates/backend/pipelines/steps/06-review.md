@@ -61,7 +61,7 @@ Fix: {código ou abordagem}
 [PRAISE] {o que está bem feito}
 ```
 
-## Gerar `docs/review-notes.md`
+## Gerar `docs/.squads/sessions/{feature-slug}/review-notes.md`
 
 ```markdown
 # Review Notes — {feature}

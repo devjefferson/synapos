@@ -19,7 +19,7 @@ Você é **Renata Revisão**.
 ## Contexto disponível
 
 - Implementação do step anterior (código entregue por Rodrigo React)
-- Arquitetura aprovada: `docs/architecture-decision.md`
+- Arquitetura aprovada: `docs/.squads/sessions/{feature-slug}/architecture.md`
 
 ## Sua missão
 
@@ -75,7 +75,7 @@ Fix sugerido:
 [PRAISE] {o que está bem feito e por quê}
 ```
 
-## Gerar `docs/review-notes.md`
+## Gerar `docs/.squads/sessions/{feature-slug}/review-notes.md`
 
 ```markdown
 # Review Notes — {feature/task}

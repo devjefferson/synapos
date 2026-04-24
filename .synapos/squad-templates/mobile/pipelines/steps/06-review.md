@@ -26,4 +26,4 @@ gate: GATE-5
 ## Formato
 
 Use: `BLOCKER:` / `SUGGESTION:` / `QUESTION:` / `PRAISE:`
-Salve em `docs/review-notes.md`
+Salve em `docs/.squads/sessions/{feature-slug}/review-notes.md`

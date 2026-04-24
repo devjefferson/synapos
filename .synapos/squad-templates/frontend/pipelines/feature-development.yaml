@@ -17,7 +17,7 @@ steps:
     file: pipeline/steps/02-arquitetura.md
     depends_on: [01-gate-integridade]
     output_files:
-      - architecture-decision.md
+      - architecture.md
     veto_conditions:
       - "Estrutura de componentes não documentada"
       - "Decisão de estado sem justificativa (local vs server vs global)"
@@ -73,5 +73,5 @@ steps:
   - id: update-task
     name: "Atualizar Tarefa"
     execution: checkpoint
-    file: ../../core/shared-steps/update-task.md
+    file: ../../../core/shared-steps/update-task.md
     depends_on: [06-docs]

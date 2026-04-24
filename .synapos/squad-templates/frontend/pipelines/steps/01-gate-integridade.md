@@ -56,11 +56,22 @@ O que vamos implementar nesta sessão?
 (descreva a feature, bug ou componente — será usado como contexto pelos agents)
 ```
 
-Salve a resposta em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
+Salve a resposta em **dois arquivos**:
+
+1. `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 ```markdown
 ## Sessão {YYYY-MM-DD}
 Task: {tarefa selecionada ou descrita}
 Issue: {#número | plataforma | local | —}
+```
+
+2. `docs/.squads/sessions/{feature-slug}/context.md` — preencha os campos correspondentes:
+```markdown
+## O que é
+{tarefa descritiva em 1-2 frases}
+
+## Por que existe
+{motivação inferred da descrição}
 ```
 
 Prossiga.
