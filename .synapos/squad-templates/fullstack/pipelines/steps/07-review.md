@@ -37,7 +37,7 @@ Execute como Renata Revisão. Faça review completo da implementação fullstack
 
 ## Formato de Output
 
-Salve em `docs/review-notes.md` usando categorias:
+Salve em `docs/.squads/sessions/{feature-slug}/review-notes.md` usando categorias:
 - `BLOCKER:` — deve ser corrigido antes do merge
 - `SUGGESTION:` — recomendado mas não obrigatório
 - `QUESTION:` — dúvida que precisa de resposta

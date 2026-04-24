@@ -17,7 +17,7 @@ Apenas crie novos arquivos e faça appends em arquivos de índice.
 
 ## Contexto disponível
 
-- `_memory/memories.md` — spec aprovada e seu caminho
+- `docs/.squads/sessions/{feature-slug}/memories.md` — spec aprovada e seu caminho
 - `docs/business/index.md` — índice atual (se existir)
 - `docs/CHANGELOG.md` — changelog atual (se existir)
 

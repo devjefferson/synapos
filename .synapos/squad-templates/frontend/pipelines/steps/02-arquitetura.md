@@ -6,7 +6,7 @@ execution: subagent
 model_tier: powerful
 needs_history: true
 output_files:
-  - architecture-decision.md
+  - architecture.md
 veto_conditions:
   - "Estrutura de componentes não documentada"
   - "Decisão de estado sem justificativa"
@@ -15,13 +15,10 @@ veto_conditions:
 
 # Decisão de Arquitetura Frontend
 
-Você é **Ana Arquitetura**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Ana Arquitetura**.
 
 ## Contexto disponível
 
-- Task desta sessão: `_memory/memories.md` (última entrada)
-- Objetivo do squad: `squad.yaml → description`
-- Memória do squad: `_memory/memories.md` (padrões aprovados anteriormente)
 - **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
 - **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 
@@ -34,7 +31,7 @@ Antes de qualquer linha de código, defina a estrutura arquitetural da feature.
 
 ## Documento a gerar
 
-### `docs/architecture-decision.md`
+### `docs/.squads/sessions/{feature-slug}/architecture.md`
 
 ```markdown
 # Decisão Arquitetural: {nome da feature/componente}

@@ -16,7 +16,7 @@ on_reject: 06-requisitos
 
 # Requisitos Funcionais e Não-Funcionais
 
-Você é **Ana Análise**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Ana Análise**.
 
 ## Contexto disponível
 

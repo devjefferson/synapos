@@ -14,7 +14,7 @@ on_reject: qs-03-spec
 
 # Spec Rápida
 
-Você é **Priscila Produto**. Leia seu `.agent.md`.
+Você é **Priscila Produto**.
 
 ## Contexto disponível
 

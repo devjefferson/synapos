@@ -17,7 +17,7 @@ veto_conditions:
 
 # Handoff para Desenvolvimento
 
-Você é **Tânia Técnica**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Tânia Técnica**.
 
 ## Contexto disponível
 

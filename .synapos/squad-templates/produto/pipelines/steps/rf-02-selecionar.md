@@ -56,7 +56,7 @@ Aguarde a resposta.
 
 ## Registrar contexto
 
-Salve em `_memory/memories.md`:
+Salve em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Refinamento selecionado — {YYYY-MM-DD}
 Doc: {caminho do arquivo selecionado}

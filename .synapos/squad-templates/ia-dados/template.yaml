@@ -1,7 +1,7 @@
 name: ia-dados
 displayName: "Squad IA / Dados"
 icon: "🤖"
-version: "1.0.0"
+version: "1.2.0"
 description: "ML, pipelines de dados, LLMs e análise — da exploração ao modelo em produção"
 
 agents:

@@ -39,7 +39,7 @@ Identifique o que muda, atualize a spec e retorne a este checkpoint.
 
 ## Se aprovar
 
-Registre em `_memory/memories.md`:
+Registre em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Spec aprovada — {YYYY-MM-DD}
 Feature: {nome}

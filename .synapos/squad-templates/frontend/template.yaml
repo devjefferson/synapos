@@ -1,7 +1,7 @@
 name: frontend
 displayName: "Squad de Frontend"
 icon: "🖥️"
-version: "1.0.0"
+version: "1.3.0"
 description: "Especialistas em desenvolvimento frontend com foco em qualidade, performance e experiência do usuário"
 
 agents:

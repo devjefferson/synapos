@@ -1,5 +1,5 @@
 ---
-id: atualizar-tarefa
+id: update-task
 name: "Atualizar Tarefa"
 execution: checkpoint
 ---
@@ -10,7 +10,7 @@ A implementação foi concluída. Registre o progresso onde as tarefas estão se
 
 ## Identificar tarefa e plataforma
 
-Leia `_memory/memories.md` da sessão atual:
+Leia `docs/.squads/sessions/{feature-slug}/memories.md` da sessão atual:
 - `Task:` — descrição do que foi feito
 - `Issue:` — referência da tarefa (número, plataforma, local ou —)
 
@@ -56,12 +56,7 @@ Se parcial, adicione nota abaixo do item:
 
 **Se concluída:**
 ```bash
-# Fechar a issue
 gh issue close {número} --comment "Implementado. Referência: {branch ou PR}"
-
-# Ou adicionar label 'done' e fechar
-gh issue edit {número} --add-label "done"
-gh issue close {número}
 ```
 
 **Se parcial:**
@@ -76,7 +71,7 @@ gh issue edit {número} --add-label "in-progress"
 
 **Se concluída:**
 - Se Linear MCP disponível: atualize o status para `Done` / `Completed`
-- Caso contrário, exiba instrução:
+- Caso contrário:
 
 ```
 Linear — Atualizar manualmente:
@@ -87,17 +82,12 @@ Comentário: Implementado em {YYYY-MM-DD}
 
 **Se parcial:**
 ```
-Linear — Atualizar manualmente:
-Issue: {ID}
-Novo status: In Progress
-Comentário: {progresso + pendências}
+Linear — Issue: {ID} | Status: In Progress | Comentário: {progresso + pendências}
 ```
 
 ---
 
 ### 🔲 Jira
-
-Exiba instrução:
 
 ```
 Jira — Atualizar manualmente:
@@ -110,15 +100,13 @@ Comentário: {resumo do que foi feito}
 
 ## Registrar no memories.md
 
-Adicione entrada:
+Adicione entrada em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 
 ```markdown
-## Tarefa concluída — {YYYY-MM-DD}
-Task: {descrição}
+## [{squad-slug} · usuario] — {YYYY-MM-DD}
+Tarefa {concluída | parcial}: {descrição}
 Issue: {referência}
-Status: {concluída | parcial}
-{SE PARCIAL:}
-Pendente: {o que falta}
+{SE PARCIAL:} Pendente: {o que falta}
 ```
 
 ---

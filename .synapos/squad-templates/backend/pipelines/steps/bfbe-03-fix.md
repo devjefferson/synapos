@@ -13,7 +13,7 @@ on_reject: bfbe-03-fix
 
 # Fix de Bug Backend
 
-Você é **Alexandre API**. Leia seu `.agent.md`.
+Você é **Alexandre API**.
 
 ## Contexto
 

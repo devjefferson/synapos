@@ -10,7 +10,7 @@ Antes de implementar, o usuário valida a estrutura proposta.
 
 ## Apresentar resumo
 
-Leia `docs/architecture-decision.md` e apresente:
+Leia `docs/.squads/sessions/{feature-slug}/architecture.md` e apresente:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -38,6 +38,6 @@ O approach está alinhado com o que você esperava?
 [3] Simplificar — remover partes que não são necessárias agora
 ```
 
-**Se [2] ou [3]:** Atualize `docs/architecture-decision.md` com o ajuste e registre em `_memory/memories.md`. Retorne ao step 02-arquitetura se necessário.
+**Se [2] ou [3]:** Atualize `docs/.squads/sessions/{feature-slug}/architecture.md` com o ajuste e registre em `docs/.squads/sessions/{feature-slug}/memories.md`. Retorne ao step 02-arquitetura se necessário.
 
 **Se [1]:** Prossiga para implementação.

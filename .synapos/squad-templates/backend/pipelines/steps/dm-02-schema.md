@@ -15,11 +15,10 @@ veto_conditions:
 
 # Design do Schema
 
-Você é **Daniela Dados**. Leia seu `.agent.md`.
+Você é **Daniela Dados**.
 
 ## Contexto disponível
 
-- Task desta sessão: `_memory/memories.md`
 - Memória do squad: padrões aprovados
 
 ## Documento a gerar

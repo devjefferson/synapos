@@ -16,13 +16,12 @@ veto_conditions:
 
 # Pesquisa de Mercado e Contexto de Negócio
 
-Você é **Paulo Pesquisa**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Paulo Pesquisa**.
 
 ## Contexto disponível
 
 - Objetivo do squad: `{squad.description}` (leia de `squad.yaml`)
 - Perfil da empresa: `docs/_memory/company.md`
-- Memória do squad: `_memory/memories.md`
 
 ## Sua missão neste step
 

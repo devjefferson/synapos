@@ -3,7 +3,7 @@ name: synapos-gate-system
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 
-# SYNAPOS GATE SYSTEM v2.0.0
+# SYNAPOS GATE SYSTEM v2.1.0
 
 > Gates são pontos de validação obrigatórios. Falha em um gate bloqueia o avanço.
 > Princípio: **Fail Loud, Never Silent** — nunca ignore uma falha de gate.
@@ -12,7 +12,7 @@ description: Sistema de quality gates — validação em pontos críticos do pip
 
 ## GATES DISPONÍVEIS
 
-Três gates ativos. Nada mais.
+Dois gates de validação automática + dois labels de checkpoint + um marcador de conclusão.
 
 ---
 
@@ -87,24 +87,59 @@ Máximo 2 reexecuções automáticas. Na 3ª falha → escale para o usuário.
 
 ---
 
-### GATE-5 — Entrega / Handoff
+---
 
-**Quando usar:** Último step de qualquer pipeline antes de marcar como `completed`.
+## LABELS DE CHECKPOINT (usados no pre-execution pipeline)
 
-**Comportamento:** apenas confirmação visual. **Nunca bloqueia.**
+Não são gates de validação automática — são labels descritivos em steps `execution: checkpoint` que pausam para aprovação do usuário. O pipeline-runner exibe o checkpoint e aguarda confirmação.
 
-**Se tudo OK:**
+### GATE-CONTEXT — Aprovação do Contexto
+
+**Quando usar:** Checkpoint após geração de `context.md` no pre-execution pipeline.
+
+**Comportamento:** pausa e exibe `context.md` para revisão. Usuário aprova, ajusta ou pula.
+
 ```
-✅ GATE-5 — Pronto para entrega
-   Squad pode ser marcado como completed.
+⏸ CHECKPOINT [GATE-CONTEXT]: Contexto gerado — revise antes de prosseguir.
 ```
 
-**Se itens pendentes (warning, não bloqueia):**
+### GATE-ARCH — Aprovação da Arquitetura
+
+**Quando usar:** Checkpoint após geração de `architecture.md` no pre-execution pipeline.
+
+**Comportamento:** pausa e exibe `architecture.md` para revisão. Usuário aprova, ajusta ou pula.
+GATE-DESIGN também é verificado neste checkpoint se `visual-spec.md` foi gerado.
+
 ```
-⚠️  GATE-5 — Itens pendentes detectados:
+⏸ CHECKPOINT [GATE-ARCH]: Arquitetura gerada — revise antes de prosseguir.
+```
+
+---
+
+## MARCADOR DE CONCLUSÃO
+
+### GATE-5 — Ciclo de Vida: Conclusão
+
+**Quando usar:** Último step de qualquer pipeline ao marcar como `completed`.
+
+**Comportamento:** log automático de conclusão. **Nunca bloqueia. Nunca pede confirmação.**
+É um marcador de fim de ciclo, não um gate de validação. O pipeline-runner emite automaticamente.
+
+**Log automático (sempre):**
+```
+✅ Pipeline concluído — {squad-slug} · {feature-slug}
+   Arquivos na session: {lista de output_files}
+```
+
+**Se itens pendentes detectados (warning, não bloqueia):**
+```
+⚠️  Itens pendentes ao concluir:
    {lista}
-   Squad será finalizado mesmo assim.
+   Squad marcado como completed mesmo assim.
 ```
+
+> **Por que não bloqueia:** validação de qualidade já foi feita pelo GATE-3 em cada step.
+> GATE-5 existe apenas para consistência de log — não adiciona verificação redundante.
 
 ---
 

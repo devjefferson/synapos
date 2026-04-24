@@ -14,7 +14,7 @@ veto_conditions:
 
 # Migration SQL
 
-Você é **Daniela Dados**. Leia seu `.agent.md`.
+Você é **Daniela Dados**.
 
 ## Contexto disponível
 

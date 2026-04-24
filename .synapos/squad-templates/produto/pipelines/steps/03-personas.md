@@ -15,7 +15,7 @@ veto_conditions:
 
 # User Research e Personas
 
-Você é **Paulo Pesquisa**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Paulo Pesquisa**.
 
 ## Contexto disponível
 

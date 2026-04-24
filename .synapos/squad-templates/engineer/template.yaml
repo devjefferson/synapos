@@ -1,7 +1,7 @@
 name: engineer
 displayName: "Squad Engineer"
 icon: "🧠"
-version: "1.0.0"
+version: "1.1.0"
 description: "Feature engineering completo: investigação → arquitetura → planejamento → execução guiada por ADRs"
 
 agents:

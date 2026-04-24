@@ -15,13 +15,10 @@ veto_conditions:
 
 # Design do Contrato da API
 
-Você é **Bruno Base**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Bruno Base**.
 
 ## Contexto disponível
 
-- Task desta sessão: `_memory/memories.md`
-- Objetivo do squad: `squad.yaml → description`
-- Memória do squad: `_memory/memories.md` — padrões e ADRs anteriores
 - **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← leia antes de qualquer decisão
 - **ADRs existentes:** `docs/tech-context/briefing/adrs-summary.md` ← verifique conflitos com decisões anteriores
 

@@ -15,13 +15,11 @@ on_reject: 04-implementacao
 
 # Implementação Frontend
 
-Você é **Rodrigo React**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Rodrigo React**.
 
 ## Contexto disponível
 
-- Arquitetura decidida: `docs/architecture-decision.md` ← **leia antes de escrever qualquer código**
-- Memória do squad: `_memory/memories.md` — padrões aprovados anteriormente
-- Objetivo do squad: `squad.yaml → description`
+- Arquitetura decidida: `docs/.squads/sessions/{feature-slug}/architecture.md` ← **leia antes de escrever qualquer código**
 - **Regras críticas do projeto:** `docs/tech-context/briefing/critical-rules.md` ← aplique todas as regras durante a implementação
 
 ## Sua missão
@@ -98,7 +96,7 @@ function useFeatureName() {
 
 ## Entrega
 
-Apresente o código implementado seguindo a estrutura definida em `docs/architecture-decision.md`.
+Apresente o código implementado seguindo a estrutura definida em `docs/.squads/sessions/{feature-slug}/architecture.md`.
 
 Para cada arquivo entregue, indique:
 - **Caminho:** `{caminho relativo ao projeto}`

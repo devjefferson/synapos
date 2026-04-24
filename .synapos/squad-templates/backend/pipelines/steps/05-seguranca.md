@@ -16,13 +16,12 @@ on_reject: 04-implementacao
 
 # Auditoria de Segurança
 
-Você é **Sérgio Segurança**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Sérgio Segurança**.
 
 ## Contexto disponível
 
 - Contrato da API: `docs/api-contract.md`
 - Implementação do step anterior (código entregue por Alexandre API)
-- Memória do squad: `_memory/memories.md`
 
 ## Execute a auditoria OWASP
 
@@ -96,5 +95,5 @@ Você é **Sérgio Segurança**. Leia seu `.agent.md` para aplicar sua persona e
 ## Regra de decisão
 
 - **Critical/High encontrado** → retorna para implementação com fix detalhado
-- **Apenas Medium/Low** → aprovado, mas medium deve ir para `_memory/memories.md` como débito técnico
+- **Apenas Medium/Low** → aprovado, mas medium deve ir para `docs/.squads/sessions/{feature-slug}/memories.md` como débito técnico
 - **Clean** → aprovado, prosseguir para review

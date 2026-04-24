@@ -42,9 +42,9 @@ A pesquisa está alinhada com o que você esperava?
 [3] Adicionar contexto — há informação que eu não tenho ainda
 ```
 
-**Se [2] ou [3]:** Registre o ajuste em `_memory/memories.md` e retorne ao step 02-contexto-negocio com o novo foco.
+**Se [2] ou [3]:** Registre o ajuste em `docs/.squads/sessions/{feature-slug}/memories.md` e retorne ao step 02-contexto-negocio com o novo foco.
 
-**Se [1]:** Registre em `_memory/memories.md`:
+**Se [1]:** Registre em `docs/.squads/sessions/{feature-slug}/memories.md`:
 ```markdown
 ## Pesquisa aprovada — {YYYY-MM-DD}
 Direção validada: {resumo do que foi confirmado}

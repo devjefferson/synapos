@@ -77,8 +77,8 @@ steps:
       - "BLOCKER sem fix sugerido"
     on_reject: 04-implementacao
 
-  - id: atualizar-tarefa
+  - id: update-task
     name: "Atualizar Tarefa"
     execution: checkpoint
-    file: pipeline/steps/atualizar-tarefa.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [06-review]

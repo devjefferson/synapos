@@ -1,6 +1,6 @@
 name: "Feature Development"
-description: "Investigação → Arquitetura → Planejamento → Execução guiada por ADRs. Aprovação humana obrigatória antes de cada fase."
-version: "1.0.0"
+description: "Investigação → Arquitetura → Planejamento → Execução guiada por ADRs. Checkpoint consolidado antes de iniciar a execução."
+version: "2.0.0"
 
 # Arquivos de sessão gerados neste pipeline.
 # Salvos em: docs/.squads/sessions/{feature-slug}/
@@ -11,6 +11,8 @@ session_files:
   architecture: architecture.md
   plan: plan.md
 
+# v2.0: Checkpoints intermediários (pós-contexto, pós-arquitetura, pós-plano)
+# foram consolidados em um único checkpoint final antes da execução.
 steps:
   - id: 01-gate-integridade
     name: "Verificação de Integridade"
@@ -41,20 +43,13 @@ steps:
       - "context.md sem seção de ADRs Relevantes"
       - "Questões críticas não respondidas pelo humano antes de salvar"
 
-  - id: 04-checkpoint-contexto
-    name: "Aprovação do Contexto"
-    execution: checkpoint
-    gate: GATE-2
-    file: pipeline/steps/04-checkpoint-contexto.md
-    depends_on: [03-investigacao]
-
   - id: 05-arquitetura
     name: "Estruturação Arquitetural"
     agent: leo-engenheiro
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/05-arquitetura.md
-    depends_on: [04-checkpoint-contexto]
+    depends_on: [03-investigacao]
     output_files:
       - architecture.md
     veto_conditions:
@@ -63,20 +58,13 @@ steps:
       - "architecture.md sem lista de arquivos a modificar/criar"
       - "Decisão técnica tomada sem apresentar como [DECISÃO PENDENTE] ao humano"
 
-  - id: 06-checkpoint-arquitetura
-    name: "Aprovação da Arquitetura"
-    execution: checkpoint
-    gate: GATE-ADR
-    file: pipeline/steps/06-checkpoint-arquitetura.md
-    depends_on: [05-arquitetura]
-
   - id: 07-planejamento
     name: "Planejamento de Execução"
     agent: leo-engenheiro
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/07-planejamento.md
-    depends_on: [06-checkpoint-arquitetura]
+    depends_on: [05-arquitetura]
     output_files:
       - plan.md
     veto_conditions:
@@ -85,10 +73,11 @@ steps:
       - "Dependências sequenciais/paralelas não documentadas"
       - "plan.md sem referência a context.md e architecture.md"
 
-  - id: 08-checkpoint-plano
-    name: "Aprovação do Plano"
+  - id: 08-checkpoint-final
+    name: "Aprovação Consolidada (Contexto + Arquitetura + Plano)"
     execution: checkpoint
-    file: pipeline/steps/08-checkpoint-plano.md
+    gate: GATE-ADR
+    file: pipeline/steps/checkpoint-final.md
     depends_on: [07-planejamento]
 
   - id: 09-execucao
@@ -97,11 +86,11 @@ steps:
     execution: inline
     model_tier: powerful
     file: pipeline/steps/09-execucao.md
-    depends_on: [08-checkpoint-plano]
+    depends_on: [08-checkpoint-final]
     gate: GATE-5
 
-  - id: atualizar-tarefa
+  - id: update-task
     name: "Atualizar Tarefa no Linear"
     execution: checkpoint
-    file: pipeline/steps/atualizar-tarefa.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [09-execucao]

@@ -12,12 +12,11 @@ on_reject: bf-03-fix
 
 # Fix de Bug
 
-Você é **Rodrigo React**. Leia seu `.agent.md`.
+Você é **Rodrigo React**.
 
 ## Contexto disponível
 
 - Diagnóstico do bug: saída do step bf-02-diagnostico
-- Memória do squad: `_memory/memories.md`
 
 ## Regras do fix
 

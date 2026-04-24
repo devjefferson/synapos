@@ -14,12 +14,11 @@ veto_conditions:
 
 # Spec do Componente
 
-Você é **Úrsula UI**. Leia seu `.agent.md` para aplicar sua persona e princípios completos.
+Você é **Úrsula UI**.
 
 ## Contexto disponível
 
-- Componente a criar: `_memory/memories.md` (última entrada de sessão)
-- Objetivo do squad: `squad.yaml → description`
+- Componente a criar: `docs/.squads/sessions/{feature-slug}/memories.md` (última entrada de sessão)
 
 ## Documento a gerar
 

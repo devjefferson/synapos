@@ -3,7 +3,7 @@ name: synapos-pipeline-runner
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
-# SYNAPOS PIPELINE RUNNER v2.3.0
+# SYNAPOS PIPELINE RUNNER v2.4.0
 
 > Responsável por executar pipelines de squads step-by-step.
 > Chamado pelo orchestrator após criação ou carregamento de um squad.
@@ -13,6 +13,10 @@ description: Engine de execução de pipelines — gerencia steps, agents, vetos
 >
 > v2.3: Sistema de memória otimizado — manifest-based caching, memories windowing,
 > on-demand architecture.md, atomic state writes.
+>
+> v2.4: plan.md é artefato estático (state.json é fonte única de progresso),
+> architecture.md cacheado em memória por pipeline run, checkpoints da
+> pré-execução consolidados em um único checkpoint final.
 
 ---
 
@@ -55,20 +59,23 @@ O `{feature-slug}` é o identificador da feature — geralmente o nome da branch
 > **Princípio:** A LLM não deve descobrir o projeto. Ela deve receber apenas o que precisa para executar o próximo step.
 > Contexto começa mínimo e expande somente quando o step declara necessidade.
 
-**Receba do orchestrator** as variáveis derivadas (nunca releia preferences.md):
+**Receba do orchestrator** as variáveis derivadas (nunca releia esses arquivos):
 - `[EXECUTION_MODE]` — `quick` | `complete`
 - `[MODELO_TIER]` — `high` | `standard` | `lite`
 - `[LINGUA]` — ex: `pt-BR`
+- `[TASK_TRACKER]` — `none` | `jira` | `linear` | etc.
+- `[COMPANY_CONTEXT]` — conteúdo de `docs/_memory/company.md` (Tier 0)
+- `[STACK_CONTEXT]` — conteúdo de `docs/_memory/stack.md` (Tier 0, pode ser vazio)
 
-Leia obrigatoriamente:
+Leia apenas:
 ```
 .synapos/squads/{squad-slug}/squad.yaml   → configuração do squad
-docs/_memory/company.md                   → perfil da empresa/usuário (Tier 0)
-docs/_memory/stack.md                     → stack do projeto (Tier 0) — se existir
 ```
 
-> **Se `docs/_memory/stack.md` não existir:** continue normalmente. Emita **uma única vez** no início do pipeline:
-> `⚠️ [STACK] stack.md não encontrado — agents usarão exemplos genéricos. Execute /setup:discover para gerar.`
+> **Regra:** `preferences.md`, `company.md` e `stack.md` são lidos **uma única vez** pelo orchestrator. O pipeline-runner reutiliza os valores recebidos — nunca relê do disco.
+>
+> **Se `[STACK_CONTEXT]` vier vazio:** continue normalmente. Emita **uma única vez** no início do pipeline:
+> `⚠️ [STACK] stack.md ausente — agents usarão exemplos genéricos. Execute /setup:discover para gerar.`
 > Não repita este aviso por step ou por agent.
 
 Leia `execution_mode` do `squad.yaml` e configure o runner:
@@ -165,8 +172,8 @@ Os arquivos abaixo são **on-demand** — somente carregados quando o step decla
 
 | Arquivo | Quando carregar |
 |---|---|
-| `architecture.md` | Step declara `output_files` (via SCOPE GUARD) ou `needs_architecture: true` |
-| `plan.md` | Step usa rastreamento TODO (já presente em FASE 2.3b) |
+| `architecture.md` | Step declara `output_files` (via SCOPE GUARD) ou `needs_architecture: true` — **cacheado em memória** após primeira leitura do pipeline run |
+| `plan.md` | Step declara `needs_plan: true` — artefato de referência humana, não rastreado automaticamente |
 | `review-notes.md` | Step declara `needs_review: true` |
 | `docs/` completo | Apenas `execution_mode: complete` E step declara `needs_docs: true` |
 
@@ -339,24 +346,16 @@ docs/.squads/sessions/{feature-slug}/
 # Plano: {feature-slug}
 
 > Gerado em: {YYYY-MM-DD} | Squad: {squad-slug}
-
----
-
-## TODO — Steps do pipeline
-
-- [ ] **{step-id}**: {descrição do que será feito}
-- [ ] **{step-id}**: {descrição do que será feito}
-- [ ] **{step-id}**: {descrição do que será feito}
-
-> Runner marca `[>]` ao iniciar cada step e `[x]` ao concluir. Não adicione steps sem aprovação.
+> Artefato estático de referência humana — progresso real é rastreado em state.json.
 
 ---
 
 ## Fases de execução
 
-{descrição das fases — discovery, implementação, review, etc.}
+{descrição das fases — discovery, implementação, review, etc., com agents/skills atribuídos e estimativas}
 ```
 
+> **Progresso:** `state.json` é a única fonte de verdade. `plan.md` documenta o plano aprovado e não é reescrito durante execução.
 > **Escopo de modificação:** a lista de arquivos autorizados para escrita vive em `architecture.md` (seção de arquivos a modificar/criar), não em `plan.md`. O runner lê architecture.md para derivar o SCOPE GUARD.
 
 `memories.md` inicial (com estrutura de janela deslizante):
@@ -366,6 +365,9 @@ docs/.squads/sessions/{feature-slug}/
 > Aprendizados acumulados de todos os roles que trabalharam nesta feature.
 > O pipeline-runner carrega apenas o bloco RECENTES por padrão.
 > Para expandir o histórico completo: use /session consolidate.
+>
+> [DECISÃO CRÍTICA] — use este marcador em entradas que NUNCA devem ser comprimidas.
+> Entradas com [DECISÃO CRÍTICA] são permanentes — não são movidas para SUMMARY.
 
 <!-- SUMMARY -->
 <!-- /SUMMARY -->
@@ -377,8 +379,9 @@ docs/.squads/sessions/{feature-slug}/
 
 > **Regra de append:** Novas entradas vão sempre dentro de `<!-- RECENTES -->`, antes do marcador `<!-- /RECENTES -->`.
 > **Janela:** Ao atingir mais de 10 entradas em RECENTES, o pipeline-runner avisa para consolidar via `/session consolidate`.
-> **Consolidação:** Move entradas antigas do bloco RECENTES para o SUMMARY e regenera o resumo.
+> **Consolidação:** Move entradas antigas do bloco RECENTES para o SUMMARY — exceto entradas com `[DECISÃO CRÍTICA]`.
 > **Leitura padrão:** Pipeline-runner carrega apenas o bloco RECENTES. Steps com `needs_history: true` recebem também o SUMMARY.
+> **[DECISÃO CRÍTICA]:** Entradas com este marcador nunca são comprimidas. Use para decisões arquiteturais, requisitos regulatórios ou escolhas com impacto de segurança.
 
 `review-notes.md` inicial:
 ```markdown
@@ -451,7 +454,7 @@ O state.json é **best-effort** — log de execução, não fonte de verdade cr�
 
 **Regra:** agents não escrevem no state.json. Apenas o pipeline-runner.
 
-**Fonte de verdade:** `state.json` é a fonte de verdade para progresso. `plan.md` é exibição visual para humanos. Em caso de divergência, `state.json` prevalece.
+**Fonte de verdade:** `state.json` é a única fonte de verdade para progresso. `plan.md` é artefato estático da pré-execução (não reescrito durante execução).
 
 ### 1.4b — Verificar pre_pipeline
 
@@ -588,14 +591,25 @@ Execute este guard **apenas** em steps que declaram `output_files` no pipeline.y
 4. [Contexto + Instrução do step]
 ```
 
-**1. Carregar e extrair escopo autorizado (on-demand)**
+**1. Carregar e extrair escopo autorizado (on-demand, com cache por pipeline run)**
 
 > `architecture.md` é carregado on-demand neste step — não foi carregado na FASE 1.1.
-> Este é o único ponto onde architecture.md entra no contexto, garantindo que não haja carregamento desnecessário.
+> A primeira leitura dentro do pipeline run popula `[ARCHITECTURE_CACHE]` (conteúdo + lista de arquivos autorizados).
+> Steps subsequentes do mesmo run reutilizam o cache — **nunca releem o arquivo**.
 
-Leia `docs/.squads/sessions/{feature-slug}/architecture.md` e extraia a lista de arquivos a modificar/criar (tipicamente em seção nomeada `## Arquivos a modificar`, `## Arquivos afetados`, `## Escopo de modificação` ou equivalente — a veto condition do pre-execution garante que essa seção existe).
+**Lógica:**
+1. Se `[ARCHITECTURE_CACHE]` está populado: use o conteúdo e a lista cacheados. Pule para o passo 2 (injetar SCOPE GUARD). Log: `📦 [SCOPE] architecture.md reutilizado do cache`
+2. Se `[ARCHITECTURE_CACHE]` está vazio (primeira leitura):
+   - Leia `docs/.squads/sessions/{feature-slug}/architecture.md`
+   - Extraia a lista de arquivos a modificar/criar (tipicamente em `## Arquivos a modificar`, `## Arquivos afetados`, `## Escopo de modificação` — a veto condition do pre-execution garante que a seção existe)
+   - Armazene `[ARCHITECTURE_CACHE] = { content, scope_files }`
+   - Atualize `session.manifest.json`: `architecture.md.loaded_at = {agora}`
+   - Log: `🔄 [SCOPE] architecture.md carregado (primeira vez neste run)`
 
-- **Se a lista existe:** use-a como escopo autorizado. Atualize `session.manifest.json`: `architecture.md.loaded_at = {agora}`.
+> **Invalidação do cache:** `[ARCHITECTURE_CACHE]` vive apenas durante o pipeline run. Se o usuário editar architecture.md entre runs, a próxima execução relê do disco.
+> **Quando o SCOPE GUARD autoriza novo arquivo** (ver passo 3 abaixo): o arquivo é adicionado ao `scope_files` do cache E persistido em architecture.md no disco.
+
+- **Se a lista existe:** use-a como escopo autorizado.
 - **Se `architecture.md` não existe ou não tem lista de arquivos:** não injete SCOPE GUARD. Log: `⚠️ [SCOPE] architecture.md sem lista de arquivos — SCOPE GUARD desativado para este step`. Continue normalmente sem restrição.
 
 > **Regra de fallback:** ausência de escopo = sem restrição, não escopo mínimo. Nunca derive escopo de `output_files` do pipeline.yaml — esses são session files, não arquivos do projeto.
@@ -620,26 +634,31 @@ Se perceber necessidade de alterar arquivo fora desta lista:
 → NUNCA expanda o escopo silenciosamente.
 ```
 
-**3. Atualizar TODO do plan.md**
-
-Se `plan.md` existe e contém a seção `## TODO — Steps do pipeline`:
-- Marque o step atual como em andamento: `- [ ] **{step-id}**: ...` → `- [>] **{step-id}**: ...`
-- Log: `📋 [TODO] {step-id} em andamento`
-
-**4. Veto de escopo no output**
+**3. Veto de escopo no output**
 
 Após receber o output do agent, antes de passar para GATE-3, verifique se o output declara explicitamente a intenção de criar ou modificar arquivo fora da lista autorizada (caminhos mencionados no texto do output).
 
-- **Arquivo não autorizado detectado** → veto com retry (contador próprio, separado do GATE-3):
+- **Arquivo não autorizado detectado** → não auto-rejeita. Apresente ao usuário imediatamente via AskUserQuestion:
   ```
-  ⛔ [SCOPE GUARD] Output vetado — arquivo fora do escopo declarado.
-  Arquivo: {arquivo detectado}
-  Tentativa SCOPE {N}/2 — reexecutando com instrução de escopo reforçada.
+  ⚠️ [SCOPE GUARD] O agent precisa modificar um arquivo fora do escopo atual.
+  
+  Arquivo solicitado: {arquivo detectado}
+  Escopo autorizado (de architecture.md): {lista atual}
   ```
-  Máximo 2 retries de SCOPE GUARD. Na 3ª falha → escale ao usuário (não para GATE-3).
+  ```
+  AskUserQuestion({
+    question: "O agent quer tocar em '{arquivo}' que não está no escopo de architecture.md.\n\nO que fazer?",
+    options: [
+      { label: "✅ Autorizar — adicionar ao escopo e continuar", description: "Atualiza architecture.md e prossegue" },
+      { label: "🔄 Rejeitar — reexecutar dentro do escopo atual", description: "Máximo 1 retry com instrução reforçada" },
+      { label: "📝 Atualizar architecture.md — editar manualmente", description: "Pausa até o usuário editar e retomar" }
+    ]
+  })
+  ```
+  - Se **Autorizar**: adicione o arquivo à lista de arquivos autorizados em `architecture.md` **e em `[ARCHITECTURE_CACHE].scope_files`** e continue para GATE-3.
+  - Se **Rejeitar**: reexecute o step com instrução de escopo reforçada. Máximo 1 retry. Se falhar novamente, escale.
+  - Se **Atualizar**: registre `suspended_at` com o step atual, oriente o usuário a editar `architecture.md` e retomar via `/init`. Ao retomar, `[ARCHITECTURE_CACHE]` é invalidado (novo pipeline run) — architecture.md é relido do disco.
 - **Sem violação** → continue para GATE-3 normalmente.
-
-> **Transparência de retries:** o log distingue `SCOPE {N}/2` de `GATE-3 {N}/2`. O usuário sempre sabe qual camada está reexecutando.
 
 ### 2.4 — Executar por modo
 
@@ -699,9 +718,9 @@ async_checkpoints: true   # padrão: false
 - Apresente o output formatado
 - Se `output_file` definido → salve o resultado
 
-**Step `atualizar-tarefa`** — Antes de executar qualquer step com id contendo `atualizar-tarefa`, verifique `[TASK_TRACKER]` recebido do orchestrator:
+**Step `update-task`** — Antes de executar qualquer step com id contendo `update-task`, verifique `[TASK_TRACKER]` recebido do orchestrator:
 - Se `[TASK_TRACKER]` for `none` ou não informado → pule o step automaticamente.
-- Log: `⚡ Task tracker não configurado — step 'atualizar-tarefa' ignorado`
+- Log: `⚡ Task tracker não configurado — step 'update-task' ignorado`
 - Continue para o próximo step.
 
 **`execution: subagent`** — agent executa como subagente:
@@ -790,11 +809,7 @@ Atualize `state.json` (via escrita atômica — veja 1.4c):
 }
 ```
 
-Se `plan.md` existe e contém a seção `## TODO — Steps do pipeline`:
-- Marque o step como concluído: `- [>] **{step-id}**: ...` → `- [x] **{step-id}**: ...`
-- Log: `✅ [TODO] {step-id} concluído`
-
-> **Fonte de verdade:** state.json é quem define o progresso. plan.md é apenas exibição. Se divergirem, state.json prevalece.
+> **Fonte de verdade única:** `state.json` define progresso. `plan.md` é artefato estático da pré-execução (referência humana) — nunca é reescrito pelo runner.
 
 ```
 ✅ {Nome do Step} — concluído
@@ -993,12 +1008,12 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Contexto por modo** | Modo Rápido: Tier 0 + snapshot + memories RECENTES. Modo Completo: + ADRs filtrados + project-learnings + memories SUMMARY (se needs_history) |
 | **Manifest controla cache** | session.manifest.json rastreia hashes — evita re-leitura de arquivos inalterados |
 | **architecture.md é on-demand** | Nunca carregado na FASE 1.1. Entra apenas via SCOPE GUARD (output_files) ou needs_architecture |
-| **preferences.md lido uma vez** | Orchestrator lê e passa [MODELO_TIER] + [LINGUA]. Pipeline-runner nunca relê preferences.md |
-| **stack.md é Tier 0** | Carregado na FASE 1.1 junto com company.md. Injetado em TODOS os agents, antes de qualquer instrução técnica. Agents adaptam linguagem, exemplos e estrutura de pastas ao stack detectado |
+| **Arquivos _memory lidos uma vez** | Orchestrator lê `preferences.md`, `company.md` e `stack.md` no PASSO 1 e passa como `[MODELO_TIER]`, `[LINGUA]`, `[TASK_TRACKER]`, `[COMPANY_CONTEXT]`, `[STACK_CONTEXT]`. Pipeline-runner nunca relê esses arquivos |
+| **stack.md é Tier 0** | Recebido como `[STACK_CONTEXT]` do orchestrator. Injetado em TODOS os agents, antes de qualquer instrução técnica. Agents adaptam linguagem, exemplos e estrutura de pastas ao stack detectado |
 | **Stack adaptation é obrigatória** | Se stack.md existe, agents NÃO usam exemplos hardcoded — adaptam para a linguagem/framework declarados. Princípios são imutáveis; exemplos concretos seguem o stack |
-| **state.json vs plan.md** | state.json é fonte de verdade do progresso. plan.md é exibição visual. Em divergência, state.json prevalece |
+| **state.json é fonte única de progresso** | plan.md é artefato estático da pré-execução — nunca reescrito pelo runner |
 | **SCOPE GUARD por architecture.md** | Escopo lido da lista de arquivos em architecture.md — ausência = sem restrição (warning), nunca deriva de pipeline output_files |
 | **SCOPE GUARD só em steps com output_files** | Steps sem output_files não recebem SCOPE GUARD — evita context waste em steps de revisão/formatação |
 | **Escopo expandido = [DECISÃO PENDENTE]** | Se agent precisar de arquivo fora do escopo, sinaliza e aguarda aprovação — nunca expande silenciosamente |
-| **Retries distintos por camada** | SCOPE GUARD tem contador próprio (SCOPE N/2), separado do GATE-3 (GATE-3 N/2) — log sempre indica qual camada está reexecutando |
-| **TODO é rastreado** | plan.md rastreia TODO — runner marca `[>]` ao iniciar e `[x]` ao concluir cada step via 2.3b e 2.8 |
+| **SCOPE GUARD pergunta, não rejeita** | Violação de escopo → AskUserQuestion imediato (autorizar / rejeitar / editar architecture.md). Nunca auto-rejeita — a decisão é sempre do humano |
+| **architecture.md cacheado por run** | Primeira leitura (via SCOPE GUARD ou needs_architecture) carrega e armazena em `[ARCHITECTURE_CACHE]`. Steps subsequentes reutilizam o cache durante o mesmo pipeline run |

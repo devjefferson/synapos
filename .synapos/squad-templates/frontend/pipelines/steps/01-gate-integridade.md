@@ -35,7 +35,7 @@ Agents: {lista com ícones}
 Antes de perguntar sobre a task, verifique:
 
 1. Procure arquivos `docs/specs/*-tasks.md` e liste itens `- [ ]` pendentes
-2. Leia `_memory/memories.md` — se houver `Platform:` registrado:
+2. Leia `docs/.squads/sessions/{feature-slug}/memories.md` — se houver `Platform:` registrado:
    - **GitHub**: execute `gh issue list --label "feature" --state open`
    - **Linear / Jira**: exiba as tarefas registradas no memories.md
 
@@ -56,11 +56,22 @@ O que vamos implementar nesta sessão?
 (descreva a feature, bug ou componente — será usado como contexto pelos agents)
 ```
 
-Salve a resposta em `_memory/memories.md`:
+Salve a resposta em **dois arquivos**:
+
+1. `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 ```markdown
 ## Sessão {YYYY-MM-DD}
 Task: {tarefa selecionada ou descrita}
 Issue: {#número | plataforma | local | —}
+```
+
+2. `docs/.squads/sessions/{feature-slug}/context.md` — preencha os campos correspondentes:
+```markdown
+## O que é
+{tarefa descritiva em 1-2 frases}
+
+## Por que existe
+{motivação inferred da descrição}
 ```
 
 Prossiga.

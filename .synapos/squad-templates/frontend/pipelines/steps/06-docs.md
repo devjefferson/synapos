@@ -11,16 +11,16 @@ output_files:
 
 # Documentação da Feature
 
-Você é **Ana Arquitetura**. Leia seu `.agent.md`.
+Você é **Ana Arquitetura**.
 
 ## Contexto disponível
 
-- `docs/architecture-decision.md`
-- `docs/review-notes.md`
+- `docs/.squads/sessions/{feature-slug}/architecture.md`
+- `docs/.squads/sessions/{feature-slug}/review-notes.md`
 
 ## Documento a gerar
 
-### `docs/feature-notes.md`
+### `docs/.squads/sessions/{feature-slug}/feature-notes.md`
 
 ```markdown
 # Feature Notes: {nome da feature}
@@ -32,7 +32,7 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md`.
 {resumo em 3-5 bullets do que foi construído}
 
 ## Decisões técnicas tomadas
-{decisões que não estavam em docs/architecture-decision.md mas emergiram durante a implementação}
+{decisões que não estavam em docs/.squads/sessions/{feature-slug}/architecture.md mas emergiram durante a implementação}
 
 ## Pontos de atenção para manutenção futura
 {o que a próxima pessoa precisa saber antes de mexer neste código}
@@ -44,7 +44,7 @@ Você é **Ana Arquitetura**. Leia seu `.agent.md`.
 {sugestões do review que ficaram para depois — e por quê}
 ```
 
-Registre em `_memory/memories.md` qualquer padrão aprovado nesta sessão que deve ser mantido:
+Registre em `docs/.squads/sessions/{feature-slug}/memories.md` qualquer padrão aprovado nesta sessão que deve ser mantido:
 ```markdown
 ## Padrão aprovado — {YYYY-MM-DD}
 {descrição do padrão para usar em próximas sessões}

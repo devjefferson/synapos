@@ -16,7 +16,7 @@ git branch --show-current
 ```
 
 - Se estiver em `main` ou `master`: apresente opção de criar branch de feature
-- Se já estiver em uma branch de feature: confirme e prossiga
+- Se já estiver em branch de feature: confirme e prossiga
 - Se o humano quiser criar: solicite o nome e execute `git checkout -b feature/{slug}`
 
 ```
@@ -28,30 +28,23 @@ Opções:
 Aguardando aprovação.
 ```
 
-## 2. Verificar pasta de sessão
+## 2. Verificar sessão anterior
 
-Verifique se o diretório de output já existe e se há `context.md` ou `architecture.md` de uma sessão anterior:
+Verifique se `docs/.squads/sessions/{feature-slug}/context.md` já existe.
 
+**Se existir:**
 ```
-docs/.squads/{slug}/output/{run_id}/context.md
-docs/.squads/{slug}/output/{run_id}/architecture.md
-```
+📂 Sessão existente: docs/.squads/sessions/{feature-slug}/
 
-**Se existirem arquivos de sessão anterior** (run diferente do atual):
-```
-📂 Sessão anterior encontrada em: docs/.squads/{slug}/output/{run_id-anterior}/
-
-Arquivos existentes:
+Arquivos encontrados:
   - context.md ✓
-  - architecture.md ✓ (ou ✗ se não existir)
+  - architecture.md ✓ / ✗
 
-O que você quer fazer?
-
-- ▶️ Usar como base para esta sessão (continuar de onde parou)
-- 🔄 Ignorar e começar do zero
+- ▶️ Continuar de onde parou
+- 🔄 Começar do zero
 ```
 
-Aguarde seleção do usuário.
+Aguarde seleção.
 
 ## 3. Solicitar dados de entrada
 
@@ -59,8 +52,8 @@ Aguarde seleção do usuário.
 Pronto para iniciar a investigação.
 
 Forneça os dados da feature:
-  - Cole os cartões do Linear (ID + descrição) ou descreva a feature livremente
+  - Cole os cartões do Linear (ID + descrição) ou descreva livremente
   - Se houver spec de negócio, indique o arquivo ou cole o conteúdo
 ```
 
-Aguarde a resposta antes de avançar para o próximo step.
+Aguarde a resposta antes de avançar.

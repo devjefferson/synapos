@@ -11,6 +11,63 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.0.0] — 2026-04-22
+
+### Conceito
+
+- Nova nota conceitual no topo do `orchestrator.md`: **"Synapos simula um squad com uma única IA que muda de papel"** — arquivos como `squad.yaml`, `agent`, `pipeline` e `role` são papéis simulados, não processos paralelos. O valor está na mudança estruturada de perspectiva.
+
+### Adicionado
+
+- `onboarding.md` — protocolo de primeira vez extraído do orchestrator; carregado on-demand apenas quando `company.md` não existe
+- `stack-detector.md` — detecção automática de stack extraída do orchestrator; carregado on-demand apenas quando `stack.md` não existe
+- `role-custom.md` — fluxo de role customizado extraído do orchestrator; carregado on-demand quando usuário escolhe "Customizado"
+- `escalation.md` — protocolo de escalation de decisões movido para runtime; carregado pelo pipeline-runner quando agent encontra decisão escalável
+- `checkpoint-final.md` — checkpoint consolidado único que revisa context.md + architecture.md + plan.md juntos
+- Cache em memória de `[ARCHITECTURE_CACHE]` por pipeline run — primeira leitura popula o cache, steps subsequentes reutilizam (elimina N-1 leituras de architecture.md por pipeline)
+- `[COMPANY_CONTEXT]` e `[STACK_CONTEXT]` passados do orchestrator para o pipeline-runner — elimina 2 reads de `_memory/*` por pipeline run
+
+### Alterado
+
+- **`orchestrator.md` v3.0.0** — reescrito de 744 para 477 linhas (-36%):
+  - PASSO 2 agora prioriza retomada: varre `state.json` de todos os squads ANTES de perguntar modo; se há squad `running`, oferece retomar sem passar pelos outros passos
+  - `execution_mode` reutilizado ao carregar squad existente — nunca pergunta modo de novo
+  - PASSO 7 e 7.5 fundidos: criar role + feature session em um único passo
+  - Guarda `HAS_TEMPLATES = false` consolidada em um único lugar
+  - Fast path: sessões com contexto pronto + squads ativos vão direto ao menu principal
+- **`pipeline-runner.md` v2.4.0**:
+  - `plan.md` agora é artefato estático gerado na pré-execução — não é mais reescrito durante execução. `state.json` é a única fonte de verdade de progresso
+  - `architecture.md` cacheado em memória por pipeline run (elimina N leituras redundantes)
+  - Recebe `[COMPANY_CONTEXT]` e `[STACK_CONTEXT]` do orchestrator — não relê `_memory/*` nunca mais
+  - Auto-update do TODO em `plan.md` removido das FASE 2.3b e 2.8
+- **`pre-execution.yaml` v2.0.0** — 3 checkpoints intermediários (pós-contexto, pós-arquitetura, pós-plano) consolidados em um único `pre-checkpoint-final`
+- **`feature-development.yaml` v2.0.0** (engineer) — mesma consolidação dos checkpoints intermediários
+
+### Removido
+
+- `04-checkpoint-contexto.md`, `06-checkpoint-arquitetura.md`, `08-checkpoint-plano.md` — substituídos pelo checkpoint consolidado
+- Bloco `## TODO — Steps do pipeline` do template de `plan.md` (não é mais rastreado)
+- `PROTOCOLO DE ONBOARDING` do orchestrator — extraído para `onboarding.md`
+- `DETECÇÃO AUTOMÁTICA DE STACK` do orchestrator (~75 linhas) — extraído para `stack-detector.md`
+- `ROLE CUSTOMIZADO` do orchestrator — extraído para `role-custom.md`
+- `PROTOCOLO DE ESCALATION DE DECISÕES` do orchestrator — movido para `escalation.md`, invocado pelo pipeline-runner
+
+### Breaking Changes
+
+- **Pipeline-runner mudou interface**: agora requer `[COMPANY_CONTEXT]` e `[STACK_CONTEXT]` do orchestrator. Integrações externas que invocam o runner diretamente precisam ser atualizadas.
+- **Checkpoints intermediários removidos**: pipelines que referenciavam `04-checkpoint-contexto`, `06-checkpoint-arquitetura` ou `08-checkpoint-plano` precisam migrar para `checkpoint-final`.
+- **`plan.md` não é mais reescrito** pelo runner: quem lia o arquivo esperando TODOs `[>]`/`[x]` dinâmicos precisa ler `state.json`.
+
+### Motivação
+
+Redução de consumo de tokens por sessão e alinhamento com o conceito "exército de um homem só":
+- Orchestrator: 744 → 477 linhas (-36% por turno em sessões recorrentes)
+- Arquivos extraídos só entram no contexto quando relevantes (primeira vez, role custom, escalation)
+- `_memory/*` lido 1× na sessão em vez de N× por pipeline
+- Checkpoints: 4 → 1 na pré-execução (menos fricção, mesma segurança via checkpoint consolidado)
+
+---
+
 ## [2.8.0] — 2026-04-16
 
 ### Adicionado
@@ -390,7 +447,7 @@ Agents atualizados:
 #### Core — Task Tracker Configurável
 - `_memory/preferences.md` — campo `task_tracker: none | github | linear | jira`
 - `core/orchestrator.md` — onboarding agora coleta preferência de task tracker
-- `core/pipeline-runner.md` — step `atualizar-tarefa` ignorado automaticamente quando `task_tracker: none`
+- `core/pipeline-runner.md` — step `update-task` ignorado automaticamente quando `task_tracker: none`
 
 #### Pipelines — Quick Fix (7 domínios)
 - Pipeline `quick-fix` adicionado a todos os templates: frontend, backend, produto, fullstack, mobile, devops, ia-dados

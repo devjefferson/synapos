@@ -17,9 +17,9 @@ Transformar requisitos brutos em contexto estruturado e aprovado pelo humano, sa
 
 Antes de perguntar ao usuário, verifique:
 ```
-docs/technical-context/project-briefing.md
-docs/technical-context/briefing/critical-rules.md
-docs/technical-context/briefing/adrs-summary.md
+docs/tech-context/project-briefing.md
+docs/tech-context/briefing/critical-rules.md
+docs/tech-context/briefing/adrs-summary.md
 ```
 
 Se existirem: carregue as regras críticas e ADRs relevantes para incluir no context.md.

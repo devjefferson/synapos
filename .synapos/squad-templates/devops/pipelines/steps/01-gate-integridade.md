@@ -7,6 +7,8 @@ gate: GATE-0
 
 # Verificação de Integridade — GATE-0
 
+Verifique cada item antes de prosseguir:
+
 - [ ] `.synapos/core/orchestrator.md` existe
 - [ ] `docs/_memory/company.md` existe
 - [ ] `.synapos/squads/{slug}/squad.yaml` existe com `description` preenchida
@@ -20,6 +22,8 @@ Se ausente: 🚫 Execute `/setup:discover` antes de continuar. Implementação s
 
 ## Contexto do squad
 
+Apresente ao usuário:
+
 ```
 Squad: {name} | Modo: {modo}
 Objetivo: {description}
@@ -31,7 +35,7 @@ Agents: {lista com ícones}
 Antes de perguntar sobre a task, verifique:
 
 1. Procure arquivos `docs/specs/*-tasks.md` e liste itens `- [ ]` pendentes
-2. Leia `_memory/memories.md` — se houver `Platform:` registrado:
+2. Leia `docs/.squads/sessions/{feature-slug}/memories.md` — se houver `Platform:` registrado:
    - **GitHub**: execute `gh issue list --label "feature" --state open`
    - **Linear / Jira**: exiba as tarefas registradas no memories.md
 
@@ -52,7 +56,7 @@ O que vamos configurar/provisionar nesta sessão?
 Inclua: cloud provider, ambientes envolvidos (dev/staging/prod), serviços alvo.
 ```
 
-Salve a resposta em `_memory/memories.md`:
+Salve a resposta em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 ```markdown
 ## Sessão {YYYY-MM-DD}
 Task: {tarefa selecionada ou descrita}

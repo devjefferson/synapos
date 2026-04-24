@@ -17,7 +17,7 @@ Crie sempre uma nova versão numerada. O original permanece intacto como histór
 
 ## Contexto disponível
 
-- `_memory/memories.md` — doc original e delta aprovado
+- `docs/.squads/sessions/{feature-slug}/memories.md` — doc original e delta aprovado
 
 ## Tarefas
 

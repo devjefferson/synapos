@@ -111,11 +111,3 @@ Marque a fase como `[Completada ✅]` e adicione à seção `### Comentários`:
 #### Decisões tomadas durante a fase
 [Listar qualquer [DECISÃO PENDENTE] que foi resolvido e como]
 ```
-
-## 6. Atualizar Linear (se configurado)
-
-Se `task_tracker` em `preferences.md` é `linear`:
-- Ao **iniciar** fase: mover card para "In Progress"
-- Ao **concluir** fase: adicionar comentário com resumo
-- Ao **abrir PR**: mover para "In Review" + link do PR
-- Ao **concluir tudo**: mover para "Done"

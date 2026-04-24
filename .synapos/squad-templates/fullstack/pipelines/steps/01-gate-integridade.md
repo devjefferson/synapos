@@ -35,7 +35,7 @@ Agents: {lista com ícones}
 Antes de perguntar sobre a task, verifique:
 
 1. Procure arquivos `docs/specs/*-tasks.md` e liste itens `- [ ]` pendentes
-2. Leia `_memory/memories.md` — se houver `Platform:` registrado:
+2. Leia `docs/.squads/sessions/{feature-slug}/memories.md` — se houver `Platform:` registrado:
    - **GitHub**: execute `gh issue list --label "feature" --state open`
    - **Linear / Jira**: exiba as tarefas registradas no memories.md
 
@@ -56,7 +56,7 @@ O que vamos implementar nesta sessão?
 Inclua: feature/bug, qual a integração FE↔BE envolvida, contexto de negócio.
 ```
 
-Salve a resposta em `_memory/memories.md`:
+Salve a resposta em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
 ```markdown
 ## Sessão {YYYY-MM-DD}
 Task: {tarefa selecionada ou descrita}
