@@ -27,6 +27,7 @@ O valor está na **mudança estruturada de perspectiva** (arquiteto → dev → 
 | `/session` | Navega sessions, visualiza context.md e memories.md, consolida quando necessário |
 | `/session {slug}` | Abre diretamente a session de uma feature |
 | `/session consolidate` | Consolida memories.md e review-notes.md da session ativa |
+| `/setup:squad` | Cria um novo role — seleciona domínio, configura agents e gera arquivos |
 | `/setup:build-tech` | Gera documentação técnica do projeto |
 | `/setup:build-business` | Gera documentação de negócio do projeto |
 | `/bump` | Versiona os arquivos do framework |
@@ -39,8 +40,26 @@ O valor está na **mudança estruturada de perspectiva** (arquiteto → dev → 
 ## REGRA GLOBAL — MENUS INTERATIVOS
 
 Sempre que precisar apresentar opções ao usuário, use `AskUserQuestion` (botões clicáveis).
-Nunca apresente menus como texto puro esperando que o usuário digite um número.
 Para multi-seleção, instrua explicitamente: "Selecione uma ou mais opções".
+
+**Exceção — listas com mais de 4 itens:** `AskUserQuestion` suporta no máximo 4 opções por pergunta.
+Quando a lista tiver 5 ou mais itens (ex: seleção de squad com 8+ templates), apresente como **lista numerada em markdown** e peça ao usuário que responda com o número:
+
+```
+Escolha o squad digitando o número:
+
+1. ⚙️ Squad de Backend — APIs robustas, segurança e escalabilidade
+2. 🚀 Squad DevOps / Infra — CI/CD, containers, cloud, IaC
+3. 🧠 Squad Engineer — Feature engineering guiado por ADRs
+4. 🖥️ Squad de Frontend — Qualidade, performance e UX
+5. 📦 Squad Fullstack — Frontend + Backend integrados
+6. 🤖 Squad IA / Dados — ML, pipelines de dados, LLMs
+7. 📱 Squad Mobile — React Native e Flutter
+8. 📋 Squad de Produto — Documentação de produto
+9. ✨ Customizado — Monte seu próprio role
+```
+
+Nunca use `AskUserQuestion` com mais de 4 opções — o excesso é silenciosamente truncado.
 
 ---
 
@@ -95,24 +114,74 @@ Sessions v1 existentes não serão afetadas.
 
 ## PASSO 2 — DETECTAR RETOMADA PRIORITÁRIA
 
-Antes de qualquer outra escolha, varra `.synapos/squads/*/squad.yaml` e leia cada `docs/.squads/sessions/{feature-slug}/state.json`.
+Antes de qualquer outra escolha:
 
-**Se existe algum squad com `status: running` em `state.squads[{squad}]`:**
+1. Varra **todos** os subdiretórios de `.synapos/squads/` (ignorar `.gitkeep`), leia cada `squad.yaml`
+2. Para cada squad, leia `docs/.squads/sessions/{feature-slug}/state.json`
+3. Colete todos os squads onde `state.squads[{squad-slug}].status === "running"`
+
+**Se não houver nenhum squad `running`** → continue para PASSO 3.
+
+**Se houver um ou mais squads `running`:**
+
+### 2.1 — Enriquecer cada squad interrompido
+
+Para cada squad `running`, colete as seguintes informações:
+
+| Campo | Fonte | Fallback |
+|---|---|---|
+| `displayName` | `squad.yaml → displayName` | `squad-slug` |
+| `feature` | `squad.yaml → feature` | `"sem feature"` |
+| `suspended_at` (step-id) | `state.json → squads[slug].suspended_at` | `"desconhecido"` |
+| Nome legível do step | leia `pipeline/pipeline.yaml` → `steps[id=suspended_at].name` | usar step-id |
+| Steps concluídos | `state.json → completed_steps.length` | `0` |
+| Total de steps | `pipeline.yaml → steps.length` | `"?"` |
+| Tempo desde suspensão | `state.json → updated_at` vs data atual | `"tempo desconhecido"` |
+
+> Se `pipeline.yaml` não existir ou `suspended_at` não corresponder a nenhum step do pipeline, marque como `[step removido]` — tratado no roteamento abaixo.
+
+### 2.2 — Se há apenas 1 squad interrompido
 
 ```
 AskUserQuestion({
-  question: "⚠️ Execução anterior interrompida detectada\n\nSquad: {squad-slug}\nFeature: {feature-slug}\nÚltimo step: {suspended_at}\n\nO que você quer fazer?",
+  question: "⚠️ Execução interrompida detectada\n\n{displayName} · {feature}\nStep: {nome-do-step} ({steps-concluídos}/{total} concluídos)\nInterrompido: {tempo-desde-suspensão}\n\nO que você quer fazer?",
   options: [
-    { label: "▶️ Retomar", description: "Continuar de onde parou ({suspended_at})" },
-    { label: "🔄 Descartar e ir ao menu", description: "Marcar como descartada e escolher outro role" }
+    { label: "▶️ Retomar de onde parou", description: "Continuar a partir de: {nome-do-step}" },
+    { label: "🔁 Reiniciar do zero", description: "Reexecutar o pipeline completo (mantém contexto da session)" },
+    { label: "🔍 Inspecionar antes", description: "Ver arquivos da session e decidir depois" },
+    { label: "🗑️ Descartar", description: "Marcar como descartada e ir ao menu principal" }
   ]
 })
 ```
 
-- **Retomar** → passe `resume_from: {suspended_at}` ao pipeline-runner. Pule para PASSO 8.3.
-- **Descartar** → atualize `state.squads[{squad}].status = "discarded"` e continue para PASSO 3.
+### 2.3 — Se há múltiplos squads interrompidos
 
-Se não houver squads `running`, continue para PASSO 3.
+Primeiro, liste todos para o usuário escolher qual tratar:
+
+```
+AskUserQuestion({
+  question: "⚠️ {N} execuções interrompidas detectadas\n\nQual você quer resolver agora?",
+  options: [
+    // uma opção por squad running, em ordem do mais recente ao mais antigo (updated_at)
+    { label: "▶️ {displayName}", description: "{feature} · parado em: {nome-do-step} · há {tempo}" },
+    ...
+    { label: "📋 Ir ao menu", description: "Ignorar por agora e abrir o menu principal" }
+  ]
+})
+```
+
+Após o usuário selecionar um squad, apresente o menu de ações do 2.2 para aquele squad.
+
+### 2.4 — Roteamento por ação
+
+| Ação | Comportamento |
+|---|---|
+| **Retomar** | Passe `resume_from: {suspended_at}` ao pipeline-runner. Pule para PASSO 5.3. |
+| **Retomar** (step removido) | Log `⚠️ Step {suspended_at} não existe mais no pipeline — retomando do primeiro step pendente`. Infira o próximo step não concluído a partir de `completed_steps`. Passe `resume_from: {próximo-step}`. Pule para PASSO 5.3. |
+| **Reiniciar do zero** | Limpe `completed_steps: []`, `current_step: null`, `suspended_at: null`, `status: "running"` no `state.json`. Passe `resume_from: null`. Pule para PASSO 5.3. |
+| **Inspecionar** | Liste os arquivos da session (`context.md`, `plan.md`, `architecture.md`, `memories.md`) e abra o que o usuário escolher. Após leitura, apresente novamente o menu 2.2. |
+| **Descartar** | Atualize `state.squads[{squad}].status = "discarded"` no `state.json`. Se havia múltiplos interrompidos, volte ao menu 2.3 com os restantes. Senão, continue para PASSO 3. |
+| **Ir ao menu** | Continue para PASSO 3. |
 
 ---
 
@@ -166,213 +235,16 @@ AskUserQuestion({
 
 **Roteamento:**
 - Squad existente selecionado → **CARREGAR SQUAD EXISTENTE** (seção abaixo)
-- "✨ Novo role" → PASSO 5
-- "✨ Customizado" (aparece em PASSO 5, não aqui)
+- "✨ Novo role" → leia `.synapos/core/commands/setup/squad.md` e siga. Ao concluir, vá para PASSO 5.
+- "✨ Customizado" (aparece dentro de `/setup:squad`, não aqui)
 
-**Se não há squads ativos E `[HAS_TEMPLATES] = true`** → vá direto para PASSO 5.
-
----
-
-## PASSO 5 — INFERIR MODO E ROLE
-
-### 5.1 — Modo (quick vs complete)
-
-Tente inferir da mensagem inicial do usuário:
-
-| Sinal | Modo |
-|---|---|
-| "fix", "bug", "typo", "quick", "ajuste" | `quick` |
-| "feature", "arquitetura", "refactor", "sistema", "integração" | `complete` |
-| Nenhum sinal claro | perguntar |
-
-Se não for possível inferir:
-
-```
-AskUserQuestion({
-  question: "Como você quer executar?",
-  options: [
-    { label: "⚡ Rápido", description: "Executa direto, sem ler documentação do projeto" },
-    { label: "🔵 Completo", description: "Lê docs/, injeta ADRs e contexto completo" }
-  ]
-})
-```
-
-Armazene como `[EXECUTION_MODE]` (`quick` / `complete`).
-
-| Modo | O que injeta | Gates ativos |
-|---|---|---|
-| `quick` | company.md + session files | GATE-0, GATE-3, GATE-5 |
-| `complete` | Tudo — docs/, ADRs, session files | GATE-0, GATE-3, GATE-5 |
-
-Log único ao definir: `⚡ Modo Rápido` ou `🔵 Modo Completo`.
-
-### 5.2 — Role (domínio do squad)
-
-Tente inferir da mensagem inicial:
-
-| Sinal | Role |
-|---|---|
-| "backend", "API", "endpoint", "banco" | `backend` |
-| "frontend", "tela", "componente", "UI" | `frontend` |
-| "mobile", "app", "iOS", "Android" | `mobile` |
-| "infra", "deploy", "CI/CD", "Docker" | `devops` |
-| "produto", "spec", "PRD", "discovery" | `produto` |
-| "dados", "modelo", "ML", "pipeline de dados" | `ia-dados` |
-| Nenhum sinal claro | perguntar |
-
-Se não for possível inferir, liste os templates e pergunte:
-
-```
-AskUserQuestion({
-  question: "Escolha como quer atuar:",
-  options: [
-    { label: "{icon} {displayName}", description: "{description}" },
-    // ... um por template instalado, em ordem alfabética
-    { label: "✨ Customizado", description: "Monte seu próprio role" }
-  ]
-})
-```
-
-**Roteamento:**
-- Template existente → PASSO 6
-- "✨ Customizado" → leia `.synapos/core/role-custom.md` e siga. Depois pule para PASSO 8.
+**Se não há squads ativos E `[HAS_TEMPLATES] = true`** → leia `.synapos/core/commands/setup/squad.md` e siga diretamente. Ao concluir, vá para PASSO 5.
 
 ---
 
-## PASSO 6 — CONFIGURAR ROLE
+## PASSO 5 — ATIVAR ROLE
 
-Leia o template: `.synapos/squad-templates/{domínio}/template.yaml`.
-
-### Comportamento por modo
-
-| | Rápido (`quick`) | Completo (`complete`) |
-|---|---|---|
-| Agents opcionais | não apresenta | apresenta |
-| Modo de performance | fixado em `solo` | apresenta opções |
-| `execution_mode` no squad.yaml | `quick` | `complete` |
-
-### Modo Rápido: defaults automáticas
-
-- Agents: apenas base do template
-- Modo: `solo`
-- Nome: auto-gerado `{domínio}-{NNN}`
-
-Log: `⚡ Role criado com defaults (solo, agents base)`
-
-### Modo Completo: pergunte (máximo 1 AskUserQuestion)
-
-```
-AskUserQuestion({
-  question: "Role: {displayName}\n\nQuer usar defaults ou customizar?",
-  options: [
-    { label: "✅ Defaults", description: "Agents base + solo + auto-nome" },
-    { label: "🔧 Customizar", description: "Escolher agents, modo, nome" }
-  ]
-})
-```
-
-> Agents base são sempre incluídos.
-> Auto-nome: `{domínio}-{NNN}` → backend-001, frontend-002.
-
----
-
-## PASSO 7 — CRIAR ROLE + FEATURE SESSION
-
-### 7.1 — Estrutura de arquivos
-
-```
-.synapos/squads/{squad-slug}/          ← configuração do role (framework)
-├── squad.yaml
-├── agents/
-│   └── (copiar os .agent.md selecionados do template)
-└── pipeline/
-    ├── pipeline.yaml
-    └── steps/
-
-docs/.squads/sessions/{feature-slug}/  ← session (criada pelo pipeline-runner na 1ª execução)
-├── context.md
-├── architecture.md
-├── plan.md
-├── memories.md
-├── review-notes.md
-└── state.json
-```
-
-### 7.2 — Gerar squad.yaml
-
-```yaml
-name: {squad-slug}
-domain: {domínio}
-displayName: "{displayName do template}"
-description: "{contexto do squad nesta feature}"
-status: active
-mode: {alta | economico | solo}
-execution_mode: {quick | complete}
-created_at: {YYYY-MM-DD}
-feature: ""        # preenchido em 7.4
-session: ""        # preenchido em 7.4
-roles:
-  - {papel 1}
-  - {papel 2}
-agents:
-  - {id do agent 1}
-  - {id do agent 2}
-pipeline:
-  default: {id do pipeline padrão}
-  file: pipeline/pipeline.yaml
-project_context:
-  company: docs/_memory/company.md
-  docs_business: docs/business/
-  docs_tech: docs/tech/
-  docs_context: docs/tech-context/
-  session: ""      # preenchido em 7.4
-```
-
-### 7.3 — Inicializar project-learnings.md (se não existir)
-
-Verifique se `docs/_memory/project-learnings.md` existe. Se não, crie:
-
-```markdown
-# Aprendizados do Projeto
-
-> Aprendizados transversais compartilhados por todos os squads deste projeto.
-> Atualizado automaticamente ao final de cada pipeline.
-
-(preenchido durante execuções)
-```
-
-### 7.4 — Feature session
-
-Liste as pastas em `docs/.squads/sessions/`.
-
-| Sessions existentes | Ação |
-|---|---|
-| 0 | Criar nova automaticamente (slug inferido da descrição do squad) |
-| 1 | Usar a existente automaticamente |
-| 2+ | Perguntar qual usar |
-
-**Pergunta para 2+ sessions:**
-
-```
-AskUserQuestion({
-  question: "Role {squad-slug} ativado! 🎉\n\nFeature session:",
-  options: [
-    { label: "✨ Nova: {auto-slug}", description: "Criar nova feature" },
-    { label: "📂 {feature-1}", description: "Usar session existente" }
-    // ... uma por session
-  ]
-})
-```
-
-`{feature-slug}` = lowercase, espaços → hífens, sem caracteres especiais.
-
-Após resolver, atualize `feature` e `session` no `squad.yaml`.
-
----
-
-## PASSO 8 — ATIVAR ROLE
-
-### 8.1 — Resumo e confirmação
+### 5.1 — Resumo e confirmação
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -396,7 +268,7 @@ Pipeline: {pipeline}
   })
   ```
 
-### 8.2 — Verificação automática de skills
+### 5.2 — Verificação automática de skills
 
 Silenciosamente antes de iniciar:
 1. Leia os steps do pipeline
@@ -404,7 +276,7 @@ Silenciosamente antes de iniciar:
 3. Se skill ausente: log `⚠️ Skill {x} não encontrada — continuando sem ela`
 4. Não bloqueia
 
-### 8.3 — Iniciar pipeline
+### 5.3 — Iniciar pipeline
 
 Leia e siga `.synapos/core/pipeline-runner.md` passando:
 - Squad (recém-criado ou carregado)
@@ -447,7 +319,7 @@ AskUserQuestion({
 })
 ```
 
-Para "Nova execução" → pule para PASSO 8.3 com o `[EXECUTION_MODE]` lido do squad.yaml.
+Para "Nova execução" → pule para PASSO 5.3 com o `[EXECUTION_MODE]` lido do squad.yaml.
 
 ---
 

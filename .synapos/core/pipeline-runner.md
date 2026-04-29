@@ -396,19 +396,44 @@ docs/.squads/sessions/{feature-slug}/
 
 Leia `state.json` e verifique se existe `state.squads["{squad-slug}"]`.
 
-**Se existe e tem `"status": "running"`** — sessão interrompida:
+**Se o orchestrator passou `resume_from: {step-id}` (retomada):**
 
-O orchestrator já detectou isso e perguntou ao usuário antes de chegar aqui.
+> O orchestrator já perguntou ao usuário. O pipeline-runner apenas executa.
 
-- Se o orchestrator passou `resume_from: {step-id}`:
-  - Pule todos os steps em `completed_steps`
-  - Continue a partir de `resume_from`
-  - Anuncie:
-  ```
-  ⚡ Retomando {squad-slug} na feature {feature-slug}
-     Steps já concluídos: {completed_steps}
-     Continuando a partir de: {resume_from}
-  ```
+1. **Validar o step de retomada:**
+   - Verifique se `resume_from` corresponde a um step existente no `pipeline.yaml`
+   - Se **não existir** no pipeline: log `⚠️ [RESUME] Step '{resume_from}' não encontrado no pipeline — inferindo próximo step`
+     - Derive o próximo step: primeiro step do pipeline cujo `id` não está em `completed_steps`
+     - Se todos os steps já estão em `completed_steps`: trate como pipeline já concluído → FASE 3 diretamente
+
+2. **Re-injetar outputs de steps anteriores:**
+   - Para cada step em `completed_steps`: verifique se ele tem `output_files` no `pipeline.yaml`
+   - Para cada `output_file` de step concluído: carregue o arquivo da session folder se existir
+   - Esses arquivos entram como "outputs disponíveis" no contexto dos steps subsequentes (via `depends_on` ou injeção direta)
+   - Log: `📦 [RESUME] {N} outputs anteriores re-injetados: {lista de arquivos}`
+
+3. **Atualizar state:**
+   - Mantenha `completed_steps` existente — não limpe
+   - Atualize `current_step: null`, `suspended_at: {resume_from}`, `status: "running"`, `updated_at: {agora}`
+
+4. **Anunciar retomada:**
+   ```
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚡ Retomando pipeline
+   Squad:     {squad-slug}
+   Feature:   {feature-slug}
+   Concluídos: {completed_steps.length}/{total} steps
+   Retomando: {nome-do-step} ({resume_from})
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+
+5. **Executar a partir de `resume_from`** — pule todos os steps em `completed_steps`, execute normalmente a partir do step indicado.
+
+**Se o orchestrator passou `resume_from: null` (reinício do zero):**
+
+- O state.json já foi limpo pelo orchestrator (`completed_steps: []`, `suspended_at: null`)
+- Trate como nova execução: siga para "nova execução do squad" abaixo
+- Log: `🔁 [RESUME] Reinício do zero — pipeline executará todos os {total} steps`
 
 **Se não existe ou `"status": "completed"` / `"discarded"`** — nova execução do squad:
 
@@ -999,7 +1024,10 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Skills são obrigatórias** | Se uma skill cobre a tarefa, o agent DEVE usá-la |
 | **Decisões sinalizam com `[?]`** | Decisão fora do escopo → sinaliza `[?]` no output, aguarda usuário |
 | **ADRs somente no modo Completo** | Modo Rápido não injeta ADRs. Modo Completo: conflito com ADR = veto |
-| **Sessão recuperável** | `suspended_at` atualizado a cada step. Orquestrador detecta e retoma |
+| **Sessão recuperável** | `suspended_at` atualizado a cada step. Orquestrador detecta, enriquece contexto e retoma |
+| **Resume valida step** | Ao retomar, verifica se `resume_from` existe no pipeline. Se não, infere próximo step não concluído |
+| **Resume re-injeta outputs** | Ao retomar, carrega outputs dos steps já concluídos para contexto dos steps subsequentes |
+| **Reinício do zero preserva session** | `resume_from: null` limpa progresso mas mantém context.md, memories.md e demais arquivos da session |
 | **Session é compartilhada** | Múltiplos roles trabalham na mesma session. Nunca apague arquivos sem aprovação |
 | **review-notes é append-only** | Nunca substitua — sempre acrescente. Consolidação é manual via `/consolidate` |
 | **memories é append-only com janela** | Novas entradas vão no bloco RECENTES. Ao atingir 10+, sugerir consolidação. Nunca delete entradas |
