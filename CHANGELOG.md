@@ -11,6 +11,42 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.1.0] — 2026-04-29
+
+### Adicionado
+
+- **`/setup:squad`** — novo comando dedicado para criação de roles, extraído do orchestrator. Protocolo em `.synapos/core/commands/setup/squad.md`; registrado em `.claude/commands/setup/squad.md`
+- **PASSO 2 do orchestrator — retomada enriquecida**:
+  - Coleta **todos** os squads com `status: running` (não apenas o primeiro detectado)
+  - Exibe nome legível do step (lido do `pipeline.yaml`), progresso (`N/total steps`) e tempo desde a suspensão (`updated_at`)
+  - 4 opções de ação: **Retomar**, **Reiniciar do zero**, **Inspecionar session antes**, **Descartar**
+  - Múltiplos squads interrompidos: lista todos ordenados do mais recente ao mais antigo; usuário escolhe qual tratar
+  - Reinício do zero: reseta `completed_steps` e `suspended_at` mas preserva `context.md`, `memories.md` e demais arquivos da session
+  - Step removido do pipeline: detecta e infere o próximo step não concluído a partir de `completed_steps`
+- **Pipeline-runner — retomada robusta** (FASE 1.4B):
+  - Valida se `resume_from` existe no `pipeline.yaml`; se não, infere próximo step pendente
+  - Re-injeta outputs dos steps já concluídos no contexto dos steps subsequentes
+  - Banner de retomada com progresso: `Concluídos: N/total steps | Retomando: {nome-do-step}`
+  - Suporte explícito a `resume_from: null` (reinício do zero: trata como nova execução, preserva session)
+- **Regra global de menus** — exceção documentada para listas com mais de 4 itens: apresentar como lista numerada em markdown (o `AskUserQuestion` suporta no máximo 4 opções por pergunta)
+
+### Alterado
+
+- **`orchestrator.md`** — criação de squad extraída para `/setup:squad`:
+  - PASSO 4: roteamento de "✨ Novo role" e "sem squads ativos" delegado para `setup/squad.md`
+  - PASSO 5 (antigo 8): ativação de role mantida no orchestrator — recebe squad já configurado e inicia pipeline
+  - PASSO 5.2 (domínio): instrução explícita para varrer `.synapos/squad-templates/`, ler cada `template.yaml` e listar todos os templates como lista numerada (nunca omitir)
+  - Referências internas atualizadas (PASSO 8 → PASSO 5)
+- **`setup:squad.md`** — seleção de domínio usa lista numerada em markdown para exibir todos os templates (em vez de `AskUserQuestion` que truncaria em 4 opções)
+
+### Motivação
+
+- Orchestrator focado em roteamento — criação de squad é responsabilidade do `/setup:squad`
+- Retomada de sessão com contexto suficiente para o usuário tomar uma decisão informada (progresso, tempo, nome do step)
+- Seleção de squad lista todos os domínios disponíveis sem truncamento
+
+---
+
 ## [3.0.0] — 2026-04-22
 
 ### Conceito

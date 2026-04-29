@@ -43,11 +43,14 @@ Isso persiste entre conversas, entre roles, entre dias.
 ## Como funciona
 
 ```
-/init → escolhe um role (backend, frontend, produto...)
-      → escolhe modo (⚡ Rápido ou 🔵 Completo)
-      → pipeline executa steps
-      → contexto salvo na session
+/init         → detecta sessões interrompidas e retoma ou abre o menu
+/setup:squad  → cria um novo role: domínio → modo → agents → session
+              → pipeline executa steps
+              → contexto salvo na session
 ```
+
+Ao retomar uma sessão interrompida, o `/init` exibe progresso (steps concluídos/total), tempo desde a suspensão e oferece: retomar de onde parou, reiniciar do zero ou inspecionar os arquivos da session antes de decidir.
+
 ---
 
 ## Modos de execução
@@ -73,6 +76,7 @@ Com Synapos, cada feature acumula contexto ao longo do tempo:
 /session              # lista todas as features ativas
 /session auth-module  # abre o contexto de uma feature específica
 /session consolidate  # compacta memórias quando o arquivo crescer
+/setup:squad          # cria um novo role (squad) para uma feature
 ```
 
 ---
