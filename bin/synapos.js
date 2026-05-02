@@ -184,7 +184,7 @@ ${bold('EXEMPLOS')}
     process.exit(1);
   }
 
-  // ── 1. Resolver squads via args ou instalar todos por padrão ─────────────────
+  // ── 1. Resolver squads via args ou prompt interativo ────────────────────────
   let selectedSquadIds = [];
 
   if (args.length > 0) {
@@ -198,9 +198,19 @@ ${bold('EXEMPLOS')}
     info(`Squads selecionados via argumento: ${selectedSquadIds.join(', ')}`);
     nl();
   } else {
-    // Instalar todos os squads disponíveis
-    selectedSquadIds = SQUADS.map(s => s.value);
-    info(`Instalando todos os squads disponíveis (${selectedSquadIds.length})`);
+    // Selecionar squads interativamente
+    const { selectedSquads } = await prompts({
+      type:         'multiselect',
+      name:         'selectedSquads',
+      message:      'Quais squad templates instalar?',
+      choices:      SQUADS.map(s => ({ title: s.title, value: s.value, description: s.description, selected: false })),
+      hint:         '- Espaço para selecionar, Enter para confirmar',
+      instructions: false,
+      min:          1,
+    }, { onCancel: () => { nl(); process.exit(0); } });
+
+    if (!selectedSquads || selectedSquads.length === 0) process.exit(0);
+    selectedSquadIds = selectedSquads;
     nl();
   }
 

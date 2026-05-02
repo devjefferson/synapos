@@ -11,6 +11,15 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.1.1] — 2026-05-01
+
+### Corrigido
+
+- **CLI (`synapos`)** — instalação sem argumentos agora exibe prompt `multiselect` para escolher quais squad templates instalar, em vez de instalar todos automaticamente
+- **`/setup:squad` — PASSO 2** — listagem de domínios passa a ler exclusivamente os subdiretórios presentes em `.synapos/squad-templates/`; inferência por sinal também respeita apenas templates instalados
+
+---
+
 ## [3.1.0] — 2026-04-29
 
 ### Adicionado
