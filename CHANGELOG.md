@@ -11,6 +11,14 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.1.2] — 2026-05-02
+
+### Corrigido
+
+- **CLI (`synapos`)** — adicionados `setup/from-code.md` e `setup/squad.md` ao array `COMMANDS`; agora instalados em todos os IDEs configurados
+
+---
+
 ## [3.1.1] — 2026-05-01
 
 ### Corrigido

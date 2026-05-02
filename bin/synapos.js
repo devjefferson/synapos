@@ -56,6 +56,8 @@ const COMMANDS = [
   { file: 'setup/build-business.md',  content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/build-business.md\n' },
   { file: 'setup/build-tech.md',      content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/build-tech.md\n' },
   { file: 'setup/discover.md',        content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/discover.md\n' },
+  { file: 'setup/from-code.md',       content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/from-code.md\n' },
+  { file: 'setup/squad.md',           content: 'Leia e execute exatamente o protocolo em: .synapos/core/commands/setup/squad.md\n' },
 ];
 
 // IDE definitions
