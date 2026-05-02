@@ -47,37 +47,24 @@ Log único ao definir: `⚡ Modo Rápido` ou `🔵 Modo Completo`.
 
 ## PASSO 2 — SELECIONAR DOMÍNIO
 
-Tente inferir da mensagem inicial:
+**Antes de qualquer inferência**, liste os subdiretórios de `.synapos/squad-templates/` e carregue o `template.yaml` de cada um (extraindo `icon`, `displayName`, `description`, e quaisquer palavras-chave de sinal que o yaml exponha). Esses são os **únicos templates disponíveis** — ignore qualquer domínio que não esteja instalado.
 
-| Sinal | Role |
-|---|---|
-| "backend", "API", "endpoint", "banco" | `backend` |
-| "frontend", "tela", "componente", "UI" | `frontend` |
-| "mobile", "app", "iOS", "Android" | `mobile` |
-| "infra", "deploy", "CI/CD", "Docker" | `devops` |
-| "produto", "spec", "PRD", "discovery" | `produto` |
-| "dados", "modelo", "ML", "pipeline de dados" | `ia-dados` |
-| Nenhum sinal claro | perguntar |
+Com os templates carregados, tente inferir da mensagem inicial usando os sinais de cada `template.yaml`. Se o template inferido não existir em `.synapos/squad-templates/`, trate como "nenhum sinal claro".
 
-Se não for possível inferir, faça os seguintes passos **antes** de perguntar:
-
-1. Liste todos os subdiretórios de `.synapos/squad-templates/` — cada um é um template disponível.
-2. Para cada template, leia `template.yaml` e extraia: `icon`, `displayName`, `description`.
-3. Ordene os templates em ordem alfabética pelo `name` (nome do diretório).
-4. Apresente como **lista numerada em markdown** — `AskUserQuestion` suporta no máximo 4 opções e seria truncado. Peça ao usuário que responda digitando o número:
+Se não for possível inferir, apresente como **lista numerada em markdown** — `AskUserQuestion` suporta no máximo 4 opções e seria truncado. Peça ao usuário que responda digitando o número:
 
 ```
 Escolha o squad digitando o número:
 
 1. {icon} {displayName} — {description}
 2. {icon} {displayName} — {description}
-... (um por template, em ordem alfabética)
+... (um por template instalado, em ordem alfabética)
 N. ✨ Customizado — Monte seu próprio role
 ```
 
 Aguarde o usuário digitar um número e use-o para identificar o template selecionado.
 
-> **Nunca omita templates.** Se `.synapos/squad-templates/` tiver 8 diretórios, a lista deve ter 8 linhas + Customizado. Templates adicionados futuramente aparecem automaticamente.
+> **Nunca omita templates instalados.** Se `.synapos/squad-templates/` tiver 3 diretórios, a lista deve ter 3 linhas + Customizado. Templates adicionados futuramente aparecem automaticamente.
 
 **Roteamento:**
 - Template existente → PASSO 3
