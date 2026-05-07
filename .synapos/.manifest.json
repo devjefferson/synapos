@@ -1,8 +1,8 @@
 {
   "framework": {
     "name": "synapos",
-    "version": "2.6.1",
-    "released_at": "2026-04-03"
+    "version": "2.7.0",
+    "released_at": "2026-05-06"
   },
   "best_practices": {
     "catalog": "1.1.0",
@@ -25,8 +25,9 @@
   },
   "core": {
     "orchestrator": "1.6.1",
-    "pipeline_runner": "2.3.0",
+    "pipeline_runner": "2.5.0",
     "gate_system": "1.5.0",
+    "change_guard": "1.0.0",
     "model_adapter": "1.1.0",
     "skills_engine": "1.1.0",
     "versioning": "1.1.0",

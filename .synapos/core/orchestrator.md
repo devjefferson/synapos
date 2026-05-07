@@ -309,17 +309,46 @@ Quando o usuário escolhe um squad ativo no PASSO 4:
 
 ```
 AskUserQuestion({
-  question: "Role {squad-slug} carregado.\nFeature: {feature-slug}\n\nRoles que já trabalharam: {lista}\n\nO que você quer fazer?",
+  question: "Role {squad-slug} carregado.\nFeature atual: {feature-slug}\n\nRoles que já trabalharam: {lista}\n\nO que você quer fazer?",
   options: [
-    { label: "🔄 Nova execução", description: "Executar novamente (manter contexto)" },
+    { label: "🔄 Continuar nesta feature", description: "Executar novamente em: {feature-slug}" },
+    { label: "✨ Nova feature", description: "Iniciar uma feature diferente (cria nova session)" },
     { label: "🧠 Ver memória", description: "Abrir memories.md da feature" },
-    { label: "📂 Ver arquivos", description: "Ver arquivos da session" },
-    { label: "⏸️ Pausar", description: "Pausar/arquivar role" }
+    { label: "📂 Ver arquivos", description: "Ver arquivos da session" }
   ]
 })
 ```
 
-Para "Nova execução" → pule para PASSO 5.3 com o `[EXECUTION_MODE]` lido do squad.yaml.
+**"Continuar nesta feature"** → pule para PASSO 5.3 com `[EXECUTION_MODE]` do squad.yaml e `feature` inalterado.
+
+**"✨ Nova feature"** → siga o protocolo abaixo antes de ir ao PASSO 5.3.
+
+### Nova feature em squad existente
+
+1. Pergunte o nome da nova feature:
+   ```
+   AskUserQuestion({
+     question: "Qual é o nome ou slug da nova feature?\n\nExemplos: auth-refactor, checkout-v2, fix-payment-flow",
+     options: [
+       { label: "✏️ Digitar o nome", description: "Informe no chat abaixo" }
+     ]
+   })
+   ```
+   Aguarde a resposta do usuário. Normalize para slug: minúsculas, hífens, sem espaços (ex: "Auth Refactor" → "auth-refactor").
+
+2. Atualize `squad.yaml`:
+   - `feature: {novo-slug}`
+   - `session: {novo-slug}`
+   - `status: active`
+   - `updated_at: {agora ISO}`
+
+3. Log:
+   ```
+   ✨ Nova feature iniciada: {novo-slug}
+   Session será criada em: docs/.squads/sessions/{novo-slug}/
+   ```
+
+4. Pule para PASSO 5.3 — o pipeline-runner criará a session automaticamente se não existir (seção 1.4).
 
 ---
 

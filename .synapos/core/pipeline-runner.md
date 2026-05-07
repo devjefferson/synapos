@@ -3,7 +3,7 @@ name: synapos-pipeline-runner
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
-# SYNAPOS PIPELINE RUNNER v2.4.0
+# SYNAPOS PIPELINE RUNNER v2.5.0
 
 > Responsável por executar pipelines de squads step-by-step.
 > Chamado pelo orchestrator após criação ou carregamento de um squad.
@@ -17,6 +17,9 @@ description: Engine de execução de pipelines — gerencia steps, agents, vetos
 > v2.4: plan.md é artefato estático (state.json é fonte única de progresso),
 > architecture.md cacheado em memória por pipeline run, checkpoints da
 > pré-execução consolidados em um único checkpoint final.
+>
+> v2.5: CHANGE GUARD — rastreamento de alterações por step. Todo step inline/subagent
+> reporta arquivos alterados (com trechos), arquivos revisados sem alteração e motivo.
 
 ---
 
@@ -685,6 +688,63 @@ Após receber o output do agent, antes de passar para GATE-3, verifique se o out
   - Se **Atualizar**: registre `suspended_at` com o step atual, oriente o usuário a editar `architecture.md` e retomar via `/init`. Ao retomar, `[ARCHITECTURE_CACHE]` é invalidado (novo pipeline run) — architecture.md é relido do disco.
 - **Sem violação** → continue para GATE-3 normalmente.
 
+### 2.3c — CHANGE GUARD (steps inline/subagent, ativo por padrão)
+
+Execute este guard em **todos** os steps com `execution: subagent` ou `execution: inline`, a menos que o step declare `change_guard: false` ou o squad.yaml declare `change_guard: false`.
+
+**Verifique a ativação:**
+1. Se `squad.yaml.change_guard: false` → pule esta seção inteiramente.
+2. Se `pipeline.yaml` → step atual tem `change_guard: false` → pule esta seção.
+3. Caso contrário → ativo.
+
+**Injetar instrução no prompt do agent** (após SCOPE GUARD, antes da instrução do step):
+
+```
+📋 CHANGE GUARD — instrução obrigatória
+
+Ao concluir sua tarefa, inclua ao final do output o seguinte bloco.
+Inclua TODOS os arquivos que você abriu durante a execução — alterados ou não.
+
+---
+📋 [CHANGE GUARD]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✏️  ALTERADOS ({N} arquivo(s))
+  {caminho/do/arquivo.ext}
+    • L{start}–L{end} — {o que foi alterado}
+
+👁️  REVISADOS · SEM ALTERAÇÃO ({N} arquivo(s))
+  {caminho/do/arquivo.ext} — {motivo: já estava correto | não aplicável | fora do escopo deste step}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{N} alterado(s) · {N} sem alteração necessária
+---
+
+Regras:
+- Nunca omita um arquivo consultado, mesmo que a visita tenha sido rápida
+- Para arquivos alterados: liste cada trecho com linha aproximada
+- Para arquivos não alterados: uma frase objetiva basta
+- Arquivos de session (docs/.squads/sessions/) não entram no relatório
+- Se nenhum arquivo do projeto foi acessado: escreva "CHANGE GUARD — nenhum arquivo acessado neste step"
+```
+
+**Após receber o output do agent:**
+
+1. Procure o bloco entre `📋 [CHANGE GUARD]` e o segundo `━━━` ao final
+2. Extraia e armazene como `[CHANGE_GUARD_REPORT]` para exibição no passo 2.8
+3. **Remova o bloco do output** antes de salvar o `output_file` — o change guard não faz parte do artefato
+4. Se o bloco **não for encontrado**: logue `⚠️ [CHANGE GUARD] bloco ausente no step "{step-id}" — rastreamento indisponível` e continue normalmente
+
+**Persistência (se `squad.yaml.change_log: true`):**
+
+Faça append em `docs/.squads/sessions/{feature-slug}/change-log.md`:
+```markdown
+## {step-id} — {YYYY-MM-DD HH:MM}
+Squad: {squad-slug} · Agent: {agent-id}
+
+{conteúdo de [CHANGE_GUARD_REPORT]}
+```
+
+---
+
 ### 2.4 — Executar por modo
 
 **`execution: checkpoint`** — pausa para decisão do usuário. Use menu interativo:
@@ -839,6 +899,17 @@ Atualize `state.json` (via escrita atômica — veja 1.4c):
 ```
 ✅ {Nome do Step} — concluído
 ```
+
+**Se `[CHANGE_GUARD_REPORT]` foi capturado no passo 2.3c**, exiba imediatamente após a linha de conclusão:
+
+```
+📋 [CHANGE GUARD] — {Nome do Step}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{conteúdo de [CHANGE_GUARD_REPORT]}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Limpe `[CHANGE_GUARD_REPORT]` após exibição — o relatório é por step, não acumulativo.
 
 ---
 
@@ -1045,3 +1116,7 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Escopo expandido = [DECISÃO PENDENTE]** | Se agent precisar de arquivo fora do escopo, sinaliza e aguarda aprovação — nunca expande silenciosamente |
 | **SCOPE GUARD pergunta, não rejeita** | Violação de escopo → AskUserQuestion imediato (autorizar / rejeitar / editar architecture.md). Nunca auto-rejeita — a decisão é sempre do humano |
 | **architecture.md cacheado por run** | Primeira leitura (via SCOPE GUARD ou needs_architecture) carrega e armazena em `[ARCHITECTURE_CACHE]`. Steps subsequentes reutilizam o cache durante o mesmo pipeline run |
+| **CHANGE GUARD ativo por padrão** | Todos os steps inline/subagent injetam instrução de rastreamento. Agent reporta arquivos alterados (com trechos) e revisados sem alteração. Ausência do bloco gera aviso, nunca falha |
+| **CHANGE GUARD não polui artefato** | Bloco `[CHANGE GUARD]` é extraído do output antes de salvar output_file — nunca contamina o conteúdo gerado |
+| **CHANGE GUARD desativável** | `change_guard: false` em squad.yaml (todo o squad) ou em step no pipeline.yaml (step específico) |
+| **change-log.md opcional** | `change_log: true` em squad.yaml persiste relatórios em `docs/.squads/sessions/{feature-slug}/change-log.md` |

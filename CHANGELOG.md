@@ -11,6 +11,16 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.1.3] — 2026-05-06
+
+### Corrigido
+
+- **`orchestrator.md`** — fluxo "Nova execução" em squad existente agora pergunta entre continuar na feature atual ou iniciar uma nova; resolvido bug onde todas as execuções reutilizavam a mesma session
+- **`change-guard.md`** (novo) — sistema de rastreamento de alterações por step: reporta arquivos alterados com trechos, arquivos revisados sem alteração e motivo
+- **`pipeline-runner.md` v2.5.0** — integração do CHANGE GUARD (seções 2.3c e 2.8); relatório exibido após cada step concluído
+
+---
+
 ## [3.1.2] — 2026-05-02
 
 ### Corrigido
