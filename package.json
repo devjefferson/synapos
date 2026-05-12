@@ -16,7 +16,9 @@
     "bin/",
     ".synapos/",
     ".github/",
-    ".antigravity/"
+    ".antigravity/",
+    ".codex/",
+    "AGENTS.md"
   ],
   "dependencies": {
     "prompts": "^2.4.2"

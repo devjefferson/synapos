@@ -63,6 +63,7 @@ const COMMANDS = [
 // IDE definitions
 const IDES = [
   { value: 'claude',      title: 'Claude Code',  commandsDir: '.claude/commands',    hint: '/init na conversa'               },
+  { value: 'codex',       title: 'Codex',        commandsDir: '.codex/prompts',      hint: 'synapos:init no chat do Codex'   },
   { value: 'copilot',     title: 'Copilot',      commandsDir: null,                  hint: 'synapos:init no chat do Copilot' },
   { value: 'opencode',    title: 'OpenCode',     commandsDir: '.opencode/commands',  hint: '/init no chat'                   },
   { value: 'cursor',      title: 'Cursor',       commandsDir: '.cursor/commands',    hint: '/init no chat'                   },
@@ -284,7 +285,19 @@ ${bold('EXEMPLOS')}
   for (const ideId of selectedIdes) {
     const ide = IDES.find(i => i.value === ideId);
     try {
-      if (ideId === 'copilot') {
+      if (ideId === 'codex') {
+        // Codex: prompts em .codex/prompts/ + AGENTS.md na raiz + config.toml
+        for (const cmd of COMMANDS) {
+          writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
+        }
+        const agentsSrc  = path.join(PACKAGE_DIR, 'AGENTS.md');
+        const agentsDest = path.join(targetDir, 'AGENTS.md');
+        copyFile(agentsSrc, agentsDest);
+        const configSrc  = path.join(PACKAGE_DIR, '.codex', 'config.toml');
+        const configDest = path.join(targetDir, '.codex', 'config.toml');
+        copyFile(configSrc, configDest);
+        ok(`${ide.title} configurado ${gray(`(.codex/prompts/, ${COMMANDS.length} prompts + AGENTS.md + config.toml)`)}`);
+      } else if (ideId === 'copilot') {
         // Copilot usa .github/copilot-instructions.md em vez de comandos
         const copilotSrc  = path.join(PACKAGE_DIR, '.github', 'copilot-instructions.md');
         const copilotDest = path.join(targetDir, '.github', 'copilot-instructions.md');
