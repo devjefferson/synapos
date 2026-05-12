@@ -11,6 +11,15 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.2.0] — 2026-05-12
+
+### Adicionado
+
+- **`.codex/config.toml`** — arquivo de configuração do Codex CLI adicionado ao pacote; aponta `AGENTS.md` como instrução de sistema
+- **CLI (`synapos`)** — instalação Codex agora copia `.codex/config.toml` junto com prompts e `AGENTS.md`
+
+---
+
 ## [3.1.3] — 2026-05-06
 
 ### Corrigido
