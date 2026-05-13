@@ -11,6 +11,11 @@ veto_conditions:
   - "Estrutura de componentes não documentada"
   - "Decisão de estado sem justificativa"
   - "ADR ausente para decisão que afeta mais de 1 componente"
+success_criteria:
+  - "architecture.md contém estrutura de pastas com todos os componentes identificados"
+  - "Cada tipo de estado tem justificativa explícita (local/server/global/URL)"
+  - "Contratos TypeScript dos componentes principais definidos"
+  - "Pontos de atenção para o dev (edge cases, integrações) documentados"
 ---
 
 # Decisão de Arquitetura Frontend

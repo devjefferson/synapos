@@ -6,6 +6,12 @@ execution: inline
 model_tier: powerful
 output_files:
   - context.md
+success_criteria:
+  - "context.md contém seção ## Motivação com pelo menos 2 frases explicando o porquê"
+  - "context.md contém seção ## Meta com resultado mensurável (não apenas 'melhorar' ou 'facilitar')"
+  - "context.md contém seção ## Regras Críticas do Projeto ou ## ADRs Relevantes preenchida"
+  - "Todas as perguntas de clarificação foram apresentadas ao humano e respondidas antes de gerar o arquivo"
+  - "context.md contém seção ## Validação com critério verificável de 'done'"
 ---
 
 # Investigação

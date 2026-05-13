@@ -11,6 +11,11 @@ veto_conditions:
   - "Tipo genérico não seguro (any, object, interface{}) sem justificativa"
   - "Lista sem key/identificador estável"
 on_reject: 04-implementacao
+success_criteria:
+  - "Todo arquivo listado em architecture.md foi implementado ou a omissão justificada"
+  - "Checklist de entrega preenchida (estados, TypeScript, keys, acessibilidade, lógica em hooks)"
+  - "Cada arquivo entregue tem caminho e descrição de 1 linha"
+  - "Nenhum arquivo fora da lista de architecture.md foi modificado sem sinalizar [DECISÃO PENDENTE]"
 ---
 
 # Implementação Frontend

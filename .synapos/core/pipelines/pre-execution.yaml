@@ -40,6 +40,11 @@ steps:
     depends_on: [pre-02-preparacao]
     output_files:
       - context.md
+    output_schema:
+      required_sections:
+        - "## Motivação"
+        - "## Meta"
+        - "## Validação"
     veto_conditions:
       - "context.md sem seção de Motivação preenchida"
       - "context.md sem Meta mensurável"
@@ -54,6 +59,12 @@ steps:
     depends_on: [pre-03-investigacao]
     output_files:
       - architecture.md
+    output_schema:
+      required_sections:
+        - "## Principais Arquivos a Modificar/Criar"
+        - "## ADRs Aplicadas"
+        - "## Verificação de Consistência"
+        - "## Trade-offs e Alternativas"
     veto_conditions:
       - "architecture.md sem seção de Verificação de Consistência"
       - "architecture.md sem lista de ADRs Aplicadas"

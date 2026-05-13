@@ -11,6 +11,48 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [3.5.0] — 2026-05-13
+
+### Adicionado
+
+- **`.synapos/core/compliance-protocol.md`** — fonte única de verdade para os 4 protocolos compartilhados por todos os agents: Stack Adaptation Rule, ADRs, [DECISÃO PENDENTE] e HANDOFF
+- **`pipeline-runner.md`** — carrega `compliance-protocol.md` uma vez por run e injeta como `[COMPLIANCE_PROTOCOL]` no contexto de todo step (seção 1.3)
+
+### Alterado
+
+- **Todos os 30 `.agent.md`** — comprimidos de ~295 para ~84 linhas (~71% de redução total). Removidos: `## Princípios`, `## Framework Operacional`, `## Exemplos de Output`, `## Vocabulário`, `## Stack Adaptation Rule`, `## Compliance Obrigatório` (movido para compliance-protocol.md); mantidos apenas: `## Persona`, `## Anti-Patterns` (só "Nunca faça"), `## Quality Criteria`, `## Regras Obrigatórias`, `## Fora do Meu Escopo`, `## Foco por Tipo de Step`
+- **Regra Universal** adicionada no topo de todos os agents: "Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano."
+
+---
+
+## [3.4.0] — 2026-05-13
+
+### Adicionado
+
+- **`pipeline-runner.md` v2.10.0** — `[SESSION_REPORT_DATA]` acumulado durante toda a execução do pipeline; escrito em disco uma única vez na FASE 3.3
+- **FASE 3.3 — session-report.md** — gerado automaticamente ao final de todo pipeline: consolida arquivos modificados (via CHANGE GUARD), gates executados (com resultados e tentativas), decisões aprovadas (`[DECISÃO PENDENTE]` resolvidas) e HANDOFF final do último step
+- **FASE 3.4 — commit automático** — opt-in via campo `auto_commit: ask | true | false` no squad.yaml; tipo de commit derivado automaticamente do pipeline (`feat`, `fix`, `chore`, `ci`, `docs`); nunca bloqueia a finalização se git falhar
+- **Sumário FASE 3.5** — exibe `session-report.md` e hash do commit quando disponíveis
+
+---
+
+## [3.3.0] — 2026-05-13
+
+### Adicionado
+
+- **`gate-system.md` v2.3.0** — GATE-3a (validação estrutural de output via `output_schema`) e GATE-3b (critérios de sucesso via `success_criteria` no frontmatter do step); ordem de execução de gates explícita
+- **`pipeline-runner.md` v2.9.0** — pré-execução automática para sessions novas (sem pergunta); protocolo HANDOFF compacto entre steps (`depends_on` injeta apenas o bloco `## HANDOFF`, não o output completo); persona focada por tipo de step (`## Foco por Tipo de Step`); fronteira negativa (`## Fora do Meu Escopo`) injetada como fence no prompt; CHANGE GUARD via `git diff` para steps subagent
+- **Todos os 30 agentes** — seções `## Fora do Meu Escopo`, `## Foco por Tipo de Step` e `### HANDOFF — Protocolo Obrigatório` adicionadas com conteúdo específico por papel
+- **Steps chave** — `success_criteria` adicionado ao frontmatter de `03-investigacao`, `05-arquitetura`, `02-arquitetura (FE)` e `04-implementacao (FE)`
+- **Pipelines** — `output_schema` adicionado ao `pre-execution.yaml` (investigação e arquitetura) e `frontend/feature-development.yaml` (arquitetura)
+- **`.synapos/VERSION`** — bumped para 2.9.0
+
+### Alterado
+
+- **`pre-execution.yaml`** — pré-execução não pergunta mais ao usuário quando `context.md` não existe em session nova; executa automaticamente
+
+---
+
 ## [3.2.0] — 2026-05-12
 
 ### Adicionado

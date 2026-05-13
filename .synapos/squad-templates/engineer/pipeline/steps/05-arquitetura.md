@@ -6,6 +6,12 @@ execution: subagent
 model_tier: powerful
 output_files:
   - architecture.md
+success_criteria:
+  - "architecture.md contém seção ## Principais Arquivos a Modificar/Criar com lista de caminhos completos"
+  - "architecture.md contém seção ## ADRs Aplicadas com pelo menos 1 entrada"
+  - "architecture.md contém seção ## Verificação de Consistência com status ✅ APROVADO ou ⚠️ CORRIGIDO"
+  - "architecture.md contém seção ## Trade-offs e Alternativas com ao menos 1 alternativa rejeitada documentada"
+  - "Nenhuma decisão técnica foi tomada sem sinalizar [DECISÃO PENDENTE] para escolhas fora do escopo"
 ---
 
 # Estruturação Arquitetural

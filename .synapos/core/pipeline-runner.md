@@ -3,7 +3,7 @@ name: synapos-pipeline-runner
 description: Engine de execução de pipelines — gerencia steps, agents, vetos e revisões
 ---
 
-# SYNAPOS PIPELINE RUNNER v2.5.0
+# SYNAPOS PIPELINE RUNNER v2.10.0
 
 > Responsável por executar pipelines de squads step-by-step.
 > Chamado pelo orchestrator após criação ou carregamento de um squad.
@@ -20,6 +20,26 @@ description: Engine de execução de pipelines — gerencia steps, agents, vetos
 >
 > v2.5: CHANGE GUARD — rastreamento de alterações por step. Todo step inline/subagent
 > reporta arquivos alterados (com trechos), arquivos revisados sem alteração e motivo.
+>
+> v2.6: Pré-execução automática — context.md ausente em session nova aciona pré-exec
+> automaticamente sem perguntar ao usuário. Retomadas mantêm comportamento anterior.
+>
+> v2.7: HANDOFF compacto — cada step emite bloco `## HANDOFF` ao final. depends_on
+> injeta apenas o HANDOFF (não o arquivo completo). Full output disponível via
+> `needs_full_output_of: step-id`. Reduz overflow de contexto entre steps.
+>
+> v2.8: GATE-3a estrutural — valida schema do output (seções obrigatórias, formatos)
+> antes da validação semântica de veto_conditions. Falhas são precisas e acionáveis.
+>
+> v2.9: Persona focada por tipo de step — pipeline-runner injeta apenas a seção
+> `## Foco por Tipo de Step` do agent (se existir), não a persona inteira.
+> Fronteira negativa `## Fora do Meu Escopo` é injetada como fence no prompt.
+> CHANGE GUARD para subagent usa `git diff` como fonte primária (self-report como fallback).
+>
+> v2.10: SESSION REPORT — `session-report.md` gerado automaticamente ao final de todo pipeline.
+> Consolida arquivos modificados, gates executados, decisões tomadas e HANDOFF final.
+> COMMIT AUTOMÁTICO — FASE 3.4 cria commit git estruturado (opt-in via `auto_commit` no squad.yaml).
+> `[SESSION_REPORT_DATA]` acumulado durante execução, escrito uma vez na FASE 3.3.
 
 ---
 
@@ -241,11 +261,24 @@ steps:
     model_tier: fast | powerful
     output_files:                     # nomes de arquivo apenas
       - {nome}.md                     # vai para docs/.squads/sessions/{feature-slug}/
-    veto_conditions:                  # opcional
+    output_schema:                    # opcional — define contrato estrutural do output
+      required_sections:              # seções de markdown obrigatórias (## Título)
+        - "## Meta"
+        - "## Motivação"
+      formats:                        # validações de formato específicas
+        - field: "## Meta"
+          pattern: "Permitir .+ para que .+"   # regex opcional
+    veto_conditions:                  # opcional — validação semântica (GATE-3 semântico)
       - "condição que invalida o output"
+    needs_full_output_of: step-id     # opcional — injeta output completo de step anterior
+                                      # (padrão: injeta apenas o bloco HANDOFF do step)
     on_reject: step-id-anterior       # opcional — loop de revisão
     depends_on: [step-id]             # opcional
 ```
+
+> **output_schema vs veto_conditions:** `output_schema` valida estrutura (GATE-3a — antes da execução do agente verificar).
+> `veto_conditions` valida semântica (GATE-3 — "o output faz sentido?"). São complementares, não redundantes.
+> `output_schema` falha com mensagem precisa ("## Meta ausente"); `veto_conditions` falha com mensagem semântica.
 
 ### Campo `model_tier` por step
 
@@ -273,6 +306,14 @@ Se apenas um modelo está configurado em preferences.md, todos os steps usam o m
 ### 1.3 — Carregar agents
 
 Para cada agent no squad.yaml, leia o arquivo `.agent.md` correspondente em `.synapos/squads/{squad-slug}/agents/`.
+
+**Carregar compliance-protocol.md (uma vez, shared):**
+
+Leia `.synapos/core/compliance-protocol.md` e armazene como `[COMPLIANCE_PROTOCOL]`.
+
+Injete `[COMPLIANCE_PROTOCOL]` no contexto de **todo** step `inline` ou `subagent`, após as seções do agent (`## Foco por Tipo de Step`), antes da instrução do step. Este bloco substitui as seções `### ADRs`, `### [DECISÃO PENDENTE]` e `### HANDOFF` que antes viviam em cada `.agent.md`.
+
+> **Motivo:** O conteúdo é idêntico para todos os agents. Uma única leitura + injeção por run, em vez de 45 linhas duplicadas em 30 arquivos.
 
 ### 1.4 — Inicializar ou retomar session
 
@@ -510,18 +551,19 @@ pre_pipeline:
 
 3. **Se `context.md` já existe na session:** pule — pré-execução já feita.
 
-4. **Se `context.md` não existe E pré-execução válida:**
+4. **Se `context.md` não existe E pré-execução válida:** execute automaticamente, sem perguntar.
 
+> **Motivo:** Session nova sem context.md significa que o agente trabalhará sem contexto
+> de negócio ou arquitetura — o output inevitavelmente será genérico ou incorreto.
+> A pré-execução não é um opcional: é a fundação de tudo o que vem depois.
+> Para sessions retomadas (context.md já existe), o comportamento anterior se mantém — pule.
+
+Anuncie ao iniciar:
 ```
-Esta feature ainda não tem contexto/arquitetura definidos.
-
-Deseja executar a pré-execução antes de [{nome do pipeline principal}]?
-
-- ✅ Sim — Investigação → Arquitetura → Planejamento → {pipeline principal}
-- ⏭️ Não — Iniciar direto no {pipeline principal}
+🔍 Session nova detectada — executando pré-execução automaticamente.
+   Investigação → Arquitetura → Planejamento → {nome do pipeline principal}
 ```
 
-**Se escolher Sim:**
 1. Leia `.synapos/core/pipelines/pre-execution.yaml`
 2. Use `pre_pipeline.agent` como lead do pre-execution
 3. Execute os steps do pre-execution (com todos os gates e checkpoints)
@@ -555,7 +597,26 @@ Continuar? [Enter para sim]
 
 Nunca bloqueie — apenas avise e aguarde confirmação.
 
-### 1.6 — Anunciar início
+### 1.6 — Inicializar SESSION_REPORT_DATA
+
+Inicialize em memória (nunca no disco durante execução):
+
+```
+[SESSION_REPORT_DATA] = {
+  feature: {feature-slug},
+  squad: {squad-slug},
+  pipeline: {pipeline-name},
+  started_at: {ISO datetime},
+  steps: [],              ← preenchido a cada step (seção 2.8)
+  all_files_changed: [],  ← consolidado de todos os CHANGE GUARD reports
+  all_decisions: [],      ← [DECISÃO PENDENTE] resolvidas
+  gate_summary: { passed: 0, failed: 0, retries: 0 }
+}
+```
+
+> `[SESSION_REPORT_DATA]` é acumulado durante toda a execução e escrito como `session-report.md` apenas uma vez na FASE 3.3. Nunca escreva parcialmente durante a execução — o report incompleto é pior que ausente.
+
+### 1.7 — Anunciar início
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -606,6 +667,49 @@ Exemplo: `docs/architecture.md` → `docs/.squads/sessions/auth-module/architect
 Aplique o protocolo do MODEL-ADAPTER sobre o prompt composto antes de enviar ao agent.
 O adapter atua apenas em steps com `execution: subagent` ou `execution: inline`.
 Steps com `execution: checkpoint` nunca são afetados.
+
+### 2.3a — Montar persona do agent (foco por tipo de step + fronteira negativa)
+
+Execute antes de qualquer outro bloco de contexto.
+
+**1. Carregar persona do agent**
+
+Leia o `.agent.md` do agent atribuído ao step.
+
+**2. Extrair foco por tipo de step (se disponível)**
+
+Verifique se o arquivo `.agent.md` contém a seção `## Foco por Tipo de Step`.
+
+- **Se existe:** identifique o tipo do step atual (derivado do id ou nome: `investigacao`, `arquitetura`, `implementacao`, `revisao`, `planejamento`, `diagnostico`, `execucao`, `review`, `docs`, `seguranca`, `integracao`, `design` — use correspondência de substring no id/name do step).
+  - Extraia apenas a linha relevante para o tipo atual.
+  - Armazene como `[AGENT_FOCUS]`. Injete no prompt **após a seção `## Persona`** e **antes** de qualquer instrução.
+  - **Não injete** o restante da persona completa — use apenas `## Identidade` + `[AGENT_FOCUS]` + `## Quality Criteria` + `## Compliance Obrigatório` + `## Modo Lite` (se ativo).
+  - Log: `🎯 [PERSONA] Foco injetado para tipo: {tipo-do-step}`
+
+- **Se não existe:** injete a persona completa como antes. Sem log.
+
+> **Motivo:** Uma arquiteta frontend que recebe 200 linhas de persona ao revisar código tem
+> princípios de design de componente competindo com os critérios de revisão. O foco reduz
+> o ruído e sharpens o comportamento do agente para o que o step realmente requer.
+
+**3. Injetar fronteira negativa (se disponível)**
+
+Verifique se o arquivo `.agent.md` contém a seção `## Fora do Meu Escopo`.
+
+- **Se existe:** injete o conteúdo como bloco de fence **logo após a persona**, antes das instruções do step:
+
+```
+⛔ FORA DO MEU ESCOPO — não execute mesmo que pareça útil:
+{conteúdo da seção ## Fora do Meu Escopo}
+```
+
+- **Se não existe:** continue normalmente.
+
+> **Motivo:** Sem fronteira explícita, agents em modo `inline` fazem role bleed — o arquiteto
+> começa a implementar, o reviewer começa a redesenhar. A fence negativa cria um sinal de
+> "stay in your lane" mais forte que princípios positivos sozinhos.
+
+---
 
 ### 2.3b — SCOPE GUARD (apenas steps com `output_files` definido)
 
@@ -697,10 +801,26 @@ Execute este guard em **todos** os steps com `execution: subagent` ou `execution
 2. Se `pipeline.yaml` → step atual tem `change_guard: false` → pule esta seção.
 3. Caso contrário → ativo.
 
+**Para steps com `execution: subagent` — CHANGE GUARD via git diff (fonte primária):**
+
+Ao invés de depender do auto-reporte do agent, o runner captura alterações estruturalmente:
+
+1. **Antes de executar o subagent:** execute `git diff --name-only HEAD` e armazene como `[FILES_BEFORE]`
+2. **Após receber o resultado do subagent:** execute `git diff --name-only HEAD` e armazene como `[FILES_AFTER]`
+3. **Calcule diff:** `[FILES_CHANGED] = [FILES_AFTER] - [FILES_BEFORE]`
+4. Para cada arquivo em `[FILES_CHANGED]`: execute `git diff HEAD -- {arquivo}` para capturar trechos alterados
+5. Construa `[CHANGE_GUARD_REPORT]` a partir do diff real — não do auto-reporte do agent
+6. Log: `🔍 [CHANGE GUARD] git diff capturado: {N} arquivo(s) alterado(s)`
+
+Se `git` não estiver disponível ou o comando falhar: caia no modo de self-report (instrução abaixo).
+Log de fallback: `⚠️ [CHANGE GUARD] git indisponível — usando self-report do agent`
+
+**Para steps com `execution: inline` — CHANGE GUARD via self-report (instrução obrigatória):**
+
 **Injetar instrução no prompt do agent** (após SCOPE GUARD, antes da instrução do step):
 
 ```
-📋 CHANGE GUARD — instrução obrigatória
+📋 CHANGE GUARD — instrução obrigatória (modo inline)
 
 Ao concluir sua tarefa, inclua ao final do output o seguinte bloco.
 Inclua TODOS os arquivos que você abriu durante a execução — alterados ou não.
@@ -710,7 +830,7 @@ Inclua TODOS os arquivos que você abriu durante a execução — alterados ou n
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✏️  ALTERADOS ({N} arquivo(s))
   {caminho/do/arquivo.ext}
-    • L{start}–L{end} — {o que foi alterado}
+    • L{start}–L{end} — {o que foi alterado} ← linha obrigatória para arquivos alterados
 
 👁️  REVISADOS · SEM ALTERAÇÃO ({N} arquivo(s))
   {caminho/do/arquivo.ext} — {motivo: já estava correto | não aplicável | fora do escopo deste step}
@@ -720,13 +840,17 @@ Inclua TODOS os arquivos que você abriu durante a execução — alterados ou n
 
 Regras:
 - Nunca omita um arquivo consultado, mesmo que a visita tenha sido rápida
-- Para arquivos alterados: liste cada trecho com linha aproximada
+- Para arquivos alterados: número de linha é obrigatório (L{start}–L{end})
 - Para arquivos não alterados: uma frase objetiva basta
 - Arquivos de session (docs/.squads/sessions/) não entram no relatório
 - Se nenhum arquivo do projeto foi acessado: escreva "CHANGE GUARD — nenhum arquivo acessado neste step"
 ```
 
-**Após receber o output do agent:**
+> **Por que a diferença?** Subagents têm acesso estrutural ao sistema de arquivos — git diff é
+> mais confiável que auto-reporte. Inline runs são conversacionais — self-report com linha obrigatória
+> é a melhor opção disponível.
+
+**Após receber o output (para steps inline):**
 
 1. Procure o bloco entre `📋 [CHANGE GUARD]` e o segundo `━━━` ao final
 2. Extraia e armazene como `[CHANGE_GUARD_REPORT]` para exibição no passo 2.8
@@ -742,6 +866,56 @@ Squad: {squad-slug} · Agent: {agent-id}
 
 {conteúdo de [CHANGE_GUARD_REPORT]}
 ```
+
+---
+
+### 2.3d — HANDOFF (steps inline/subagent com depends_on ou que alimentam próximo step)
+
+Execute em **todos** os steps com `execution: subagent` ou `execution: inline` que têm `output_files` ou `depends_on` definido.
+
+**Injetar instrução no prompt do agent** (após instrução do step, antes do fim):
+
+```
+📤 HANDOFF — instrução obrigatória
+
+Ao concluir, inclua ao final do output o seguinte bloco.
+Este bloco é consumido pelo próximo agente — seja preciso e conciso.
+
+---
+## HANDOFF
+**Decisões que o próximo agente deve respeitar:**
+- {decisão 1 — com justificativa em 1 linha}
+- {decisão 2}
+
+**O que foi entregue:**
+- {arquivo ou artefato criado/modificado} — {o que contém em 1 frase}
+
+**O que o próximo agente precisa saber:**
+- {contexto, restrição ou aviso relevante para o step seguinte}
+
+**Bloqueios ou [DECISÃO PENDENTE]:**
+- {se houver} | nenhum
+---
+```
+
+**Após receber o output do agent:**
+
+1. Procure o bloco entre `## HANDOFF` e o separador `---` no final do output
+2. Extraia e armazene como `[HANDOFF_{step-id}]`
+3. **Remova o bloco do output** antes de salvar o `output_file` — o HANDOFF não faz parte do artefato
+4. Se o bloco **não for encontrado**: logue `⚠️ [HANDOFF] bloco ausente no step "{step-id}" — próximo agente receberá output completo via depends_on` e continue normalmente
+
+**Injeção no step seguinte (via `depends_on`):**
+
+Quando o próximo step declara `depends_on: [step-id]`:
+- **Padrão:** injete apenas `[HANDOFF_{step-id}]` como contexto do step anterior (não o arquivo completo)
+- **Se o step declara `needs_full_output_of: {step-id}`:** injete o arquivo de output completo (lido da session folder) em vez do HANDOFF
+- **Se `[HANDOFF_{step-id}]` não foi capturado:** injete o arquivo de output completo como fallback, com log `📦 [HANDOFF] fallback — injetando output completo de {step-id}`
+
+> **Motivo:** Um arquivo `architecture.md` com 300+ linhas injetado inteiro no contexto do próximo
+> step cria ruído que compete com a instrução real. O HANDOFF de ~10 linhas contém apenas o que
+> o próximo agente **precisa agir** — decisões, o que foi entregue, restrições. O arquivo completo
+> fica disponível via `needs_full_output_of` para steps que genuinamente precisam do conteúdo inteiro.
 
 ---
 
@@ -823,6 +997,77 @@ async_checkpoints: true   # padrão: false
 ### 2.5 — Aplicar gates automáticos pós-execução
 
 > Antes de aplicar qualquer gate, verifique `execution_mode` do squad.yaml e a tabela de gates ativos em `.synapos/core/gate-system.md`. Gates marcados como desativados para o modo atual são ignorados silenciosamente — sem log, sem falha.
+
+**Ordem de aplicação dos gates (execute nesta sequência):**
+
+```
+1. GATE-3a — Estrutural    (se output_schema declarado no pipeline.yaml)
+2. GATE-3  — Qualidade     (output não vazio, não placeholder)
+3. GATE-3b — Sucesso       (se success_criteria declarado no .md do step)
+4. GATE-DECISION           (decisões autônomas detectadas)
+5. GATE-ADR                (conflitos com ADRs, quando aplicável)
+6. Veto conditions         (condições específicas do step)
+```
+
+**GATE-3a — Validação Estrutural (executar PRIMEIRO, antes de qualquer outro gate):**
+
+Execute este gate **apenas** em steps que declaram `output_schema` no pipeline.yaml.
+
+Para cada item em `output_schema.required_sections`:
+- Verifique se a seção existe no output (busca literal por `## {seção}` ou `# {seção}`)
+- Se alguma seção está ausente: falha imediata com mensagem precisa
+
+```
+🚫 GATE-3a — estrutura inválida
+
+Seção obrigatória ausente: "{seção faltante}"
+O output deve conter: {lista de required_sections}
+
+Reexecutando step com instrução explícita...
+```
+
+Para cada item em `output_schema.formats` (se presente):
+- Extraia o conteúdo da seção declarada em `field`
+- Se `pattern` definido: verifique correspondência regex
+- Se não corresponder: falha com mensagem de formato
+
+```
+🚫 GATE-3a — formato inválido
+
+Campo: {field}
+Esperado: {pattern}
+Encontrado: {primeiros 100 chars do conteúdo atual}
+
+Reexecutando step com instrução de formato...
+```
+
+> **Gate-3a nunca faz auto-aprovação:** sempre re-executa o step com instrução reforçada quando falha.
+> Máximo 2 reexecuções automáticas. Na 3ª falha → escale para o usuário.
+> **Gate-3a passando:** log `✅ GATE-3a — estrutura válida ({N} seções confirmadas)`
+
+**GATE-3b — Critérios de Sucesso (executar DEPOIS do GATE-3):**
+
+Execute este gate **apenas** em steps cujo arquivo `.md` contém frontmatter com `success_criteria`.
+
+O pipeline-runner carrega os critérios ao ler o arquivo do step (seção 2.3). Armazene como `[SUCCESS_CRITERIA_{step-id}]`.
+
+Para cada critério:
+- Verifique se o output satisfaz a condição descrita
+- Critérios são binários: satisfeito (✅) ou não (❌)
+
+```
+🚫 GATE-3b — critério de sucesso não atendido
+
+Critério: "{critério não atendido}"
+Total: {N satisfeitos}/{M total}
+
+Reexecutando step com feedback específico...
+```
+
+> **Diferença de GATE-3b vs veto_conditions:**
+> `veto_conditions` são definidas no pipeline.yaml e avaliam o output como inválido (o step precisa refazer).
+> `success_criteria` são definidas no arquivo do step e avaliam se o output atingiu os objetivos (o step está incompleto).
+> Veto = output errado. Success_criteria = output certo mas incompleto.
 
 **GATE-DECISION (universal — ativo em todos os modos):**
 
@@ -911,6 +1156,38 @@ Atualize `state.json` (via escrita atômica — veja 1.4c):
 
 Limpe `[CHANGE_GUARD_REPORT]` após exibição — o relatório é por step, não acumulativo.
 
+**Acumular em `[SESSION_REPORT_DATA]`** (obrigatório após cada step inline/subagent):
+
+```
+[SESSION_REPORT_DATA].steps += {
+  id: "{step-id}",
+  name: "{step-name}",
+  agent: "{agent-id}",
+  gates: [
+    // para cada gate executado neste step:
+    { gate: "GATE-3a|GATE-3|GATE-3b", result: "pass|fail", attempts: N }
+  ],
+  files_changed: [
+    // extraído de [CHANGE_GUARD_REPORT] ou git diff:
+    { path: "{caminho}", lines: "L{start}–L{end}", description: "{o que foi alterado}" }
+  ],
+  handoff: "[HANDOFF_{step-id}]",   // null se não capturado
+  veto_attempts: N,                 // tentativas de reexecução por veto/gate
+  decisions_resolved: []            // [DECISÃO PENDENTE] resolvidas neste step
+}
+
+// Consolidar files_changed para o nível global:
+[SESSION_REPORT_DATA].all_files_changed += files_changed deste step (sem duplicatas por path)
+
+// Atualizar gate_summary:
+[SESSION_REPORT_DATA].gate_summary.passed += N gates aprovados
+[SESSION_REPORT_DATA].gate_summary.failed += N gates que falharam (mesmo que reexecutados)
+[SESSION_REPORT_DATA].gate_summary.retries += veto_attempts + tentativas de gate
+```
+
+> **Rastreamento de decisões:** quando um `[DECISÃO PENDENTE]` é apresentado ao usuário e aprovado, registre em `[SESSION_REPORT_DATA].all_decisions`:
+> `{ step: "{step-id}", decision: "{descrição}", resolved_as: "{opção aprovada}", at: "{HH:MM}" }`
+
 ---
 
 ## FASE 3 — FINALIZAÇÃO
@@ -977,7 +1254,178 @@ Se houver resposta, acrescente em `docs/_memory/project-learnings.md`:
 {texto do usuário}
 ```
 
-### 3.3 — Apresentar sumário
+### 3.3 — Gerar session-report.md
+
+Gere o arquivo `docs/.squads/sessions/{feature-slug}/session-report.md` a partir de `[SESSION_REPORT_DATA]`.
+
+**Este arquivo é a evidência auditável do que o pipeline executou.** Nunca pule este passo — um pipeline sem report não tem rastreabilidade.
+
+```markdown
+# Session Report: {feature-slug}
+
+> Gerado automaticamente em {YYYY-MM-DD HH:MM} · Synapos v{VERSION}
+
+**Squad:** {squad-slug} · **Pipeline:** {pipeline-name}
+**Steps concluídos:** {N}/{total} · **Iniciado:** {started_at} · **Concluído:** {agora}
+
+---
+
+## Resumo de Execução
+
+| Step | Agent | Gates | Arquivos Alterados | Retentativas |
+|------|-------|-------|--------------------|--------------|
+{para cada step em [SESSION_REPORT_DATA].steps:}
+| `{id}`: {name} | {agent} | {lista de gates com ✅/❌} | {N} arquivo(s) | {veto_attempts} |
+
+---
+
+## Arquivos Modificados
+
+> Consolidado de todos os CHANGE GUARD reports do pipeline.
+> Evidência estrutural de tudo que foi tocado.
+
+{se [SESSION_REPORT_DATA].all_files_changed não está vazio:}
+{para cada entry em all_files_changed:}
+- `{path}` — step `{step}` · {lines} · {description}
+
+{se all_files_changed está vazio:}
+⚠️ Nenhum arquivo rastreado — CHANGE GUARD indisponível (steps inline sem self-report ou git indisponível).
+
+---
+
+## Decisões Registradas
+
+> [DECISÃO PENDENTE] que precisaram de aprovação humana durante o pipeline.
+
+{se [SESSION_REPORT_DATA].all_decisions não está vazio:}
+{para cada decisão:}
+- **`{step}`** — {decision} → aprovado como: _{resolved_as}_ ({at})
+
+{se all_decisions está vazio:}
+Nenhuma decisão fora do escopo foi necessária neste pipeline.
+
+---
+
+## Gates Executados
+
+| Gate | Step | Resultado | Tentativas |
+|------|------|-----------|------------|
+{para cada gate em cada step:}
+| {gate} | `{step-id}` | {✅ aprovado \| 🚫 falhou → reexecutado} | {attempts} |
+
+**Total:** {gate_summary.passed + gate_summary.failed} gates ·
+✅ {gate_summary.passed} aprovados ·
+{se gate_summary.failed > 0: 🔁 {gate_summary.failed} falharam (reexecutados: {gate_summary.retries}x)}
+
+---
+
+## HANDOFF Final
+
+> Saída estruturada do último step executado — contexto para o próximo squad ou sessão de trabalho.
+
+{conteúdo do [HANDOFF_{último-step-id}] capturado, ou:}
+_(HANDOFF não capturado no último step)_
+
+---
+
+_Gerado por Synapos v{VERSION} · Session: `docs/.squads/sessions/{feature-slug}/`_
+```
+
+**Regras do session report:**
+- Se `session-report.md` já existe (pipeline reexecutado): sobrescreva — cada report reflete a última execução
+- Não crie backup `.bak` do report — ele é gerado, não editado manualmente
+- Log ao concluir: `📊 [REPORT] session-report.md gerado — {N} steps · {N} arquivos · {N} gates`
+
+---
+
+### 3.4 — Commit automático (opt-in)
+
+**Verificar configuração:**
+
+Leia `auto_commit` do `squad.yaml`:
+
+| Valor | Comportamento |
+|-------|--------------|
+| `ask` (padrão) | Pergunta ao usuário antes de commitar |
+| `true` | Commita automaticamente sem perguntar |
+| `false` | Pula este passo silenciosamente |
+
+**Se `auto_commit: false`:** pule sem log.
+
+**Se `auto_commit: ask`:** apresente ao usuário:
+
+```
+AskUserQuestion({
+  question: "Pipeline concluído. Deseja criar um commit com as alterações?\n\n{N} arquivo(s) modificado(s):\n{lista dos primeiros 5 arquivos de all_files_changed}\n{se > 5: '...e mais {N-5} arquivo(s)'}",
+  options: [
+    { label: "✅ Commitar agora", description: "Cria commit com mensagem estruturada" },
+    { label: "⏭️ Pular", description: "Não commita — você fará isso manualmente" }
+  ]
+})
+```
+
+**Se `auto_commit: true` ou usuário confirmar:**
+
+1. **Derivar tipo de commit** a partir do pipeline:
+   ```
+   feature-development, feature-*, component-* → feat
+   bug-fix, fix-*, quick-fix             → fix
+   database-migration, migration-*        → chore(db)
+   ci-cd-setup, infra-*                   → ci
+   refinar-docs, docs-*                   → docs
+   discovery-spec-*, spec-*               → docs
+   (qualquer outro)                       → chore
+   ```
+
+2. **Montar lista de arquivos a stagear:**
+   - Use `[SESSION_REPORT_DATA].all_files_changed` (caminhos extraídos do CHANGE GUARD)
+   - Adicione sempre: `docs/.squads/sessions/{feature-slug}/session-report.md`
+   - Adicione sempre: `docs/.squads/sessions/{feature-slug}/state.json`
+   - **Nunca inclua:** `.synapos/`, arquivos `.env`, arquivos fora do projeto
+
+3. **Gerar mensagem de commit:**
+
+```
+{tipo}({feature-slug}): {pipeline-name} — {squad-slug}
+
+Steps: {lista de step-names concluídos, separados por ", "}
+
+Arquivos modificados:
+{para cada path em all_files_changed:}
+  - {path}
+
+Session: docs/.squads/sessions/{feature-slug}/session-report.md
+
+Co-authored-by: Synapos v{VERSION} <noreply@synapos.dev>
+```
+
+4. **Executar:**
+
+```bash
+git add {lista de arquivos}
+git commit -m "{mensagem estruturada}"
+```
+
+5. **Ao concluir:**
+```
+✅ [GIT] Commit criado: {hash curto} — "{primeira linha da mensagem}"
+```
+
+**Se git falhar (não é repo, conflito, etc.):**
+```
+⚠️ [GIT] Commit não realizado: {motivo}
+   Arquivos modificados disponíveis em: docs/.squads/sessions/{feature-slug}/session-report.md
+```
+Nunca bloqueie a finalização do pipeline por falha de git.
+
+**Campo no squad.yaml:**
+```yaml
+auto_commit: ask   # ask | true | false (padrão: ask)
+```
+
+---
+
+### 3.5 — Apresentar sumário
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -989,12 +1437,17 @@ Session:  docs/.squads/sessions/{feature-slug}/
 
 Arquivos na session:
   📄 {lista de output_files criados/atualizados}
+  📊 session-report.md  ← evidência auditável desta execução
+
+{se commit foi criado:}
+  🔖 Commit: {hash curto} — "{primeira linha da mensagem}"
 
 O que deseja fazer agora?
   [1] Iniciar outro squad nesta feature
-  [2] Ver um arquivo da session
-  [3] Voltar ao menu principal
-  [4] Pausar squad
+  [2] Ver session-report.md
+  [3] Ver um arquivo da session
+  [4] Voltar ao menu principal
+  [5] Pausar squad
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -1006,17 +1459,18 @@ O contexto injetado depende do `execution_mode` do squad.
 
 ### Modo Rápido (`quick`) — contexto mínimo
 
-1. **Persona do agent** (conteúdo do `.agent.md` — ou versão Modo Lite se `[MODELO_TIER]: lite`)
-2. **Contexto do squad** (`company.md` + descrição do squad + roles[])
-3. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
-4. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo (se inválido ou `needs_full_context: true`)
-5. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
-6. **Outputs anteriores relevantes** (definidos em `depends_on`)
-7. **Instrução do step** + base path do squad
-8. **[CONTEXT_RULES]** aplicado sobre os blocos acima se `[MODELO_TIER]: standard` ou `lite`
+1. **Persona focada do agent** (seção `## Identidade` + `[AGENT_FOCUS]` do tipo do step + `## Quality Criteria` + `## Compliance Obrigatório` — ou versão Modo Lite se `[MODELO_TIER]: lite`). Se não há `## Foco por Tipo de Step`: usa persona completa.
+2. **Fronteira negativa** (seção `## Fora do Meu Escopo` do agent — se existir, injetada como fence `⛔ FORA DO MEU ESCOPO`)
+3. **Contexto do squad** (`company.md` + descrição do squad + roles[])
+4. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
+5. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo (se inválido ou `needs_full_context: true`)
+6. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
+7. **Outputs anteriores**: HANDOFF do step de depends_on (ou output completo se `needs_full_output_of` declarado)
+8. **Instrução do step** + base path do squad
+9. **[CONTEXT_RULES]** aplicado sobre os blocos acima se `[MODELO_TIER]: standard` ou `lite`
 
 ```
-[Agent Persona] + [Stack do Projeto] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Persona Focada] + [⛔ Fora do Escopo] + [Stack] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [HANDOFF ou Output Anterior] + [Instrução do Step] + [Skills Ativas]
 ```
 
 > **Não inclui por padrão:** `architecture.md`, `plan.md`, `review-notes.md`, `docs/`, ADRs.
@@ -1024,17 +1478,19 @@ O contexto injetado depende do `execution_mode` do squad.
 
 ### Modo Completo (`complete`) — contexto expandido
 
-1. **Persona do agent** (conteúdo do `.agent.md`)
-2. **Contexto do squad** (`company.md` + descrição + roles[])
-3. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
-4. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo
-5. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
-6. **ADRs filtrados** — do cache `[ADRS_CARREGADOS]` (somente domínio do squad). Conflito com ADR aceita = output vetado.
-7. **project-learnings.md** (se existir)
-8. **Outputs anteriores relevantes** + **Instrução do step** + base path
+1. **Persona focada do agent** (mesma lógica do modo rápido — foco por tipo de step se disponível)
+2. **Fronteira negativa** (seção `## Fora do Meu Escopo` do agent — se existir)
+3. **Contexto do squad** (`company.md` + descrição + roles[])
+4. **Stack do projeto** (`stack.md` — se existir) — injetado junto da persona, antes de qualquer instrução técnica
+5. **Contexto da feature**: `context.snapshot` (se hash válido) ou `context.md` completo
+6. **Memória recente**: bloco `<!-- RECENTES -->` de `memories.md` (últimas 5 entradas)
+7. **ADRs filtrados** — do cache `[ADRS_CARREGADOS]` (somente domínio do squad). Conflito com ADR aceita = output vetado.
+8. **project-learnings.md** (se existir)
+9. **Outputs anteriores**: HANDOFF do step de depends_on (ou output completo se `needs_full_output_of` declarado)
+10. **Instrução do step** + base path
 
 ```
-[Agent Persona] + [Stack do Projeto] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [ADRs filtrados] + [Project Learnings] + [Outputs Anteriores] + [Instrução do Step] + [Skills Ativas]
+[Persona Focada] + [⛔ Fora do Escopo] + [Stack] + [Contexto Squad] + [context.snapshot|context.md] + [Memories RECENTES] + [ADRs filtrados] + [Project Learnings] + [HANDOFF ou Output Anterior] + [Instrução do Step] + [Skills Ativas]
 ```
 
 > **Skills:** quando ativas, o agent DEVE usá-las — não são opcionais.
@@ -1116,7 +1572,21 @@ Substitua `{feature-slug}` e `{squad-slug}` pelos valores reais antes de injetar
 | **Escopo expandido = [DECISÃO PENDENTE]** | Se agent precisar de arquivo fora do escopo, sinaliza e aguarda aprovação — nunca expande silenciosamente |
 | **SCOPE GUARD pergunta, não rejeita** | Violação de escopo → AskUserQuestion imediato (autorizar / rejeitar / editar architecture.md). Nunca auto-rejeita — a decisão é sempre do humano |
 | **architecture.md cacheado por run** | Primeira leitura (via SCOPE GUARD ou needs_architecture) carrega e armazena em `[ARCHITECTURE_CACHE]`. Steps subsequentes reutilizam o cache durante o mesmo pipeline run |
-| **CHANGE GUARD ativo por padrão** | Todos os steps inline/subagent injetam instrução de rastreamento. Agent reporta arquivos alterados (com trechos) e revisados sem alteração. Ausência do bloco gera aviso, nunca falha |
+| **CHANGE GUARD ativo por padrão** | Subagent usa git diff como fonte primária (confiável). Inline usa self-report com linha obrigatória. Ausência do bloco (inline) gera aviso, nunca falha |
 | **CHANGE GUARD não polui artefato** | Bloco `[CHANGE GUARD]` é extraído do output antes de salvar output_file — nunca contamina o conteúdo gerado |
 | **CHANGE GUARD desativável** | `change_guard: false` em squad.yaml (todo o squad) ou em step no pipeline.yaml (step específico) |
 | **change-log.md opcional** | `change_log: true` em squad.yaml persiste relatórios em `docs/.squads/sessions/{feature-slug}/change-log.md` |
+| **Pré-execução é obrigatória para sessions novas** | Se context.md não existe e pre_pipeline válido: executa automaticamente sem perguntar. Sessions retomadas (context.md existe) pulam pré-exec |
+| **HANDOFF comprime depends_on** | Por padrão, depends_on injeta apenas o bloco HANDOFF (não o output completo). Use `needs_full_output_of` para injetar o arquivo completo quando necessário |
+| **HANDOFF não polui artefato** | Bloco `## HANDOFF` extraído do output antes de salvar output_file |
+| **GATE-3a é estrutural, GATE-3 é semântico** | GATE-3a executa PRIMEIRO se output_schema declarado. Falha estrutural = mensagem precisa. GATE-3 valida qualidade mínima. GATE-3b valida critérios de sucesso do step |
+| **Persona focada reduz ruído** | Se agent tem `## Foco por Tipo de Step`: injeta apenas o foco relevante + Identity + Quality Criteria + Compliance. Persona completa como fallback |
+| **Fronteira negativa é fence explícito** | Se agent tem `## Fora do Meu Escopo`: injetado como bloco `⛔ FORA DO MEU ESCOPO` antes das instruções do step |
+| **success_criteria é por step** | Lido do frontmatter do arquivo .md do step. Validado pelo GATE-3b após GATE-3 |
+| **output_schema é por pipeline step** | Declarado no pipeline.yaml. Validado pelo GATE-3a antes de qualquer outro gate |
+| **SESSION_REPORT_DATA é acumulado durante execução** | Inicializado na FASE 1.6. Cada step contribui via seção 2.8. Escrito em disco uma única vez na FASE 3.3 |
+| **session-report.md é sempre gerado** | Nunca pule a FASE 3.3 — o report é a evidência auditável do pipeline. Sobrescreve execuções anteriores |
+| **Commit é opt-in por padrão** | `auto_commit: ask` no squad.yaml. Nunca commita silenciosamente sem que `true` esteja explícito |
+| **Commit inclui session-report.md e state.json** | Esses dois arquivos são sempre incluídos no stage, independente do CHANGE GUARD |
+| **Commit nunca bloqueia** | Falha de git → avisa e segue para sumário. Pipeline não pode falhar por causa de commit |
+| **Tipo de commit é derivado do pipeline** | `feature-*` → `feat`, `bug-fix` → `fix`, `migration-*` → `chore(db)`, etc. Nunca deixe em branco |
