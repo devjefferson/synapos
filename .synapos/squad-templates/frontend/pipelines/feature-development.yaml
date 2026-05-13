@@ -18,6 +18,11 @@ steps:
     depends_on: [01-gate-integridade]
     output_files:
       - architecture.md
+    output_schema:
+      required_sections:
+        - "## Estrutura de Componentes"
+        - "## Decisões de Estado"
+        - "## Contratos dos Componentes Principais"
     veto_conditions:
       - "Estrutura de componentes não documentada"
       - "Decisão de estado sem justificativa (local vs server vs global)"

@@ -3,7 +3,7 @@ name: synapos-gate-system
 description: Sistema de quality gates — validação em pontos críticos do pipeline
 ---
 
-# SYNAPOS GATE SYSTEM v2.1.0
+# SYNAPOS GATE SYSTEM v2.3.0
 
 > Gates são pontos de validação obrigatórios. Falha em um gate bloqueia o avanço.
 > Princípio: **Fail Loud, Never Silent** — nunca ignore uma falha de gate.
@@ -60,9 +60,49 @@ Prosseguindo...
 
 ---
 
+### GATE-3a — Validação Estrutural do Output
+
+**Quando usar:** Após cada step com `execution: subagent` ou `execution: inline` que declara `output_schema` no `pipeline.yaml`. Executa **antes** do GATE-3.
+
+**Propósito:** Validar estrutura do output (seções obrigatórias, formatos) com mensagem precisa antes de qualquer validação semântica. Falha estrutural é um defeito distinto de falha de qualidade.
+
+**Verifica (conforme `output_schema` do step):**
+- [ ] Cada seção em `required_sections` existe no output (`## Título` ou `# Título`)
+- [ ] Campos com `pattern` definido em `formats` correspondem ao regex esperado
+
+**Falha de seção ausente:**
+```
+🚫 GATE-3a — estrutura inválida
+
+Seção obrigatória ausente: "## Meta"
+Output deve conter todas as seções: {lista de required_sections}
+Reexecutando step com instrução explícita de formato...
+```
+
+**Falha de formato:**
+```
+🚫 GATE-3a — formato inválido
+
+Campo: ## Meta
+Esperado: corresponder a "Permitir .+ para que .+"
+Encontrado: "Melhorar a experiência de login" (não satisfaz o padrão)
+Reexecutando step com instrução de formato...
+```
+
+Máximo 2 reexecuções automáticas. Na 3ª falha → escale para o usuário.
+
+**Gate passando:**
+```
+✅ GATE-3a — estrutura válida ({N} seções confirmadas)
+```
+
+> **Regra:** Steps sem `output_schema` pularão este gate silenciosamente. Nunca log para steps sem schema.
+
+---
+
 ### GATE-3 — Qualidade Mínima do Output
 
-**Quando usar:** Após cada step com `execution: subagent` ou `execution: inline`.
+**Quando usar:** Após cada step com `execution: subagent` ou `execution: inline`. Executa após GATE-3a (se aplicável).
 
 **Verifica:**
 - [ ] Output não está vazio
@@ -84,6 +124,50 @@ Máximo 2 reexecuções automáticas. Na 3ª falha → escale para o usuário.
 ```
 ✅ GATE-3 — output aprovado
 ```
+
+---
+
+### GATE-3b — Critérios de Sucesso
+
+**Quando usar:** Após GATE-3, apenas para steps cujo arquivo `.md` contém `success_criteria` no frontmatter YAML.
+
+**Propósito:** Validar se o output atingiu os objetivos do step (não apenas se é não-vazio ou não-placeholder). `success_criteria` são definidos pelo autor do step, não pelo pipeline.
+
+**Frontmatter de step com success_criteria:**
+```yaml
+---
+id: 03-investigacao
+name: "Investigação"
+success_criteria:
+  - "context.md contém seção ## Meta com frase mensurável (verbo + ator + resultado)"
+  - "context.md contém no mínimo 3 itens em ## Regras Críticas do Projeto"
+  - "Todas as perguntas de clarificação foram respondidas antes de gerar o arquivo"
+---
+```
+
+**Avaliação:** O pipeline-runner verifica cada critério contra o output. Critérios são avaliados semanticamente (não apenas por presença de string).
+
+**Falha:**
+```
+🚫 GATE-3b — critério de sucesso não atendido
+
+Critério: "context.md contém seção ## Meta com frase mensurável"
+Output atual: ## Meta contém "Melhorar login" (não mensurável — falta verbo + ator + resultado)
+
+Reexecutando step com feedback...
+```
+
+Máximo 2 reexecuções automáticas com feedback específico do critério não atendido. Na 3ª falha → escale para o usuário.
+
+**Gate passando:**
+```
+✅ GATE-3b — {N}/{N} critérios atendidos
+```
+
+> **Diferença de veto_conditions vs success_criteria:**
+> `veto_conditions` (pipeline.yaml) = "o output é inválido se..." (bloqueador binário, sem gradação).
+> `success_criteria` (step .md frontmatter) = "o output está completo quando..." (checklist de entrega).
+> Veto = output errado. Success = output incompleto.
 
 ---
 
@@ -168,14 +252,44 @@ steps:
     execution: checkpoint
     gate: GATE-0
 
+  - id: investigacao
+    name: "Investigação"
+    agent: lead-engineer
+    depends_on: [gate-integridade]
+    output_files:
+      - context.md
+    output_schema:                          # → ativa GATE-3a
+      required_sections:
+        - "## Motivação"
+        - "## Meta"
+        - "## Regras Críticas do Projeto"
+      formats:
+        - field: "## Meta"
+          pattern: "Permitir .+ para que .+"
+    veto_conditions:                        # → ativa GATE-3 (semântico)
+      - "context.md sem Meta mensurável"
+    # success_criteria definidos no arquivo do step (.md frontmatter) → ativa GATE-3b
+
   - id: implementacao
     name: "Implementar Feature"
     agent: backend-dev
-    depends_on: [gate-integridade]
+    depends_on: [investigacao]
     gate: GATE-3
     veto_conditions:
       - "output sem código implementado"
+    needs_full_output_of: investigacao      # injeta context.md completo (não só HANDOFF)
 ```
+
+### Ordem de execução de gates por step
+
+| Gate | Condição de ativação | Ordem |
+|------|---------------------|-------|
+| GATE-3a | `output_schema` declarado no pipeline.yaml | 1º |
+| GATE-3 | Step com `execution: subagent` ou `inline` | 2º |
+| GATE-3b | `success_criteria` no frontmatter do .md do step | 3º |
+| GATE-DECISION | Output contém decisão autônoma ou `[DECISÃO PENDENTE]` | 4º |
+| GATE-ADR | ADRs existem e modo complete ativo | 5º |
+| Veto conditions | `veto_conditions` declaradas no pipeline.yaml | 6º (dentro do GATE-3) |
 
 ---
 
