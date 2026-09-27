@@ -16,7 +16,9 @@ npx synapos
 
 ## O que é
 
-Synapos resolve um problema concreto: **a IA esquece tudo entre conversas**.
+Synapos é um **exército de um homem só**: uma única IA trabalhando através de roles especializadas — produto, arquitetura, desenvolvimento, review — cada uma com o contexto, a memória e as skills certas.
+
+Ele resolve dois problemas concretos: **a IA esquece tudo entre conversas** e **a IA inventa o que o projeto já tem**.
 
 Cada feature do seu projeto ganha uma **session** — uma pasta com contexto persistente que qualquer role de IA lê antes de começar a trabalhar. O resultado é uma IA que sabe o que foi decidido, por que, e o que não fazer.
 
@@ -53,12 +55,27 @@ Ao retomar uma sessão interrompida, o `/init` exibe progresso (steps concluído
 
 ---
 
-## Modos de execução
+## Profundidade adaptativa
 
-| Modo | Quando usar | O que injeta |
-|------|-------------|--------------|
-| ⚡ Rápido | Bug fix, ajuste, quick change | Contexto da session apenas |
-| 🔵 Completo | Feature nova, refactor, arquitetura | Session + docs/ do projeto + ADRs |
+A tarefa define o processo — o Synapos faz a triagem sozinho:
+
+| Track | Exemplo | Fluxo |
+|------|---------|-------|
+| ⚡ quick | "alterar o texto de um botão" | contexto → role → skills → executar → revisar (sem squad, sem session) |
+| 🔵 standard | "nova tela de listagem" | investigação → padrões do projeto → arquitetura → implementação → review |
+| 🧠 complex | "quero um módulo de pedidos" | produto (brainstorm → requisitos → spec → handoff) → arquitetura → plano → dev → review |
+
+## Memória que aprende o projeto uma vez
+
+```
+docs/_memory/
+├── project-memory.md     ← regras, decisões, padrões e aprendizados tipados
+├── adr-index.md          ← 1 linha por ADR — ADR ativa é regra em todo track
+├── skills-index.md       ← skills do projeto e instaladas, selecionadas por step
+└── roles/frontend.md     ← padrões reais: containers, componentes, estados, formulários
+```
+
+Cada step recebe só o que a decisão precisa — e declara o que carregou e por quê (Context Brief). Memória obsoleta é detectada no ponto de uso, nunca sobrescrita em silêncio.
 
 ---
 
@@ -83,13 +100,12 @@ Com Synapos, cada feature acumula contexto ao longo do tempo:
 
 ## Qualidade integrada
 
-Três gates ativos em todas as execuções:
+- **Observe antes de criar** → reuso de padrão/componente existente antes de qualquer coisa nova; "novo" exige justificativa
+- **ADR é contrato** → conflito com ADR ativa bloqueia a decisão até aprovação (`[ADR-CONFLICT]`)
+- **Sem invenção** → afirmação sobre o projeto precisa de evidência; métrica desconhecida vira `[A DEFINIR]`
+- **Gates** → integridade, estrutura, qualidade, ADR e handoff (`.synapos/core/gate-system.md`)
 
-- **GATE-0** → arquivos obrigatórios existem antes de começar
-- **GATE-3** → output não está vazio ou é placeholder
-- **GATE-5** → confirmação visual de entrega
-
-Decisões fora do escopo são sinalizadas com `[?]` no output — o role para e aguarda sua aprovação antes de continuar.
+Decisões fora do escopo são sinalizadas com `[DECISÃO PENDENTE]` (ou `[?]`) — a role para e aguarda sua aprovação.
 
 ---
 
@@ -101,7 +117,7 @@ npx synapos add skill playwright
 npx synapos add skill github
 ```
 
-Skills injetam ferramentas ou instruções no contexto do agent durante a execução.
+Skills injetam ferramentas ou critérios no contexto da role. Skills do próprio projeto (`skills/*.md`, `.claude/skills/`) também são descobertas — e só as relevantes para o step são carregadas.
 
 ---
 
@@ -115,11 +131,16 @@ Skills injetam ferramentas ou instruções no contexto do agent durante a execu�
 docs/
   _memory/              → perfil do projeto e preferências
   .squads/sessions/     → contexto persistente por feature
+  _memory/roles/        → padrões descobertos por domínio
   tech/                 → documentação técnica (opcional)
   business/             → documentação de negócio (opcional)
 ```
 
 ---
+
+## Arquitetura
+
+`docs/architecture/` — review da v4, memória, skills, fluxo de produto, guia de roles e cenários de validação. `npm test` valida a integridade do framework.
 
 ## Compatibilidade
 

@@ -1,8 +1,11 @@
 name: frontend
 displayName: "Squad de Frontend"
 icon: "🖥️"
-version: "1.3.0"
-description: "Especialistas em desenvolvimento frontend com foco em qualidade, performance e experiência do usuário"
+version: "2.0.0"
+description: "Especialistas em desenvolvimento frontend com foco em qualidade, performance e experiência do usuário — sempre ancorados nos padrões de UI do projeto"
+
+# Role usada pela fast lane (track quick) do orchestrator
+quick_role: rodrigo-react
 
 agents:
   base:

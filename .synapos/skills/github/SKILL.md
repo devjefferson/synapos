@@ -4,6 +4,7 @@ displayName: "GitHub"
 version: "1.0.0"
 type: mcp
 description: "Integração com GitHub — issues, PRs, repositórios, código e actions via MCP"
+whenToUse: "Quando o step cria/atualiza issues, PRs ou consulta dados do repositório remoto"
 categories: [git, collaboration, project-management, code]
 domains: [frontend, backend, fullstack, mobile, devops]
 ---

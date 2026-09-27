@@ -4,6 +4,7 @@ displayName: "Filesystem"
 version: "1.0.0"
 type: mcp
 description: "Leitura e escrita avançada de arquivos — acesso direto ao sistema de arquivos do projeto"
+whenToUse: "Só quando a IDE não oferece leitura/escrita nativa de arquivos — ferramentas nativas prevalecem"
 categories: [file, system, project]
 domains: [frontend, backend, fullstack, mobile, devops, ia-dados, produto]
 ---

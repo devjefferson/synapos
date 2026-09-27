@@ -4,6 +4,7 @@ displayName: "Playwright Browser"
 version: "1.0.0"
 type: mcp
 description: "Automação de browser via Playwright — navegação, screenshots, testes E2E e extração de conteúdo"
+whenToUse: "Quando o step precisa ver a UI rodando: validação visual de telas, screenshots, testes E2E"
 categories: [browser, testing, automation, scraping]
 domains: [frontend, fullstack, mobile, produto]
 ---

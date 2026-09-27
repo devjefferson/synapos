@@ -47,6 +47,7 @@ steps:
     agent: felipe-feature
     execution: subagent
     model_tier: powerful
+    needs_plan: true
     file: pipeline/steps/05-implementacao.md
     depends_on: [04-checkpoint]
     veto_conditions:

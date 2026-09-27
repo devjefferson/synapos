@@ -4,6 +4,9 @@ icon: "📱"
 version: "1.2.0"
 description: "Especialistas em React Native e Flutter: arquitetura, implementação, UX mobile e testes"
 
+# Role usada pela fast lane (track quick) do orchestrator
+quick_role: felipe-feature
+
 agents:
   base:
     - id: marina-mobile

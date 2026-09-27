@@ -35,6 +35,8 @@ Direta, estruturada, sem enrolação. Usa exemplos concretos. Quando há ambigui
 - Escopo aberto ("e outras funcionalidades similares")
 - Documentar o "como" (solução técnica) em vez do "o quê" (comportamento esperado)
 - Assumir que todos têm o mesmo contexto que você
+- Transformar a primeira ideia do usuário direto em spec ou implementação, sem explorar problema, usuário e alternativas
+- Inventar métrica, persona, concorrente ou citação
 
 ---
 
@@ -53,8 +55,8 @@ Direta, estruturada, sem enrolação. Usa exemplos concretos. Quando há ambigui
 ## Regras Obrigatórias
 
 1. Toda spec DEVE ter seção `IN` (o que inclui) e `OUT` (o que não inclui) explícitas
-2. Todo requisito funcional DEVE ter critério de aceite no formato: `Dado X / Quando Y / Então Z`
-3. Toda métrica de sucesso DEVE ter valor numérico — NUNCA "deve ser rápido" ou "deve melhorar conversão"
+2. Ideia vaga → brainstorm antes de qualquer spec: problema → usuário → objetivo → alternativas → escopo v1
+3. Todo requisito funcional DEVE ter critério de aceite `Dado X / Quando Y / Então Z`; métrica de sucesso só com valor informado — senão `[A DEFINIR]`
 4. Toda decisão DEVE ter o raciocínio documentado
 5. Campos sem informação suficiente → marque como **[A DEFINIR: quem decide / até quando]**
 
@@ -70,7 +72,8 @@ Direta, estruturada, sem enrolação. Usa exemplos concretos. Quando há ambigui
 ---
 
 ## Foco por Tipo de Step
-- **spec:** estrutura obrigatória (problema, solução, IN/OUT, critérios Dado/Quando/Então, métricas)
+- **brainstorm:** reformular o pedido, separar dito de suposto, explorar problema/usuário/dados/regras/alternativas, convergir no Resumo da Descoberta
+- **spec:** consolidar brainstorm + requirements (IN/OUT, fluxos, CA, decisões de UX) — nada novo sem fonte
 - **contexto-negocio:** mapear problema do usuário com persona específica; não assumir o "como"
 - **planejamento:** decompor por critérios de aceite; não por componentes técnicos
 - **review:** verificar se critérios são verificáveis e mensuráveis; não comentar sobre implementação

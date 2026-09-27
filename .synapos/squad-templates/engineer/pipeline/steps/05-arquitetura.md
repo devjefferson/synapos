@@ -7,127 +7,81 @@ model_tier: powerful
 output_files:
   - architecture.md
 success_criteria:
-  - "architecture.md contém seção ## Principais Arquivos a Modificar/Criar com lista de caminhos completos"
-  - "architecture.md contém seção ## ADRs Aplicadas com pelo menos 1 entrada"
-  - "architecture.md contém seção ## Verificação de Consistência com status ✅ APROVADO ou ⚠️ CORRIGIDO"
-  - "architecture.md contém seção ## Trade-offs e Alternativas com ao menos 1 alternativa rejeitada documentada"
-  - "Nenhuma decisão técnica foi tomada sem sinalizar [DECISÃO PENDENTE] para escolhas fora do escopo"
+  - "## Referência no Projeto reproduz a Âncora de padrão com caminhos reais"
+  - "## Principais Arquivos a Modificar/Criar lista caminhos completos; cada arquivo novo tem justificativa de reuso"
+  - "## ADRs Aplicadas contém o ADR CHECK (ou 'nenhuma ADR aplicável' quando o índice não tem ADR relevante)"
+  - "## Verificação de Consistência com status ✅ APROVADO ou ⚠️ CORRIGIDO"
+  - "Nenhuma decisão fora do contexto aprovado, das ADRs ou dos padrões existentes foi tomada sem [DECISÃO PENDENTE]"
 ---
 
 # Estruturação Arquitetural
 
-## Contexto disponível
-Você recebe automaticamente:
-- `context.md` (aprovado pelo humano no step anterior)
-- Toda a documentação em `docs/` incluindo ADRs
+Produzir `architecture.md`: o desenho técnico da feature **dentro dos padrões que o projeto já tem**.
 
-## Objetivo
-Produzir `architecture.md` — o design técnico completo da feature, alinhado com ADRs e convenções do projeto.
+## Entradas
 
-## 1. Ler ADRs obrigatoriamente
+- `context.md` completo (aprovado)
+- Âncora de padrão e role memory (`docs/_memory/roles/{domain}.md`) do step de descoberta
+- ADRs relevantes do `adr-index.md` (leia completas só essas)
+- `spec.md` se existir
 
-Antes de qualquer proposta técnica:
-- Leia todos os arquivos de ADR em `docs/` (arquivos com `ADR`, `adr`, `decisions`, `architecture-decision` no nome)
-- Liste as ADRs relevantes para esta feature
-- Entenda as restrições que impõem
+## 1. Partir da referência
 
-## 2. Examinar código-fonte
+A arquitetura é uma **variação da referência do projeto**, não um desenho do zero:
+- Copie a Âncora de padrão para `## Referência no Projeto`.
+- Para cada parte da feature, aplique a escada de compliance-protocol §2 (existente → composição → adaptação → novo).
+- Lacuna de padrão que a descoberta não resolveu → `[CONTEXT_REQUIRED]` e leia o código antes de decidir.
 
-Use as ferramentas disponíveis para:
-- Encontrar features similares já implementadas
-- Entender a estrutura de pastas e convenções do projeto
-- Identificar padrões (Repository, Service, Controller, etc.) usados atualmente
-- Verificar como dependências externas são utilizadas
-
-## 3. Construir architecture.md
-
-Estrutura obrigatória:
+## 2. Construir architecture.md
 
 ```markdown
-# Architecture: [Nome da Feature]
+# Architecture: {feature}
+
+## Referência no Projeto
+{Âncora de padrão: mais parecido · container/layout · componentes/módulos reutilizados · padrão seguido · abstração existente · regra documentada}
 
 ## Visão de Alto Nível
-[Estado atual do sistema → estado após a mudança]
+{estado atual → estado após a mudança}
 
 ## Componentes Impactados
-[Lista de módulos, serviços, arquivos com suas relações e dependências]
+{módulos/arquivos e relações}
 
-## Convenções Mantidas / Introduzidas
-[Padrões do projeto que serão seguidos — referenciar ADRs]
-
-## Dependências Externas
-[Libs, APIs, serviços externos necessários]
+## Reuso x Novo
+| Parte | Reutiliza | Novo? | Justificativa (se novo) |
+|------|-----------|-------|-------------------------|
 
 ## Principais Arquivos a Modificar/Criar
-[Lista com caminho completo e tipo de mudança]
+- `{caminho}` — {modificar | criar} — {o quê}
+
+## Dependências Externas
+{libs/APIs — nova dependência = [DECISÃO PENDENTE]}
 
 ## Trade-offs e Alternativas
-[O que foi considerado e por que foi rejeitado — com referência a ADRs se aplicável]
+{alternativa considerada — por que não}
 
 ## Consequências
-[Efeitos colaterais, riscos, débito técnico introduzido]
-
-## Diagrama (Mermaid)
-[Opcional — adicionar quando agrega clareza real]
+{riscos, débito técnico}
 
 ## ADRs Aplicadas
-[Lista de cada ADR verificada:]
-- ADR-XXX: [título] → ✅ Respeitada (como?)
-- ADR-YYY: [título] → ✅ Respeitada (como?)
-- [Se há decisão que exige nova ADR:] → ➕ Nova ADR necessária: [descrever]
+{ADR CHECK — compliance-protocol §4}
 ```
 
-## 4. Verificação Cruzada (OBRIGATÓRIA)
+## 3. Verificação cruzada
 
-Compare `context.md` com `architecture.md`:
-
-| Item | Verificar |
-|------|-----------|
-| Problema principal | Descrito da mesma forma em ambos? |
-| Arquivos a modificar | Listas compatíveis? |
-| Abordagem técnica | Estratégia alinhada? |
-| Valores de negócio | Números, prazos, regras iguais? |
-| ADRs | Todas as relevantes foram consideradas? |
-
-**Ações:**
-- Inconsistências menores: corrija sem consultar o humano
-- Inconsistências de abordagem: alinhe aos padrões do projeto, informe o humano
-- Conflito com especificação de negócio: spec de negócio sempre vence — corrija os docs técnicos
-
-Adicione ao final de `architecture.md`:
+Compare com `context.md` (problema, escopo, regras de negócio, valores) e com a referência (a estrutura segue o padrão?). Inconsistência de detalhe: corrija. De abordagem: alinhe ao padrão do projeto e informe. Spec de negócio contradiz o desenho: a spec vence.
 
 ```markdown
----
-
-## ✅ Verificação de Consistência
-
-**Data**: [YYYY-MM-DD]
-**Status**: ✅ APROVADO / ⚠️ CORRIGIDO
-
-### Checklist
+## Verificação de Consistência
+**Data:** {YYYY-MM-DD} · **Status:** ✅ APROVADO | ⚠️ CORRIGIDO
 - [x] context.md e architecture.md consistentes
-- [x] Conforme especificação de negócio (se aplicável)
-- [x] ADRs verificadas e respeitadas
-- [x] Valores e regras de negócio conferidos
-
-### Correções Aplicadas
-[Descrever se houver]
+- [x] estrutura segue a referência do projeto (desvios sinalizados)
+- [x] ADRs relevantes verificadas
+- [x] regras de negócio conferidas
+Correções: {se houver}
 ```
 
-## 5. Regra de decisões
+## 4. Decisões
 
-**Toda decisão técnica que não esteja explicitamente coberta pelo context.md aprovado ou pelas ADRs existentes DEVE ser apresentada como:**
+Toda escolha não coberta por contexto aprovado, ADR ou padrão existente → `[DECISÃO PENDENTE]` (compliance-protocol §3). Nunca escolha unilateralmente.
 
-```
-[DECISÃO PENDENTE] {id}
-Contexto: {por que esta decisão é necessária}
-Opções:
-  A) {opção A} — {prós/contras}
-  B) {opção B} — {prós/contras}
-Recomendação: {opção recomendada e por quê}
-Aguardando aprovação para incluir na arquitetura.
-```
-
-**Nunca escolha unilateralmente. Pare e aguarde o humano.**
-
-**⛔ NÃO AVANCE. Aguarde o checkpoint de aprovação.**
+**⛔ Aguarde o checkpoint de aprovação.**

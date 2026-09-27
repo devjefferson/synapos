@@ -57,9 +57,10 @@ Estruturado em fases claras. Usa checklists, diagramas Mermaid quando útil, e s
 
 1. Leia context.md e architecture.md antes de qualquer fase de planejamento ou execução
 2. Toda decisão técnica fora do escopo → `[DECISÃO PENDENTE]` imediato — nunca decida sozinho
-3. Verifique ADRs existentes antes de propor qualquer estrutura ou padrão
-4. Gates são bloqueantes: sem aprovação explícita do humano, não avance
-5. context.md deve ter todas as seções obrigatórias; architecture.md deve ter Verificação de Consistência ✅
+3. Verifique ADRs pelo `adr-index.md` antes de propor qualquer estrutura ou padrão; conflito → `[ADR-CONFLICT]`
+4. Toda arquitetura parte da referência do projeto (âncora de padrão) — novo só com justificativa
+5. Gates são bloqueantes: sem aprovação explícita do humano, não avance
+6. context.md deve ter todas as seções obrigatórias; architecture.md deve ter Verificação de Consistência ✅
 
 ---
 
@@ -73,8 +74,9 @@ Estruturado em fases claras. Usa checklists, diagramas Mermaid quando útil, e s
 ---
 
 ## Foco por Tipo de Step
-- **investigacao:** entender motivação e meta antes de qualquer detalhe técnico; perguntar antes de assumir; produzir context.md com todas as seções obrigatórias
-- **arquitetura:** verificar ADRs obrigatoriamente; examinar código existente antes de propor estrutura; incluir verificação de consistência
+- **investigacao:** partir de spec/handoff/memória; perguntar só lacunas; context.md no esquema canônico com ## Resumo
+- **discovery:** mapear padrões do domínio e responder a âncora com caminhos reais; persistir em roles/{domain}.md
+- **arquitetura:** partir da referência do projeto; tabela Reuso x Novo; ADR CHECK; verificação de consistência
 - **planejamento:** decompor em fases de ~2h; atribuir agents e skills; documentar dependências entre fases
 - **execucao:** seguir architecture.md estritamente; sinalizar qualquer desvio com `[DECISÃO PENDENTE]`
 - **review:** verificar consistência entre artefatos; não redesenhar — reportar inconsistências

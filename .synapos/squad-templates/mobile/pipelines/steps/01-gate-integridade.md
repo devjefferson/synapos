@@ -7,60 +7,25 @@ gate: GATE-0
 
 # Verificação de Integridade — GATE-0
 
-Verifique cada item antes de prosseguir:
+Execute o GATE-0 de `.synapos/core/gate-system.md`: framework ausente **bloqueia**; documentação de projeto ausente (`docs/tech-context/`, ADRs, `docs/_memory/roles/mobile.md`) **só avisa** — o Context Brief registra a lacuna.
 
-- [ ] `.synapos/core/orchestrator.md` existe
-- [ ] `docs/_memory/company.md` existe
-- [ ] `.synapos/squads/{slug}/squad.yaml` existe com `description` preenchida
-- [ ] `.synapos/squads/{slug}/agents/` tem ao menos `marina-mobile.agent.md`
+## Tarefa
 
-**Documentação do projeto (bloqueante):**
-- [ ] `docs/tech-context/project-briefing.md` existe
-- [ ] `docs/tech-context/briefing/critical-rules.md` existe
-
-Se ausente: 🚫 Execute `/setup:discover` antes de continuar. Implementação sem ADRs cria débito técnico imediato.
-
-## Contexto do squad
-
-Apresente ao usuário:
-
-```
-Squad: {name} | Modo: {modo}
-Objetivo: {description}
-Agents: {lista com ícones}
-```
-
-## Tarefas em aberto
-
-Antes de perguntar sobre a task, verifique:
-
-1. Procure arquivos `docs/specs/*-tasks.md` e liste itens `- [ ]` pendentes
-2. Leia `docs/.squads/sessions/{feature-slug}/memories.md` — se houver `Platform:` registrado:
-   - **GitHub**: execute `gh issue list --label "feature" --state open`
-   - **Linear / Jira**: exiba as tarefas registradas no memories.md
-
-**Se encontrar tarefas em aberto**, apresente e pergunte:
-
-```
-Tarefas em aberto:
-  - [ ] RF-{N}: {título} {#issue se houver}
-  - [ ] RF-{N}: {título}
-
-Qual tarefa vamos trabalhar? (ou descreva uma nova)
-```
-
-**Se não houver tarefas**, pergunte:
+1. `[TASK]` recebido do orchestrator ou `## Resumo` de `context.md` já preenchido (pré-execução rodou / session existente) → **não pergunte**. Exiba em 1 linha e prossiga.
+2. Senão, verifique tarefas em aberto: itens `- [ ]` em `docs/specs/*-tasks.md` e, se `state.json → squads[{squad}].issue` indicar plataforma, as issues abertas (`gh issue list --state open` para GitHub).
+3. Apresente as tarefas encontradas ou pergunte:
 
 ```
 O que vamos implementar nesta sessão?
 Inclua: feature/bug, plataforma alvo (iOS/Android/ambas), contexto de produto.
 ```
 
-Salve a resposta em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
-```markdown
-## Sessão {YYYY-MM-DD}
-Task: {tarefa selecionada ou descrita}
-Issue: {#número | plataforma | local | —}
+O runner registra em `state.json → squads[{squad}]`: `task: {tarefa}` e `issue: {#número | plataforma | local | —}`.
+Não escreva a tarefa em `memories.md` nem em `context.md` — context.md é criado pela investigação/contexto.
+
+```
+Squad: {name} · Track: {track} · Agents: {lista com ícones}
+Tarefa: {tarefa}
 ```
 
 Prossiga.

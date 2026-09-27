@@ -1,10 +1,10 @@
 ---
 name: synapos-orchestrator
-version: 2.8.0
-description: Meta-orquestrador do Synapos — roteamento para roles e pipelines
+version: 3.0.0
+description: Meta-orquestrador do Synapos — triagem, roteamento para roles e pipelines
 ---
 
-# SYNAPOS ORCHESTRATOR v2.8.0
+# SYNAPOS ORCHESTRATOR v3.0.0
 
 > Workflow system para estruturar como você trabalha com IA em projetos reais.
 > Integração: Claude Code.
@@ -13,9 +13,19 @@ description: Meta-orquestrador do Synapos — roteamento para roles e pipelines
 
 ## CONCEITO
 
-**Synapos simula um squad com uma única IA que muda de papel.**
-Arquivos como `squad.yaml`, conceitos como `agent`, `pipeline` e `role` são **papéis simulados** — não são processos paralelos nem múltiplas IAs reais.
-O valor está na **mudança estruturada de perspectiva** (arquiteto → dev → revisor), não em orquestração multi-agente.
+**Synapos é um exército de um homem só: uma única IA que trabalha através de roles especializadas.**
+Squad, role, agent e pipeline são **responsabilidades, perspectivas e critérios** diferentes dentro do mesmo processo — não processos paralelos nem múltiplas IAs.
+O valor está na **mudança estruturada de perspectiva** (produto → arquitetura → dev → revisão), cada uma com o contexto certo, a memória certa e as skills certas.
+
+```
+                    SYNAPOS
+                       │
+                    SQUAD
+        ┌──────────────┼──────────────┐
+      Produto      Arquitetura    Desenvolvimento
+        └──────────────┼──────────────┘
+                    Review
+```
 
 ---
 
@@ -110,6 +120,19 @@ Para usar squads com a versão atual: /migrate:v1-to-v2
 Sessions v1 existentes não serão afetadas.
 ```
 
+### 1.5 — Mapa de memória (uma vez)
+
+Siga `.synapos/core/context-engine.md` §3.1 — carregue **só mapas**, nunca o conteúdo completo:
+
+```
+grep "^### \[" docs/_memory/project-memory.md   (+ cabeçalhos de project-learnings.md legado)
+docs/_memory/adr-index.md
+docs/_memory/skills-index.md
+```
+
+Armazene como `[MEMORY_MAP]`. Arquivo ausente → mapa vazio; não construa agora (é construído quando uma tarefa precisar).
+Log: `🧠 [MEMORY] {N} memórias · ADRs: {N indexadas | índice ausente} · skills: {N indexadas | índice ausente}`
+
 ---
 
 ## PASSO 2 — DETECTAR RETOMADA PRIORITÁRIA
@@ -120,7 +143,7 @@ Antes de qualquer outra escolha:
 2. Para cada squad, leia `docs/.squads/sessions/{feature-slug}/state.json`
 3. Colete todos os squads onde `state.squads[{squad-slug}].status === "running"`
 
-**Se não houver nenhum squad `running`** → continue para PASSO 3.
+**Se não houver nenhum squad `running`** → continue para PASSO 2.5.
 
 **Se houver um ou mais squads `running`:**
 
@@ -180,8 +203,58 @@ Após o usuário selecionar um squad, apresente o menu de ações do 2.2 para aq
 | **Retomar** (step removido) | Log `⚠️ Step {suspended_at} não existe mais no pipeline — retomando do primeiro step pendente`. Infira o próximo step não concluído a partir de `completed_steps`. Passe `resume_from: {próximo-step}`. Pule para PASSO 5.3. |
 | **Reiniciar do zero** | Limpe `completed_steps: []`, `current_step: null`, `suspended_at: null`, `status: "running"` no `state.json`. Passe `resume_from: null`. Pule para PASSO 5.3. |
 | **Inspecionar** | Liste os arquivos da session (`context.md`, `plan.md`, `architecture.md`, `memories.md`) e abra o que o usuário escolher. Após leitura, apresente novamente o menu 2.2. |
-| **Descartar** | Atualize `state.squads[{squad}].status = "discarded"` no `state.json`. Se havia múltiplos interrompidos, volte ao menu 2.3 com os restantes. Senão, continue para PASSO 3. |
-| **Ir ao menu** | Continue para PASSO 3. |
+| **Descartar** | Atualize `state.squads[{squad}].status = "discarded"` no `state.json`. Se havia múltiplos interrompidos, volte ao menu 2.3 com os restantes. Senão, continue para PASSO 2.5. |
+| **Ir ao menu** | Continue para PASSO 2.5. |
+
+---
+
+## PASSO 2.5 — TRIAGEM (sempre que houver uma tarefa descrita)
+
+> Roda depois do PASSO 2 (retomada tem prioridade). Sem tarefa descrita na mensagem → siga para o PASSO 3; a triagem acontece quando o usuário descrever a tarefa ("💬 Nova tarefa").
+
+A profundidade do processo é definida pela tarefa, não pelo squad. Aplique quando a mensagem do usuário descreve o que fazer (ou quando o usuário descreve a tarefa no menu).
+
+| Sinal | `quick` | `standard` | `complex` |
+|---|---|---|---|
+| Escopo | 1 área, poucos arquivos, sabe-se onde | 1 domínio, vários arquivos | vários domínios ou capacidade nova |
+| Clareza do "o quê" | exata | definida; detalhes técnicos em aberto | vaga; problema/usuário/regras não definidos |
+| Decisão nova | nenhuma | técnica e local | produto, arquitetura, modelo de dados, ADR |
+| Exemplos | texto de botão, cor, typo, ajuste pontual | tela nova num padrão existente, endpoint, bug com diagnóstico | "quero um módulo de X", integração nova, redesenho |
+
+Regras:
+- **Funcionalidade nova sem problema, usuário, dados, regras ou critérios de aceite definidos → `complex`, começando pelo squad de Produto.** Uma ideia não vai direto para código. Esta regra prevalece sobre os exemplos da tabela: "tela nova num padrão existente" só é `standard` quando dados e regras já estão definidos (pelo usuário, spec ou handoff).
+- **Session com `handoff.md`** (Produto já concluiu) → use o `Track recomendado` do handoff, sem nova triagem.
+- Na dúvida entre dois tracks, escolha o mais leve e **reclassifique** se surgir sinal do mais pesado: `🧭 [TRIAGE] reclassificado → {track}: {motivo}`.
+- Pergunte só se a diferença for relevante e os sinais não decidirem.
+
+Log (1 linha — não é pergunta; siga sem aguardar, o usuário corrige se quiser): `🧭 [TRIAGE] {track} — {motivo em poucas palavras}`
+
+Armazene `[TRACK]` e `[TASK]` (a tarefa em 1–3 frases).
+
+**Roteamento:**
+- `quick` sem session ativa relacionada → **FAST LANE** (abaixo). Não cria squad, não cria session.
+- `quick` numa feature com session ativa → pipeline `quick-fix` do squad dessa feature (registra na session).
+- `standard` → squad do domínio (existente ou novo) com pipeline padrão; bug → `bug-fix`.
+- `complex` → squad de Produto (`discovery-spec-handoff`) se não há `spec.md` na session; depois squad do domínio.
+
+---
+
+## FAST LANE — track quick
+
+`Contexto → Role → Skills → Executar → Revisar`. Sem squad, sem session, sem checkpoints, sem pré-execução, sem HANDOFF, sem session-report. **A fast lane encerra o /init — não execute os PASSOS 3–5.**
+
+1. **Role:** infira o domínio pelos arquivos/área da tarefa. Use o agent de `template.yaml → quick_role` do domínio (de um squad ativo do domínio, se houver). Regras do agent que citam `architecture.md` valem como "o código ao redor do alvo".
+2. **Localizar:** busca direcionada ao alvo (grep pelo texto, componente ou rota). Nada de varrer o projeto. Mais de um alvo possível e o pedido não desambigua → pergunte qual (1 pergunta).
+3. **Context Brief** (context-engine §3.3, com `fast-lane` no lugar do step-id), mínimo — **o track quick nunca constrói índices nem role memory**, usa só o que já existe:
+   - normativos do escopo (do `[MEMORY_MAP]`);
+   - ADRs: linhas do `adr-index.md` que tocam o alvo; sem índice → liste os nomes dos arquivos de ADR e leia só a que o título/escopo indicar;
+   - skills: do `skills-index.md`; sem índice → `ls skills/ docs/skills/` e leia só a que casar;
+   - role memory: só se existir.
+4. **Executar:** a menor mudança que atende, no estilo do código ao redor. Aplique `compliance-protocol.md` (observe antes de criar; sinais de controle).
+5. **Revisar:** o diff faz exatamente o pedido e nada além? ADR CHECK se alguma ADR casou.
+6. **Reportar:** `✏️ {arquivo} · L{linhas} — {o que mudou}` por arquivo alterado · problemas vistos fora do escopo (não corrigidos) · candidatos a memória, se houver algo durável (context-engine §4.1). Normativo → 1 pergunta de confirmação; LEARNING/FACT/REFERENCE com evidência, FEEDBACK e correções de `[STALE]` → grave direto; padrão observado no código não é memória.
+
+Se durante a execução surgir decisão nova, mais de uma área ou incerteza sobre o padrão → pare e reclassifique para `standard`.
 
 ---
 
@@ -223,10 +296,13 @@ AskUserQuestion({
   options: [
     { label: "🟢 {slug}", description: "{domain} · {description} (ativo)" },
     { label: "🟡 {slug}", description: "{domain} · {description} (pausado)" },
+    { label: "💬 Nova tarefa", description: "Descrever o que fazer — o Synapos escolhe track e role" },
     // ✨ Novo role — incluir SOMENTE se [HAS_TEMPLATES] = true
   ]
 })
 ```
+
+- "💬 Nova tarefa" → colete a descrição e aplique o PASSO 2.5 (triagem).
 
 **Status visual:**
 - 🟢 active — role em andamento
@@ -238,7 +314,7 @@ AskUserQuestion({
 - "✨ Novo role" → leia `.synapos/core/commands/setup/squad.md` e siga. Ao concluir, vá para PASSO 5.
 - "✨ Customizado" (aparece dentro de `/setup:squad`, não aqui)
 
-**Se não há squads ativos E `[HAS_TEMPLATES] = true`** → leia `.synapos/core/commands/setup/squad.md` e siga diretamente. Ao concluir, vá para PASSO 5.
+**Se não há squads ativos E `[HAS_TEMPLATES] = true`** (tracks standard/complex, ou sem tarefa descrita) → leia `.synapos/core/commands/setup/squad.md` e siga diretamente. Ao concluir, vá para PASSO 5.
 
 ---
 
@@ -256,8 +332,8 @@ Pipeline: {pipeline}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-- **Modo Rápido** → iniciar direto: `⚡ Iniciando role {slug}...`
-- **Modo Completo** → AskUserQuestion:
+- **Track quick/standard** → iniciar direto: `⚡ Iniciando role {slug}...`
+- **Track complex** → AskUserQuestion:
   ```
   AskUserQuestion({
     question: "Role pronto. Iniciar execução?",
@@ -268,13 +344,10 @@ Pipeline: {pipeline}
   })
   ```
 
-### 5.2 — Verificação automática de skills
+### 5.2 — Skills
 
-Silenciosamente antes de iniciar:
-1. Leia os steps do pipeline
-2. Verifique skills necessárias
-3. Se skill ausente: log `⚠️ Skill {x} não encontrada — continuando sem ela`
-4. Não bloqueia
+Não pré-carregue skills. O runner descobre e seleciona as relevantes por step (`.synapos/core/skills-engine.md`).
+Se `docs/_memory/skills-index.md` não existe ou está desatualizado em relação às pastas de skills, o runner o reconstrói no primeiro step que precisar.
 
 ### 5.3 — Iniciar pipeline
 
@@ -282,7 +355,8 @@ Leia e siga `.synapos/core/pipeline-runner.md` passando:
 - Squad (recém-criado ou carregado)
 - Pipeline padrão do template
 - Agents selecionados
-- `[EXECUTION_MODE]`
+- `[TRACK]` e `[TASK]` (PASSO 2.5; em squad existente sem triagem, derive de `execution_mode`)
+- `[MEMORY_MAP]` (PASSO 1.5)
 - `[MODELO_TIER]`
 - `[LINGUA]`
 - `[TASK_TRACKER]`
@@ -299,9 +373,9 @@ Leia e siga `.synapos/core/pipeline-runner.md` passando:
 Quando o usuário escolhe um squad ativo no PASSO 4:
 
 1. Leia `.synapos/squads/{squad-slug}/squad.yaml`
-2. Extraia `feature`, `session` e `execution_mode` (use este como `[EXECUTION_MODE]` — **não pergunte de novo**)
+2. Extraia `feature`, `session` e `execution_mode` (derive `[TRACK]`: quick → quick · complete/standard → standard · complex → complex — **não pergunte de novo**; uma nova tarefa descrita pelo usuário passa pela triagem)
 3. Leia `docs/.squads/sessions/{feature-slug}/state.json` (se existir)
-4. Leia `docs/.squads/sessions/{feature-slug}/memories.md` (se existir)
+4. Leia os cabeçalhos de `docs/.squads/sessions/{feature-slug}/memories.md` (se existir) — o conteúdo é recuperado por step
 
 > Status `running` já foi detectado no PASSO 2. Neste ponto, o squad tem status `completed`, `discarded`, `paused` ou `active` (sem execução pendente).
 
@@ -319,7 +393,7 @@ AskUserQuestion({
 })
 ```
 
-**"Continuar nesta feature"** → pule para PASSO 5.3 com `[EXECUTION_MODE]` do squad.yaml e `feature` inalterado.
+**"Continuar nesta feature"** → pule para PASSO 5.3 com `[TRACK]` derivado do squad.yaml e `feature` inalterado.
 
 **"✨ Nova feature"** → siga o protocolo abaixo antes de ir ao PASSO 5.3.
 
@@ -371,8 +445,11 @@ Se durante execução um agent encontra decisão que precisa ser escalada, o **p
 | **Modo persiste no squad** | `execution_mode` salvo em squad.yaml; nunca perguntar de novo ao retomar |
 | **UI: "role"** | O usuário vê "role" (papel) na UI. Arquivos internos mantêm `squad` por compatibilidade |
 | **Agents BASE são fixos** | Nunca remova sem confirmação explícita |
-| **Memória persiste** | Sempre carregue memories.md em toda sessão |
+| **Triagem define a profundidade** | quick → fast lane · standard → pipeline do domínio · complex → Produto primeiro |
+| **Memória por recuperação** | Boot carrega só mapas; cada step recupera o relevante (context-engine.md) |
+| **ADR é regra em todo track** | Consulta pelo adr-index.md; conflito bloqueia (adr-standard.md) |
 | **Múltiplos roles são permitidos** | Cada squad tem contexto isolado |
 | **Salve estado** | Atualize squad.yaml após mudanças de status |
 | **Fail loud** | Se faltar arquivo de template, informe e pare |
-| **Linguagem** | Siga a preferência em `docs/_memory/preferences.md` |
+| **Linguagem** | Siga `[LINGUA]` (de `company.md → Linguagem de saída`) |
+| **Sinais de controle** | `[DECISÃO PENDENTE]`/`[?]`, `[CONTEXT_REQUIRED]`, `[ADR-CONFLICT]`, `[SKILL-CONFLICT]` — definidos em compliance-protocol.md |

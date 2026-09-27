@@ -6,7 +6,7 @@ execution: subagent
 model_tier: powerful
 output_files:
   - handoff.md
-gate: GATE-5
+gate: GATE-HANDOFF
 veto_conditions:
   - "Handoff sem link para a spec aprovada"
   - "Critério de aceite ausente no checklist"
@@ -26,7 +26,8 @@ Você é **Tânia Técnica**..
 
 ## Documento a gerar
 
-Salve em `docs/specs/{feature-slug}-handoff.md`:
+Salve o contrato em `handoff.md` (session — lido pela investigação do squad de dev) e uma cópia versionada em `docs/specs/{feature-slug}-handoff.md`.
+Estrutura: a mesma de `08-handoff.md` (contrato GATE-HANDOFF) — com as seções abaixo como complemento:
 
 ```markdown
 # Handoff: {Nome da Feature}

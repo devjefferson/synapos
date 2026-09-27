@@ -35,6 +35,7 @@ steps:
     agent: alexandre-api
     execution: subagent
     model_tier: powerful
+    needs_plan: true
     file: pipeline/steps/04-implementacao.md
     depends_on: [03-checkpoint-contrato]
     veto_conditions:

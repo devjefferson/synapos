@@ -13,15 +13,13 @@ gate: GATE-5
 Você recebe automaticamente:
 - `context.md` (aprovado)
 - `architecture.md` (aprovado)
-- `plan.md` (aprovado)
+- `plan.md` (aprovado — só no track complex)
 
-**Leia os três arquivos antes de qualquer ação.**
+**Track standard (sem plan.md):** execute como fase única — tarefas = `architecture.md → ## Principais Arquivos a Modificar/Criar`.
 
 ## 1. Identificar fase atual
 
-Leia `plan.md` e identifique:
-- Qual fase está marcada como `[Em Progresso ⏰]`
-- Se nenhuma, qual é a primeira `[Não Iniciada ⏳]`
+Fase atual = primeira fase do `plan.md` que não está concluída em `state.json → squads[{squad}].completed_phases`.
 
 Apresente ao humano:
 
@@ -50,8 +48,9 @@ Pronto para iniciar?
 
 **Antes de escrever qualquer código na fase:**
 
-1. Releia as ADRs aplicáveis da fase em `context.md` → seção "Regras Críticas"
-2. Planeje a implementação explicitamente:
+1. Releia as ADRs aplicáveis em `context.md → ## ADRs Relevantes` e `architecture.md → ## ADRs Aplicadas`
+2. Siga `architecture.md → ## Referência no Projeto` e `## Reuso x Novo` — o código novo imita a referência (estrutura, nomes, imports, estados)
+3. Planeje a implementação explicitamente:
 
 ```
 Fase X — Plano de implementação ADR-guiado:
@@ -68,7 +67,7 @@ Ordem de criação:
 Resultado esperado: Código conforme ADRs desde o início.
 ```
 
-3. Execute na ordem planejada
+4. Execute na ordem planejada
 
 ## 3. Durante a implementação
 
@@ -97,17 +96,6 @@ Valide o código. Posso avançar para FASE X+1?
 - ✏️ Ajustar — [informe o que corrigir]
 ```
 
-## 5. Atualizar plan.md ao concluir cada fase
+## 5. Registrar ao concluir cada fase
 
-Marque a fase como `[Completada ✅]` e adicione à seção `### Comentários`:
-
-```markdown
-### Comentários:
-#### Conformidade com ADRs (Abordagem Proativa)
-- ✅ ADRs consultadas ANTES da implementação
-- ✅ Código criado seguindo regras desde o início
-- Regras aplicadas: ADR-XXX → [como], ADR-YYY → [como]
-
-#### Decisões tomadas durante a fase
-[Listar qualquer [DECISÃO PENDENTE] que foi resolvido e como]
-```
+Não reescreva `plan.md` (referência aprovada). O runner registra a fase concluída em `state.json`; decisões resolvidas e conformidade ADR vão no `## HANDOFF` da fase.

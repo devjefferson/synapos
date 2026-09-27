@@ -1,118 +1,45 @@
 ---
 id: 02-contexto-negocio
-name: "Pesquisa de Mercado e Contexto"
+name: "Pesquisa (opcional)"
 agent: paulo-pesquisa
 execution: subagent
 model_tier: powerful
 output_files:
   - research/market-analysis.md
-  - research/benchmarks.md
-  - business-context.md
 veto_conditions:
-  - "Análise sem fontes citadas"
-  - "Menos de 3 concorrentes analisados"
-  - "Sem benchmarks ou métricas de referência do mercado"
+  - "Afirmação de mercado, número ou concorrente sem link/fonte e sem marcação de hipótese"
 ---
 
-# Pesquisa de Mercado e Contexto de Negócio
+# Pesquisa (opcional)
 
-Você é **Paulo Pesquisa**.
+Você é **Paulo Pesquisa**. Este step só roda quando o usuário pediu pesquisa e há skill de busca web disponível.
 
-## Contexto disponível
+## Entradas
 
-- Objetivo do squad: `{squad.description}` (leia de `squad.yaml`)
-- Perfil da empresa: `docs/_memory/company.md`
+- `brainstorm.md` — as **hipóteses** e **questões abertas** são a pauta da pesquisa. Não pesquise o que não muda uma decisão.
 
-## Sua missão neste step
+## Regras
 
-Produza uma pesquisa completa que responde:
-1. Qual o mercado / domínio em que isso se insere?
-2. Quem são os players? O que fazem bem e mal?
-3. Quais benchmarks e métricas o mercado usa para medir sucesso?
-4. Qual o contexto de negócio que motivou este produto/feature?
+- Toda afirmação externa tem link. Sem link → não entra, ou entra marcada `(hipótese — não verificado)`.
+- Não há mínimo de concorrentes. Analise os que a busca realmente encontrar e que são comparáveis.
+- Nunca invente números, citações de usuários ou nomes de empresas.
 
-## Documentos a gerar
-
-### `docs/research/market-analysis.md`
-
-Estrutura obrigatória:
-```markdown
-# Análise de Mercado
-
-**Data:** {YYYY-MM-DD}
-**Produto/Feature:** {objetivo do squad}
-
-## Visão Geral do Mercado
-{tamanho, crescimento, segmentos relevantes}
-
-## Análise Competitiva
-
-### {Concorrente 1} — {posicionamento}
-- Proposta de valor: ...
-- Pontos fortes: ...
-- Pontos fracos: ...
-- Feedback de usuários: ...
-- Preço: ...
-
-### {Concorrente 2} ...
-### {Concorrente 3} ...
-
-## Oportunidades Identificadas
-{gaps, nichos, diferenciação possível}
-
-## Tendências Relevantes
-{mudanças de comportamento, tecnologia, regulação — últimos 12-24 meses}
-
-## Fontes
-{liste todas as fontes com data de acesso}
-```
-
-### `docs/research/benchmarks.md`
+## Documento — `research/market-analysis.md` (session)
 
 ```markdown
-# Benchmarks de Referência
+# Pesquisa: {tema}
+**Data:** {YYYY-MM-DD} · **Perguntas pesquisadas:** {das hipóteses do brainstorm}
 
-**Data:** {YYYY-MM-DD}
+## Achados
+| Pergunta | Achado | Fonte |
+|----------|--------|-------|
 
-## Produtos de Referência
-{produtos que resolvem bem o problema — mesmo que em outro mercado}
+## Referências comparáveis
+| Produto | O que faz bem | O que faz mal | Fonte |
 
-## Métricas do Setor
-| Métrica | Referência ruim | Referência boa | Referência excelente |
-|---------|----------------|----------------|----------------------|
-| {ex: Conversão checkout} | < 1% | 2-3% | > 5% |
+## Impacto nas decisões
+- Hipótese "{…}": {confirmada | refutada | inconclusiva} — {fonte}
 
-## Padrões de UX Consolidados
-{padrões que usuários já esperam neste domínio}
-
-## Fontes
+## Não verificado
+{o que não foi possível confirmar}
 ```
-
-### `docs/business/business-context.md`
-
-```markdown
-# Contexto de Negócio
-
-**Data:** {YYYY-MM-DD}
-
-## Por que isto existe
-{problema de negócio que motivou esta iniciativa}
-
-## Stakeholders
-| Papel | Interesse | Impacto |
-|-------|-----------|---------|
-
-## Restrições
-{tecnológicas, legais, de prazo, de orçamento}
-
-## Oportunidade
-{por que agora? O que mudou?}
-```
-
-## Critérios de qualidade
-
-Antes de entregar, verifique:
-- [ ] Ao menos 3 concorrentes analisados com pontos fortes E fracos
-- [ ] Toda afirmação com fonte citada
-- [ ] Benchmarks com números reais (%, tempo, NPS)
-- [ ] business-context.md responde "por que agora?"

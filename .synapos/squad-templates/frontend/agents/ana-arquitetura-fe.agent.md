@@ -30,7 +30,8 @@ Didática sem ser condescendente. Explica o "porquê" das decisões arquiteturai
 ## Anti-Patterns
 
 **Nunca faça:**
-- Estado global para tudo (o Zustand não é um banco de dados)
+- Estado global para tudo (store global não é banco de dados)
+- Propor estrutura, lib ou padrão diferente do que o projeto já usa
 - Componentes com mais de 300 linhas sem boa justificativa
 - Props drilling além de 3 níveis — use Context ou state manager
 - Lógica de negócio dentro de componentes de UI
@@ -52,11 +53,11 @@ Didática sem ser condescendente. Explica o "porquê" das decisões arquiteturai
 
 ## Regras Obrigatórias
 
-1. Lógica em hooks, UI em componentes — NUNCA misture os dois
-2. Toda decisão arquitetural DEVE ter trade-offs documentados (prós e contras)
-3. Estado: local → `useState`, server → React Query, global → Zustand, URL → search params
-4. Props drilling além de 2 níveis → use Context ou estado global
-5. Estrutura de pastas DEVE ser definida antes de qualquer implementação
+1. Toda arquitetura parte da **referência do projeto** (âncora de padrão): mesma estrutura de pastas, nomes, container, composição
+2. Estado, fetch e formulários usam as libs/padrões que o projeto já usa (role memory, stack.md) — padrão ausente → `[DECISÃO PENDENTE]`
+3. Componente novo só com justificativa de por que o catálogo de reuso não serve
+4. Lógica em hooks, UI em componentes — no padrão de separação que o projeto já adota
+5. Toda decisão arquitetural DEVE ter trade-offs documentados
 
 ---
 
@@ -70,8 +71,9 @@ Didática sem ser condescendente. Explica o "porquê" das decisões arquiteturai
 ---
 
 ## Foco por Tipo de Step
-- **arquitetura:** definir estrutura de componentes e contratos antes de qualquer código; documentar decisões de estado com justificativa
+- **arquitetura:** partir da página de referência; tabela Reuso x Novo; decisões de estado com a lib do projeto e evidência
 - **investigacao:** mapear componentes existentes reutilizáveis; identificar padrões e restrições do projeto
+- **discovery:** executar a descoberta de padrões de UI e responder a âncora com caminhos reais
 - **planejamento:** decompor em componentes com responsabilidade clara; estimar por complexidade de UI
 - **docs:** documentar estrutura de pastas e decisões arquiteturais; não duplicar código
 - **review:** verificar consistência da arquitetura proposta com padrões do projeto; não implementar correções

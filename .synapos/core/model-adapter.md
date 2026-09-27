@@ -106,19 +106,18 @@ Em vez de instruir o agent a "ler toda a pasta docs/", construa e injete um resu
 {liste as 3–5 regras mais relevantes de docs/tech-context/briefing/critical-rules.md, se existir}
 {se não existir, omita esta seção}
 
-### Aprendizados do Squad
-{liste os últimos 3 aprendizados do bloco <!-- RECENTES --> de memories.md, se houver}
-{se não houver, escreva: "Nenhum aprendizado registrado ainda."}
+### Memória relevante
+{até 3 entradas selecionadas pelo context-engine §3.2 — normativas primeiro}
+{se não houver: "Nenhuma memória relevante."}
 
-### Aprendizados Transversais
-{liste os últimos 2 de docs/_memory/project-learnings.md, se existir}
-{se não existir, omita esta seção}
+### ADRs aplicáveis
+{linhas do adr-index.md que casam com domínio/escopo — só a "regra em 1 linha"}
 ```
 
 > **Regra:** No modo `lite`, o agent NÃO recebe instrução para "ler toda a pasta docs/". Recebe apenas este resumo.
-> **memories.md:** carregue apenas as últimas 3 entradas do bloco `<!-- RECENTES -->` — nunca o arquivo inteiro.
+> **Memória:** no máximo 3 entradas selecionadas por relevância (context-engine §3.2) — nunca o arquivo inteiro.
 > **Outputs de steps anteriores (`depends_on`):** em modo `lite`, forneça um resumo estruturado (não a íntegra), exceto se o step declara `preserve_depends_on: true`.
-> **ADRs:** não injetados em modo `lite` por padrão. Injetados apenas se o step declara `adr_required: true`. Nunca instrua o agent a ler docs/ para buscá-los.
+> **ADRs:** em modo `lite` injete sempre as linhas relevantes do `adr-index.md` (regra em 1 linha) — ADR continua sendo regra. A ADR completa só entra se o step declara `adr_required: true` ou se houver conflito. Nunca instrua o agent a ler docs/ para buscá-las.
 
 ### L3 — Chain-of-Thought Obrigatório
 
@@ -185,10 +184,10 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 ```
 [Agent Persona completa do .agent.md]
 [Contexto Squad: company.md]
-[context.snapshot OU context.md completo]
-[Memories: bloco RECENTES (últimas 5 entradas)]
-[ADRs filtrados por domínio — se modo complete]
-[Project Learnings: project-learnings.md, se existir e modo complete]
+[context.md ## Resumo (completo se needs_full_context)]
+[Memória selecionada — context-engine §3.2]
+[ADRs relevantes do adr-index.md]
+[Role memory do domínio]
 [Outputs anteriores relevantes: depends_on]
 [Instruções do step]
 [Skills ativas]
@@ -202,9 +201,9 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 [CoT Prefix — S1]
 [Agent Persona completa do .agent.md]
 [Contexto Squad: company.md]
-[context.snapshot OU context.md completo]
-[Memories: bloco RECENTES (últimas 5 entradas)]
-[ADRs filtrados por domínio — se modo complete]
+[context.md ## Resumo (completo se needs_full_context)]
+[Memória selecionada — context-engine §3.2]
+[ADRs relevantes do adr-index.md]
 [Outputs anteriores relevantes: depends_on]
 [Instruções do step]
 [Template — S2, se disponível]
@@ -216,7 +215,7 @@ Se qualquer item estiver incompleto, complete ANTES de responder.
 ```
 [CoT Obrigatório — L3]
 [Modo Lite da persona OU Quality Criteria como regras — L1]
-[Resumo de contexto — L2] ← inclui últimas 3 entradas de memories RECENTES, nunca arquivo inteiro
+[Resumo de contexto — L2] ← inclui até 3 memórias selecionadas por relevância, nunca arquivo inteiro
 [Outputs anteriores relevantes: depends_on — RESUMO (não íntegra, exceto preserve_depends_on: true)]
 [Instruções do step]
 [Template Obrigatório — L4]
@@ -249,7 +248,7 @@ Sempre que o adapter estiver ativo, registre antes de executar o step:
 | **Scope Forcing é sequencial** | Sub-steps de um step são apresentados um por vez, aguardando output antes do próximo |
 | **Context Pruning em depends_on** | Em modo `lite`, outputs anteriores recebem resumo estruturado (não íntegra). Use `preserve_depends_on: true` no step para forçar íntegra |
 | **ADRs vêm do cache filtrado** | ADRs são injetados do cache `[ADRS_CARREGADOS]` (filtrado por domínio). Em modo `lite`, somente se `adr_required: true` no step |
-| **Memories windowing** | Em modo `lite`, carregue apenas as 3 entradas mais recentes do bloco RECENTES — nunca o arquivo inteiro |
+| **Memória limitada** | Em modo `lite`, no máximo 3 memórias selecionadas por relevância (context-engine §3.2) — nunca o arquivo inteiro |
 | **Binding antecipado** | CONTEXT_RULES derivadas na FASE 1.1e, antes de qualquer step — não ao executar cada step |
 | **Checkpoints não são afetados** | O adapter só atua em steps `subagent` e `inline` — nunca em `checkpoint` |
 | **high é o padrão** | Se `model_capability` não estiver em preferences.md, comportamento é `high` sem log |

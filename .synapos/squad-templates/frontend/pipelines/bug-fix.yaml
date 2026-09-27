@@ -25,8 +25,9 @@ steps:
     file: pipeline/steps/bf-03-fix.md
     depends_on: [bf-02-diagnostico]
     veto_conditions:
-      - "Fix sem teste que reproduz o bug antes da correção"
+      - "Fix sem teste que reproduz o bug, quando o projeto tem testes para a área"
       - "Fix que quebra outro comportamento existente"
+      - "Fix que introduz padrão/componente novo em vez de corrigir no padrão existente"
 
   - id: bf-04-review
     name: "Review do Fix"

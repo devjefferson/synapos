@@ -4,113 +4,75 @@ name: "Investigação"
 agent: leo-engenheiro
 execution: inline
 model_tier: powerful
+needs_spec: true
 output_files:
   - context.md
 success_criteria:
-  - "context.md contém seção ## Motivação com pelo menos 2 frases explicando o porquê"
-  - "context.md contém seção ## Meta com resultado mensurável (não apenas 'melhorar' ou 'facilitar')"
-  - "context.md contém seção ## Regras Críticas do Projeto ou ## ADRs Relevantes preenchida"
-  - "Todas as perguntas de clarificação foram apresentadas ao humano e respondidas antes de gerar o arquivo"
-  - "context.md contém seção ## Validação com critério verificável de 'done'"
+  - "context.md segue o esquema canônico e começa com ## Resumo de até 5 linhas"
+  - "## Meta tem resultado verificável (não apenas 'melhorar' ou 'facilitar')"
+  - "Nenhuma pergunta ao usuário repete algo já respondido por spec.md, handoff.md, [TASK] ou memória"
+  - "## ADRs Relevantes lista as ADRs do índice que tocam a feature, ou 'nenhuma aplicável'"
+  - "## Validação tem critério verificável de 'done'"
 ---
 
 # Investigação
 
-## Objetivo
-Transformar requisitos brutos em contexto estruturado e aprovado pelo humano, salvo em `context.md`.
+Transformar a entrada da feature em contexto aprovado, salvo em `context.md`.
 
-## 1. Verificar Project Briefing
+## 1. Partir do que já existe
 
-Antes de perguntar ao usuário, verifique:
+- **spec.md / handoff.md na session** (Produto já trabalhou): são a fonte de Motivação, Meta, Escopo e critérios. Não reconstrua — referencie e extraia.
+- **context.md parcial** (criado pelo brainstorm): complete as seções faltantes preservando o que existe; não o substitua.
+- **Memória:** normativos e padrões relevantes do `[MEMORY_MAP]` (context-engine §3.2).
+- **ADRs:** linhas do `adr-index.md` que tocam a feature. Índice ausente e existem ADRs no projeto → construa o índice (adr-standard §2).
+- **Briefing técnico** (`docs/tech-context/briefing/critical-rules.md`), se existir.
+
+## 2. Mapear lacunas
+
+Para cada item — Motivação, Meta, Escopo IN/OUT, Dependências, Limitações, Validação — marque: **coberto** (cite a fonte) ou **lacuna**.
+
+## 3. Perguntar só as lacunas
+
+Até 5 perguntas, as que bloqueiam uma arquitetura correta. Nenhuma lacuna → não pergunte; apresente o entendimento para confirmação.
+
 ```
-docs/tech-context/project-briefing.md
-docs/tech-context/briefing/critical-rules.md
-docs/tech-context/briefing/adrs-summary.md
-```
+Entendimento:
+Feature: {nome} · Motivação: {…} · Meta: {…}
+Fontes: {spec.md, memória X, ADR Y}
 
-Se existirem: carregue as regras críticas e ADRs relevantes para incluir no context.md.
-
-## 2. Examinar os dados de entrada
-
-A partir dos cartões do Linear ou da descrição recebida no step anterior:
-
-Mapeie internamente:
-- **Motivação**: por que esta feature existe? qual problema resolve?
-- **Meta**: resultado esperado — mensurável e concreto
-- **Estratégia direcional**: como deve ser desenvolvido (alto nível, sem detalhes técnicos)
-- **Dependências**: o que precisa existir antes ou em paralelo?
-- **Limitações**: restrições conhecidas (tech, prazo, escopo)
-- **Validação**: como saber que está pronto?
-
-## 3. Formular perguntas de clarificação
-
-Reflita profundamente sobre o que está sendo pedido. Formule **3 a 5 perguntas críticas** — as que, se não respondidas, impediriam uma arquitetura sólida.
-
-Apresente ao humano:
-```
-Minha compreensão até agora:
-
-**Feature:** [nome]
-**Motivação:** [o que você entendeu]
-**Meta:** [resultado esperado]
-**Estratégia:** [direção geral]
-
-Antes de prosseguir, preciso de clarificação em:
-
-1. [Pergunta 1 — mais crítica]
-2. [Pergunta 2]
-3. [Pergunta 3]
-[...até 5]
+Preciso esclarecer:
+1. {lacuna mais crítica}
+…
 ```
 
-Aguarde as respostas. Se necessário, continue o diálogo até ter contexto sólido.
+## 4. Gerar context.md
 
-## 4. Verificar impacto em documentação de requisitos
-
-Se algo discutido aqui contradiz ou enriquece documentação existente:
-- Solicite permissão do humano para atualizar
-- Se o requisito está no Linear: atualize o cartão
-- Se é um arquivo local: atualize o arquivo
-
-## 5. Gerar context.md
-
-Quando o humano confirmar que a compreensão está correta, gere `context.md`:
+Após confirmação do usuário:
 
 ```markdown
-# Context: [Nome da Feature]
+# Contexto: {feature}
 
-## ⚠️ Regras Críticas do Projeto
-[Copiar de briefing/critical-rules.md se existir]
-[Se não existir: listar ADRs relevantes encontradas em docs/]
-
-## 📚 ADRs Relevantes
-[Lista de ADRs aplicáveis a esta feature com link/referência]
+## Resumo
+{≤ 5 linhas: o que é · por quê · decisões críticas · o que não fazer}
 
 ## Motivação
-[Por que esta feature existe — contexto completo]
-
 ## Meta
-[Resultado esperado — mensurável]
-
-## Estratégia
-[Direção geral — sem detalhes técnicos]
-
+{resultado verificável}
+## Escopo
+**IN:** … **OUT:** …
+## Decisões
+{### [DECISION] … — só decisões tomadas com o usuário, com motivo}
+## O que não fazer
+## ADRs Relevantes
+{adr-id — regra em 1 linha | nenhuma aplicável}
 ## Dependências
-[O que precisa existir antes ou em paralelo]
-
 ## Limitações
-[Restrições conhecidas]
-
 ## Validação
-[Como saber que está pronto]
-
 ## Questões Abertas
-[Itens que ainda precisam de resposta]
-
-## Frontend Integration (se aplicável)
-[Se envolve Lovable/frontend: listar mocks a integrar]
+## Fontes
+{spec.md · handoff.md · arquivos lidos}
 ```
 
-Apresente o context.md ao humano para revisão antes de salvar.
+Se algo discutido contradiz documentação de requisitos existente, peça permissão antes de atualizá-la.
 
-**⛔ NÃO AVANCE. Aguarde o humano revisar e aprovar explicitamente o context.md antes de prosseguir para o checkpoint.**
+**⛔ Aguarde o usuário aprovar o context.md antes de prosseguir.**

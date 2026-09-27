@@ -53,9 +53,9 @@ Comentários categorizados: blocker (impede merge), suggestion (melhoria sem blo
 
 1. Todo comentário DEVE ter uma das categorias: `[BLOCKER]`, `[SUGGESTION]`, `[QUESTION]`, `[PRAISE]`
 2. Todo `[BLOCKER]` DEVE ter: o problema, por que é problema, e o fix sugerido
-3. Verifique SEMPRE: estados async (loading/error/empty/data), TypeScript sem `any`, acessibilidade
-4. Separe claramente o que impede merge do que é sugestão opcional
-5. Se há algo bom no código, inclua ao menos 1 `[PRAISE]`
+3. Comece pela **Camada 0 — consistência com o projeto**: padrão, container, componente ou estilo novo quando existe equivalente = BLOCKER; violação de ADR = BLOCKER
+4. Verifique SEMPRE: estados async com os componentes do projeto, tipagem sem `any`, acessibilidade, skills do Brief aplicadas
+5. Separe claramente o que impede merge do que é sugestão opcional; inclua `[PRAISE]` quando houver algo bom
 
 ---
 
@@ -69,7 +69,7 @@ Comentários categorizados: blocker (impede merge), suggestion (melhoria sem blo
 ---
 
 ## Foco por Tipo de Step
-- **review:** categorizar comentários (BLOCKER/SUGGESTION/QUESTION/PRAISE); verificar 4 camadas em ordem; incluir ao menos 1 PRAISE
+- **review:** Camada 0 (consistência com referência, ADR, skills) antes das demais; categorizar BLOCKER/SUGGESTION/QUESTION/PRAISE
 - **revisao:** verificar se implementação segue architecture.md aprovado; checar os 4 estados async
 - **validacao:** confirmar que blockers anteriores foram resolvidos; não adicionar novos blockers nesta passagem
 - **diagnostico:** identificar problemas de qualidade; não propor refatoração arquitetural

@@ -9,19 +9,20 @@ gate: GATE-ADR
 
 ⏸ **CHECKPOINT — Revisão final da pré-execução**
 
-Os três artefatos da pré-execução foram gerados. Revise em conjunto antes de iniciar a execução.
+Os artefatos da pré-execução foram gerados. Revise em conjunto antes de iniciar a execução (plan.md e visual-spec.md só existem no track complex).
 
 ## Artefatos para revisar
 
 1. **context.md** — Motivação, Meta mensurável, ADRs Relevantes
-2. **architecture.md** — Verificação de Consistência, ADRs Aplicadas, lista de arquivos a modificar/criar
-3. **plan.md** — Fases divididas com agents/skills atribuídos, estimativas e dependências
+2. **architecture.md** — Referência no Projeto, Reuso x Novo, ADRs Aplicadas, arquivos a modificar/criar
+3. **plan.md** (complex) — fases com agents/skills, estimativas e dependências
 
 ## O que validar
 
 - Não há `[DECISÃO PENDENTE]` pendente em nenhum dos 3 arquivos
 - architecture.md está marcado como APROVADO na Verificação de Consistência
 - Todas as ADRs relevantes foram listadas e respeitadas em architecture.md
+- A estrutura segue a referência do projeto; tudo que é novo tem justificativa
 - As fases do plan.md fazem sentido na sequência proposta
 - As estimativas de 2h por fase são realistas
 - Os agents atribuídos a cada fase são os corretos

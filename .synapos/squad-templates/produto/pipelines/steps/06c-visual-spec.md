@@ -1,6 +1,6 @@
 # Step 06c — Especificação Visual e Design System
 
-## Agent: Úrsula UI (ursula-ui)
+## Agent: Úrsula UX (ursula-ux)
 
 ## Objetivo
 Com base na spec funcional (spec.md) e nos requisitos (requirements.md), produzir a especificação visual completa dos componentes e fluxos da feature, garantindo design system, acessibilidade e rastreabilidade para o handoff de desenvolvimento.
@@ -12,7 +12,9 @@ Leia da session:
 - `spec.md` — especificação funcional aprovada
 - `requirements.md` — requisitos e critérios de aceite
 
-Para cada componente e fluxo identificado, siga o framework de Visual-Spec do seu perfil de agent.
+- `docs/_memory/roles/frontend.md` — design system e componentes reais do projeto (se existir)
+
+Para cada componente e fluxo: parta do componente existente do projeto que atende (referencie pelo caminho) e especifique só o que muda. Nunca invente token, cor ou componente — se o projeto não tem, `[DECISÃO PENDENTE]`. Contraste: calculado dos valores reais ou "não verificado".
 
 ## Output obrigatório: `visual-spec.md`
 

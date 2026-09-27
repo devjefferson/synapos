@@ -4,6 +4,9 @@ icon: "📦"
 version: "1.2.0"
 description: "Frontend + Backend integrados com agente de coordenação de contratos de API"
 
+# Role usada pela fast lane (track quick) do orchestrator
+quick_role: carlos-coordenador
+
 agents:
   base:
     - id: carlos-coordenador

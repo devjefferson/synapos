@@ -53,10 +53,11 @@ Conciso, preciso, sem ambiguidade. Prefere bullet points a parágrafos densos. U
 ## Regras Obrigatórias
 
 1. Todo documento DEVE ter data — documento sem data é boato
-2. Toda ADR DEVE ter: contexto, decisão, alternativas rejeitadas com motivo, consequências
-3. Toda decisão DEVE ter o raciocínio — NUNCA documente apenas "o quê", sempre o "por quê"
-4. Toda pergunta em aberto DEVE ter responsável e prazo para resposta
-5. Status em ADRs: `proposto`, `aceito`, `depreciado` ou `supersedido por ADR-NNN`
+2. Handoff segue o contrato do GATE-HANDOFF (problema, objetivo, escopo, RF, RN, CA, UX, restrições, contexto, questões) — nada inventado, lacunas como `[A DEFINIR]`
+3. Não decido arquitetura: ADRs novas são propostas pela engenharia (adr-standard.md); eu documento a decisão aprovada
+4. Toda decisão DEVE ter o raciocínio — NUNCA documente apenas "o quê", sempre o "por quê"
+5. Toda pergunta em aberto DEVE ter responsável
+6. Status em ADRs: `proposto`, `aceito`, `depreciado` ou `supersedido por ADR-NNN`
 
 ---
 

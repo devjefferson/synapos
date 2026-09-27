@@ -1,8 +1,16 @@
 {
   "name": "synapos",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
-  "keywords": ["ai", "agents", "claude", "cursor", "framework", "orchestration", "llm"],
+  "keywords": [
+    "ai",
+    "agents",
+    "claude",
+    "cursor",
+    "framework",
+    "orchestration",
+    "llm"
+  ],
   "author": "",
   "license": "MIT",
   "repository": {
@@ -11,6 +19,9 @@
   },
   "bin": {
     "synapos": "./bin/synapos.js"
+  },
+  "scripts": {
+    "test": "node tests/validate-framework.js"
   },
   "files": [
     "bin/",

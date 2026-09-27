@@ -4,6 +4,9 @@ icon: "⚙️"
 version: "1.3.0"
 description: "Especialistas em desenvolvimento backend com foco em APIs robustas, segurança e escalabilidade"
 
+# Role usada pela fast lane (track quick) do orchestrator
+quick_role: alexandre-api
+
 agents:
   base:
     - id: bruno-base

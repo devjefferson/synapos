@@ -10,9 +10,11 @@ A implementação foi concluída. Registre o progresso onde as tarefas estão se
 
 ## Identificar tarefa e plataforma
 
-Leia `docs/.squads/sessions/{feature-slug}/memories.md` da sessão atual:
-- `Task:` — descrição do que foi feito
-- `Issue:` — referência da tarefa (número, plataforma, local ou —)
+Leia `docs/.squads/sessions/{feature-slug}/state.json → squads[{squad-slug}]`:
+- `task` — descrição do que foi feito
+- `issue` — referência da tarefa (número, plataforma, local ou —)
+
+Sessions antigas: se ausentes no state.json, procure `Task:`/`Issue:` em `memories.md`.
 
 Apresente ao usuário:
 
@@ -39,7 +41,7 @@ Aguarde a seleção. Se **Pular**, encerre aqui.
 
 ### 📁 Local — `docs/specs/*-tasks.md`
 
-Abra o arquivo de tarefas identificado no `Issue:` do memories.md.
+Abra o arquivo de tarefas identificado em `issue`.
 
 Localize o item correspondente e marque como concluído:
 - `- [ ]` → `- [x]`
@@ -75,7 +77,7 @@ gh issue edit {número} --add-label "in-progress"
 
 ```
 Linear — Atualizar manualmente:
-Issue: {ID registrado no memories.md}
+Issue: {issue}
 Novo status: Done
 Comentário: Implementado em {YYYY-MM-DD}
 ```
@@ -91,23 +93,17 @@ Linear — Issue: {ID} | Status: In Progress | Comentário: {progresso + pendên
 
 ```
 Jira — Atualizar manualmente:
-Issue: {ID registrado no memories.md}
+Issue: {issue}
 Transição: {Done | In Progress}
 Comentário: {resumo do que foi feito}
 ```
 
 ---
 
-## Registrar no memories.md
+## Registrar
 
-Adicione entrada em `docs/.squads/sessions/{feature-slug}/memories.md` dentro do bloco `<!-- RECENTES -->`:
-
-```markdown
-## [{squad-slug} · usuario] — {YYYY-MM-DD}
-Tarefa {concluída | parcial}: {descrição}
-Issue: {referência}
-{SE PARCIAL:} Pendente: {o que falta}
-```
+O runner atualiza `state.json → squads[{squad-slug}]`: `task_status: done | partial` e, se parcial, `pending: {o que falta}`.
+Não grave progresso de tarefa em `memories.md` — é estado, não memória.
 
 ---
 

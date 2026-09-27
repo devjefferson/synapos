@@ -58,4 +58,4 @@ AskUserQuestion({
 
 ## APÓS CONCLUIR
 
-Retorne ao orchestrator para ativação (PASSO 8 do fluxo principal).
+Retorne ao orchestrator para ativação (PASSO 5 do fluxo principal).

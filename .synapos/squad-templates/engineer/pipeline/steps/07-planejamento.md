@@ -19,13 +19,8 @@ Você recebe automaticamente:
 
 Antes de criar o plano, faça inventário do que está disponível no squad:
 
-```bash
-# Agents configurados no squad
-# (leia o squad.yaml e os .agent.md correspondentes)
-
-# Skills ativas
-# (leia .synapos/skills/*/SKILL.md se existirem)
-```
+- Agents: `squad.yaml → agents[]` (role de cada um no `template.yaml` — não leia os `.agent.md` inteiros)
+- Skills: `docs/_memory/skills-index.md` (skills-engine §2.2) — atribua por fase só as que casam com o trabalho da fase
 
 Monte internamente:
 - `AGENTS_DISPONÍVEIS`: `{id} → {role} — {description}`
@@ -48,7 +43,7 @@ Regras:
 # Plan: [Nome da Feature]
 
 > Leia `context.md` e `architecture.md` antes de trabalhar em qualquer fase.
-> Atualize este arquivo ao concluir cada fase — marque tarefas e adicione comentários.
+> Progresso é rastreado em state.json; este plano é a referência aprovada.
 
 ## FASE 1: [Nome] [Não Iniciada ⏳]
 > Agents: [agentA | agentB] ou [agentA → agentB]

@@ -1,6 +1,6 @@
 name: "Desenvolvimento de Componente"
 description: "Spec do componente → implementação → review. Ideal para componentes de design system ou reutilizáveis."
-version: "1.0.0"
+version: "2.0.0"
 
 steps:
   - id: 01-gate-integridade
@@ -9,19 +9,28 @@ steps:
     gate: GATE-0
     file: pipeline/steps/01-gate-integridade.md
 
+  - id: cd-01b-ui-discovery
+    name: "Descoberta de Padrões de UI"
+    agent: ursula-ui
+    execution: inline
+    model_tier: powerful
+    file: ../../core/shared-steps/pattern-discovery.md
+    depends_on: [01-gate-integridade]
+
   - id: cd-02-spec
     name: "Spec do Componente"
     agent: ursula-ui
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/cd-02-spec.md
-    depends_on: [01-gate-integridade]
+    depends_on: [cd-01b-ui-discovery]
     output_files:
       - component-spec.md
     veto_conditions:
       - "Spec sem todos os estados (default, hover, focus, disabled)"
       - "Sem especificação de acessibilidade"
-      - "Sem tokens de design definidos"
+      - "Token, cor ou tamanho que não existe no design system do projeto"
+      - "Componente duplicando um existente do catálogo de reuso sem justificativa"
 
   - id: cd-03-implementacao
     name: "Implementação do Componente"
@@ -32,7 +41,8 @@ steps:
     depends_on: [cd-02-spec]
     veto_conditions:
       - "Componente sem todos os estados visuais implementados"
-      - "Props sem interface TypeScript"
+      - "Props sem tipagem no padrão do projeto"
+      - "API/estrutura do componente diverge dos componentes irmãos do design system"
       - "Sem acessibilidade (aria, keyboard)"
     on_reject: cd-03-implementacao
 

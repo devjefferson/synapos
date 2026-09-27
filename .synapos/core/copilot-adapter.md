@@ -118,10 +118,9 @@ Em vez de gates que bloqueiam automaticamente o fluxo, o Copilot apresenta o gat
 
 **Se falha:** liste os itens pendentes e pergunte como proceder antes de continuar.
 
-**Gates por modo (conforme gate-system.md):**
+**Gates:** ativação por track conforme `.synapos/core/gate-system.md` (tabela "ATIVAÇÃO POR TRACK"). Aliases legados: GATE-2/GATE-4 = GATE-HANDOFF.
 
-| Gate | BOOTSTRAP | STANDARD | STRICT |
-|---|---|---|---|
+---|---|---|---|
 | GATE-0 | ✅ (aviso) | ✅ | ✅ |
 | GATE-1 | ✅ | ✅ | ✅ |
 | GATE-DECISION | ✅ | ✅ | ✅ |
@@ -163,7 +162,7 @@ O usuário pode ativar comportamentos sem digitar no chat, usando comentários n
 → Execute o step especificado do pipeline ativo
 
 ```
-// synapos:gate gate:GATE-2
+// synapos:gate gate:GATE-HANDOFF
 ```
 → Execute a validação do gate especificado
 

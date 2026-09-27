@@ -7,28 +7,27 @@ model_tier: fast
 
 # Contexto Rápido — Quick Fix
 
-Colete o contexto mínimo necessário antes de executar.
+Colete o contexto mínimo antes de executar.
 
-Pergunte ao usuário:
+1. **Tarefa:** use `[TASK]` recebido do orchestrator. Só pergunte se ele estiver ausente ou ambíguo:
+   ```
+   O que precisa ser feito? (seja específico — vai direto para o executor)
+   ```
+2. **Localize o alvo** com busca direcionada (texto, componente, rota, função). Não varra o projeto.
+3. **Recupere** (context-engine §3.2): normativos do escopo, ADRs do índice que tocam o alvo, skills que casam.
 
-```
-O que precisa ser feito?
-(seja específico — isso vai direto para o agent executor)
-```
-
-Com a resposta, apresente um resumo de validação e aguarde confirmação:
+Apresente e aguarde confirmação:
 
 ```
 CONTEXTO
-
-Objetivo: {o que foi descrito}
+Objetivo: {o que foi pedido}
+Alvo: {arquivo(s) localizados}
 Escopo: {o que está incluído}
-Fora do escopo: {o que NÃO deve ser tocado}
-Risco identificado: {se houver — senão "nenhum"}
-
-Prosseguir com este escopo?
+Fora do escopo: {o que NÃO será tocado}
+Regras aplicáveis: {ADR/memória} | nenhuma
+Risco: {se houver} | nenhum
+Prosseguir?
 ```
 
-Se confirmado → salve em `docs/.squads/sessions/{feature-slug}/quick-fix-contexto.md` e prossiga imediatamente.
-
-Se ajuste → colete o novo escopo e salve.
+Confirmado → se `context.md` não existe na session, crie-o com `## Resumo` (objetivo em 1–2 linhas) e `## Escopo` (IN/OUT). Se existe, não altere. Prossiga.
+Ajuste → colete o novo escopo e reapresente.

@@ -1,6 +1,6 @@
 ---
 name: synapos-session
-version: 1.0.0
+version: 2.0.0
 description: Gerenciamento de feature sessions — listar, visualizar, retomar e consolidar
 ---
 
@@ -17,7 +17,6 @@ description: Gerenciamento de feature sessions — listar, visualizar, retomar e
 /session                    → lista todas as sessions ativas
 /session {slug}             → abre a session de uma feature específica
 /session consolidate        → consolida memories.md e review-notes.md da session ativa
-/session migrate-manifest   → cria session.manifest.json para sessions que não têm
 ```
 
 ---
@@ -54,32 +53,22 @@ Ao selecionar uma session → execute o protocolo **Com argumento** abaixo.
 
 ### Com argumento `{slug}` — abrir session
 
-1. Leia `docs/.squads/sessions/{slug}/session.manifest.json` (se existir)
-2. Leia `docs/.squads/sessions/{slug}/context.snapshot` (se existir e hash válido) ou `context.md`
-3. Leia o bloco `<!-- RECENTES -->` de `docs/.squads/sessions/{slug}/memories.md`
-4. Leia `docs/.squads/sessions/{slug}/state.json`
+1. Leia `## Resumo` de `docs/.squads/sessions/{slug}/context.md` (sessions antigas: `## O que é`)
+2. Leia os cabeçalhos de `memories.md` (`### [TIPO] …` e legados `## [`)
+3. Leia `state.json`
 
-**Calcular frescor do contexto:**
-- Se `session.manifest.json` existe e `files.context.md.loaded_at` está preenchido:
-  - Calcule dias desde `loaded_at`
-  - Se > 14 dias: exibir `⚠️ STALE ({N} dias sem atualização)`
-  - Se ≤ 14 dias: exibir `✅ Atualizado ({N} dias atrás)`
-- Se manifest não existe: exibir `⚙️ Sem manifest` (e incluir opção "Criar manifest" no menu abaixo)
-
-Exiba resumo e menu de ações:
+**Frescor:** data de modificação de `context.md` (via git ou sistema de arquivos). > 14 dias → `⚠️ STALE ({N} dias)`; senão `✅ Atualizado ({N} dias)`.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Session: {feature-slug}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-O que é: {primeira linha de context.md ## O que é}
-Decisões: {contagem de itens em ## Decisões tomadas}
-Memórias: {entry_count do manifest OU contagem de ## em memories.md} entradas
-Contexto: {✅ Atualizado | ⚠️ STALE | ❓ Frescor desconhecido}
-Roles que trabalharam: {lista do state.json}
-
-Última atividade: {updated_at do state.json}
+Resumo: {## Resumo}
+Memórias: {N} ({N} normativas · {N} stale)
+Artefatos: {spec.md · architecture.md · plan.md · review-notes.md presentes}
+Contexto: {✅ Atualizado | ⚠️ STALE}
+Roles que trabalharam: {state.json}
+Última atividade: {updated_at}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -89,128 +78,39 @@ AskUserQuestion({
   options: [
     { label: "▶️ Retomar com role ativo", description: "Continuar de onde parou" },
     { label: "📄 Ver context.md", description: "Ler contexto completo da feature" },
-    { label: "🧠 Ver memories.md", description: "Ver aprendizados acumulados" },
-    { label: "🗜 Consolidar", description: "Compactar memories e review-notes" },
-    // incluir esta opção apenas se manifest não existe:
-    { label: "⚙️ Criar manifest", description: "Inicializar session.manifest.json para esta session" },
-    { label: "↩ Voltar", description: "Voltar à lista de sessions" }
+    { label: "🧠 Ver memories.md", description: "Ver memórias da feature" },
+    { label: "🗜 Consolidar", description: "Mesclar duplicatas, limpar temporárias, promover globais" }
   ]
 })
 ```
 
-- **Retomar com role ativo** → redirecione para o `/init` passando o slug da session como contexto
-- **Ver context.md** → exiba o conteúdo do arquivo inline
-- **Ver memories.md** → exiba o conteúdo do arquivo inline
-- **Consolidar** → execute o protocolo de consolidação abaixo
-
----
-
-### Com argumento `migrate-manifest` — criar manifest para sessions legadas
-
-> Use para sessions criadas antes da v2.3 que não têm `session.manifest.json`.
-> Pode ser executado em uma session específica ou em todas de uma vez.
-
-**Se executado sem slug:** pergunte qual session migrar (ou "todas"):
-```
-AskUserQuestion({
-  question: "Migrar manifest para qual session?",
-  options: [
-    // uma opção por session sem manifest detectada
-    { label: "📂 {slug}", description: "Sem manifest" },
-    { label: "🔄 Todas sem manifest ({N} sessions)", description: "Criar manifest para todas" },
-    { label: "↩ Cancelar", description: "" }
-  ]
-})
-```
-
-**Protocolo por session:**
-1. Leia `context.md` — calcule hash: `"{tamanho}-{mtime_com_segundos}"`
-2. Leia `memories.md` — conte entradas no bloco `<!-- RECENTES -->` (ou pelo marcador `## [` se legado)
-3. Crie `session.manifest.json`:
-   ```json
-   {
-     "feature": "{slug}",
-     "manifest_version": 2,
-     "created_at": "{agora ISO}",
-     "migrated_from_legacy": true,
-     "files": {
-       "context.md":      { "hash": "{hash calculado}", "snapshot_valid": false, "loaded_at": null },
-       "architecture.md": { "hash": null, "snapshot_valid": false, "loaded_at": null },
-       "memories.md":     { "entry_count": {N}, "last_entry_at": null }
-     },
-     "adrs": { "loaded_domains": [], "loaded_at": null }
-   }
-   ```
-4. `snapshot_valid: false` força pipeline-runner a carregar `context.md` completo na próxima execução (snapshot será gerado então)
-
-**Log:**
-```
-✅ manifest criado: docs/.squads/sessions/{slug}/session.manifest.json
-   context.md hash: {hash}
-   memories: {N} entradas detectadas
-```
+- **Retomar** → `/init` com o slug da session como contexto
+- **Ver context.md / memories.md** → exiba inline
+- **Consolidar** → protocolo abaixo
 
 ---
 
 ### Com argumento `consolidate` — consolidar session ativa
 
-> Use quando memories.md ou review-notes.md estiverem grandes e difíceis de ler.
-> Consolidar não deleta informação — apenas reorganiza.
+> Consolidar reorganiza — não perde informação útil. Formato de entrada: `.synapos/core/context-engine.md` §2.
 
-**Pré-condição:** deve haver uma session ativa no contexto (slug conhecido).
-Se não houver, liste as sessions e peça ao usuário para escolher.
+Sem session no contexto → liste as sessions e peça para escolher. Antes de modificar: `memories.md.bak`.
 
-**Protocolo de consolidação de `memories.md`:**
+**memories.md:**
+1. Entradas legadas (`## [{squad} · {agent}] — data`) → converta para `### [LEARNING] {resumo}` (ou o tipo evidente), preservando data e autor em `source:`.
+2. Mescle entradas sobre o mesmo assunto em uma (mais recente vence; mantenha a evidência).
+3. Remova `TEMPORARY` de execuções concluídas.
+4. Entradas úteis para outras features → proponha promover para `docs/_memory/project-memory.md` (normativas exigem confirmação).
+5. Entradas `[DECISÃO CRÍTICA]` legadas → `### [DECISION]` com `confidence: high` — nunca removidas.
+6. Entradas `status: stale` sem uso → pergunte: atualizar com a evidência atual ou remover.
 
-memories.md usa estrutura de janela deslizante com dois blocos:
-- `<!-- SUMMARY --> ... <!-- /SUMMARY -->` — histórico consolidado
-- `<!-- RECENTES --> ... <!-- /RECENTES -->` — últimas entradas (lidas pelo pipeline-runner)
+**review-notes.md:** crie no topo `## Revisões Consolidadas até {YYYY-MM-DD}` agrupando por tema; marque as antigas com `<!-- consolidado {data} -->`.
 
-**Antes de qualquer modificação:** crie backup `memories.md.bak` na mesma pasta. Log: `📦 Backup criado: memories.md.bak`
-
-1. Leia o arquivo completo
-2. Identifique entradas no bloco `<!-- RECENTES -->` com mais de 7 dias OU se o bloco tiver mais de 10 entradas
-3. **Antes de mover qualquer entrada:** filtre entradas com `[DECISÃO CRÍTICA]` no conteúdo — estas **nunca são movidas**. Se houver entradas críticas antigas acumulando, mova-as para uma seção permanente `## Decisões Críticas` no **topo** do arquivo (acima dos blocos SUMMARY e RECENTES), fora de ambos os blocos. Isso garante que permanecem visíveis e nunca sejam comprimidas.
-4. Para cada entrada **sem** `[DECISÃO CRÍTICA]` a consolidar, mova o conteúdo para o bloco `<!-- SUMMARY -->`:
-   ```markdown
-   <!-- SUMMARY -->
-   (consolidado em: {YYYY-MM-DD})
-
-   ### Aprendizados principais
-   {resumo estruturado preservando todas as informações relevantes}
-
-   ### Armadilhas identificadas
-   {lista das armadilhas mais importantes}
-
-   ### Decisões registradas
-   {decisões que não estão em context.md}
-   <!-- /SUMMARY -->
-   ```
-5. Remova as entradas consolidadas (sem `[DECISÃO CRÍTICA]`) do bloco `<!-- RECENTES -->` (não delete — elas estão no SUMMARY)
-6. Atualize `session.manifest.json` → `files.memories.md.entry_count` com a contagem atual do bloco RECENTES
-
-> **Legado:** Se memories.md não tem a estrutura de blocos, crie os blocos durante a consolidação: mova tudo para SUMMARY e deixe RECENTES vazio.
-
-**Protocolo de consolidação de `review-notes.md`:**
-
-1. Leia o arquivo completo
-2. Crie nova seção no topo:
-   ```markdown
-   ## Revisões Consolidadas até {YYYY-MM-DD}
-
-   {resumo estruturado das revisões antigas, agrupado por tema}
-   ```
-3. Marque entradas consolidadas com `<!-- consolidado {data} -->`
-
-**Log ao concluir:**
 ```
 ✅ Consolidação concluída
-   memories.md: {N} entradas → 1 bloco consolidado
-   review-notes.md: {N} entradas → 1 bloco consolidado
-   Session: docs/.squads/sessions/{feature-slug}/
+   memories.md: {N} → {M} entradas · {P} promovidas · {T} temporárias removidas
+   review-notes.md: {N} entradas consolidadas
 ```
-
-> **`project-learnings.md` não é consolidado aqui** — é um arquivo global do projeto, não da feature. Cresce de forma controlada (append-only, entrada por pipeline concluído). Não há necessidade de consolidação automática.
 
 ---
 
@@ -218,8 +118,7 @@ memories.md usa estrutura de janela deslizante com dois blocos:
 
 | Regra | Descrição |
 |-------|-----------|
-| **Leitura apenas** | `/session` nunca modifica arquivos — exceto `consolidate` e `migrate-manifest` |
+| **Leitura apenas** | `/session` nunca modifica arquivos — exceto `consolidate` |
 | **Consolidar é manual** | Nunca consolide automaticamente — só quando o usuário executar `/session consolidate` |
-| **Migrar é seguro** | `/session migrate-manifest` é idempotente — não sobrescreve manifest existente |
-| **context.md é a estrela** | Sempre exiba o resumo de context.md no cabeçalho da session |
+| **Resumo primeiro** | Sempre exiba `## Resumo` de context.md no cabeçalho da session |
 | **Sem pipeline** | `/session` não inicia pipeline — apenas navega e organiza |

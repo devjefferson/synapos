@@ -4,6 +4,7 @@ displayName: "Fetch URL"
 version: "1.0.0"
 type: mcp
 description: "Leitura de URLs e extração de conteúdo web — páginas, documentações e APIs públicas"
+whenToUse: "Quando o step precisa ler o conteúdo de uma URL específica (documentação, API pública, página de referência)"
 categories: [web, research, scraping, documentation]
 domains: [produto, backend, ia-dados, fullstack]
 ---
