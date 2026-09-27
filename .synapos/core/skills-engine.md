@@ -1,208 +1,150 @@
 ---
 name: synapos-skills-engine
-description: Engine de gerenciamento de skills — MCP, scripts e instruções de comportamento
+version: 2.0.0
+description: Descoberta, seleção, carga e aplicação de skills — de conhecimento (ux, design-system…) e de ferramenta (MCP, scripts)
 ---
 
-# SYNAPOS SKILLS ENGINE v1.0.0
+# SYNAPOS SKILLS ENGINE v2.0.0
 
-> Skills são capacidades adicionais injetadas nos agents durante execução de pipelines.
-> Tipos: MCP (servidor de ferramentas), script (Node/Python/Bash), prompt (instruções).
+> Skills são conhecimento ou capacidade **específicos**, mais precisos que a regra genérica da role.
+> Objetivo: **mais precisão com menos contexto** — descobrir todas, carregar só as relevantes, nunca ignorar uma relevante.
 
 ---
 
-## ESTRUTURA DE UMA SKILL
+## 1. TIPOS
 
-Toda skill vive em `.synapos/skills/{skill-name}/` com um arquivo `SKILL.md`:
+| Tipo | O que é | Exemplo |
+|---|---|---|
+| `knowledge` | Instruções/critérios de um domínio | `skills/ux.md`, design-system, accessibility, best-practices do Synapos |
+| `tool` | Ferramenta externa (MCP, script) | playwright-browser, brave-search, github |
+
+`SKILL.md` instalado em `.synapos/skills/{nome}/` declara `type: mcp | script | hybrid | prompt` — `prompt` = knowledge; os demais = tool.
+
+---
+
+## 2. DESCOBERTA (DISCOVER)
+
+### 2.1 Fontes — procure em todas
+
+```
+Projeto (maior prioridade — feitas para este projeto)
+  skills/**/*.md · docs/skills/**/*.md
+  .claude/skills/*/SKILL.md · .agents/skills/*/SKILL.md · .cursor/rules/*.mdc
+Instaladas no Synapos
+  .synapos/skills/*/SKILL.md
+Nativas da IDE/sessão
+  skills que a ferramenta de IA lista como disponíveis na conversa atual
+Framework (conhecimento base)
+  .synapos/core/best-practices/_catalog.yaml
+```
+
+### 2.2 Índice — `docs/_memory/skills-index.md`
+
+A descoberta é persistida para não varrer as pastas a cada step:
 
 ```markdown
 ---
-name: skill-name
-displayName: "Nome da Skill"
-version: "1.0.0"
+scanned_at: YYYY-MM-DD
+sources: [skills/, docs/skills/, .claude/skills/, .agents/skills/, .cursor/rules/, .synapos/skills/, .synapos/core/best-practices/]
+---
+# Skills Index
+
+| id | tipo | domínios | usar quando | caminho |
+|----|------|----------|-------------|---------|
+| ux | knowledge | frontend, produto | criar/alterar telas, fluxos, formulários | skills/ux.md |
+| playwright-browser | tool | frontend | validar UI no browser, screenshots | .synapos/skills/playwright-browser/SKILL.md |
+```
+
+- `usar quando` vem do frontmatter (`description`, `whenToUse`) ou do primeiro parágrafo. Não invente gatilhos que a skill não declara.
+- **Reindexar** (tracks standard/complex) quando: índice ausente; a listagem das pastas-fonte difere dos `id` do índice (skill nova/removida); ou `sources` mais novos que `scanned_at`. Reindexação é incremental: só adiciona/remove linhas.
+- Skills nativas da IDE não entram no índice (mudam por sessão) — são consideradas no match diretamente.
+
+---
+
+## 3. MATCH
+
+Para o step atual:
+
+```
+TAREFA → domínio da role + tipo do step + entidades da tarefa
+      → comparar com "domínios" e "usar quando" de cada skill do índice (+ nativas + skills: do squad.yaml)
+      → relevante se o domínio casa E o gatilho descreve o que o step vai fazer
+```
+
+- Skill declarada em `squad.yaml → skills:` é sempre candidata, mas também precisa casar com o step.
+- Casamento é semântico: "tela de onboarding" casa com `ux` (telas/fluxos) e `accessibility` (UI), não com `api-design`.
+- Selecione no máximo ~3 skills `knowledge` por step. Se mais casam, prefira as de projeto e as mais específicas.
+
+Registre no Context Brief (linha `Skills:`):
+
+```
+Skills: ux — tela nova · accessibility — formulário · ignoradas: api-design — sem API neste step
+```
+
+**Relevante e disponível = obrigatória.** Ignorar uma skill que casou é falha do step.
+Skill nativa genérica da IDE não é obrigatória quando uma skill do projeto ou do Synapos já cobre a mesma necessidade — registre-a em `ignoradas` com o motivo.
+
+---
+
+## 4. CARGA (LOAD)
+
+- Carregue **antes** de executar o step — nunca depois de produzir o output.
+- `knowledge`: leia o SKILL.md/arquivo. Se > 200 linhas, leia os cabeçalhos e só as seções que o step usa.
+- `tool`: verifique disponibilidade (MCP configurado / runtime presente). Indisponível → registre `⚠️ Skill {x} indisponível — {motivo}` e siga com o fallback declarado no step. Não bloqueia.
+- Nunca carregue skills que não casaram "por garantia".
+
+---
+
+## 5. PRIORIDADE E CONFLITO
+
+```
+ADR ativa > regra explícita do projeto > contexto da session > padrão existente
+> SKILL ESPECÍFICA > regra genérica da role > conhecimento geral
+```
+
+(ordem completa: `compliance-protocol.md` §1)
+
+Se a skill contradiz ADR, regra do projeto, requisito explícito ou decisão do usuário:
+
+```
+[SKILL-CONFLICT]
+Skill: {id} — "{trecho da skill}"
+Conflito: {o que a skill manda}
+Regra do projeto: {ADR/regra/requisito — fonte}
+Decisão necessária: A) seguir o projeto  B) seguir a skill (e atualizar a regra)
+```
+
+Nunca escolha em silêncio.
+
+---
+
+## 6. EXECUÇÃO
+
+- Aplique a skill explicitamente. No output, cite o critério usado quando ele determinou uma escolha: `(skill ux: validação inline em formulários)`.
+- Tool skill disponível que oferece uma capacidade que a IA não tem nativamente (browser, busca web, API externa) é o caminho obrigatório para essa ação. Ferramentas nativas da IDE (ler, editar, buscar arquivos, terminal) prevalecem sobre skills equivalentes (ex: `filesystem`).
+- Steps de review verificam conformidade com as skills listadas no Brief do step revisado.
+
+---
+
+## 7. INSTALAR UMA SKILL (tool/knowledge no Synapos)
+
+```
+.synapos/skills/{nome}/SKILL.md     (ou symlink para diretório compartilhado — destino deve estar em .synapos/skills/ ou docs/_memory/)
+```
+
+Frontmatter mínimo:
+
+```yaml
+---
+name: {nome}
 type: mcp | script | hybrid | prompt
-description: "O que esta skill faz"
-categories: [search, browser, database, file, communication, ...]
+description: "{o que faz}"
+whenToUse: "{gatilho — quando a skill é relevante}"
+domains: [frontend, backend, ...]
 ---
-
-## O Que Faz
-{descrição do que a skill habilita}
-
-## Instalação
-{passos para instalar/configurar}
-
-## Configuração MCP (se type: mcp)
-{configuração para settings.json / mcp.json do IDE}
-
-## Variáveis de Ambiente (se necessário)
-{lista de env vars necessárias}
-
-## Instruções para o Agent
-{instruções de comportamento adicionadas ao contexto do agent quando esta skill está ativa}
 ```
 
----
-
-## TIPOS DE SKILL
-
-### `mcp` — Model Context Protocol Server
-Adiciona ferramentas via protocolo MCP (compatível com Claude, Cursor, etc.)
-
-Exemplo:
-```yaml
-type: mcp
-mcp_config:
-  command: npx
-  args: [-y, "@modelcontextprotocol/server-brave-search"]
-  env:
-    BRAVE_API_KEY: ${BRAVE_API_KEY}
-```
-
-### `script` — Script executável
-Executa via ferramenta Bash do agente.
-
-Exemplo:
-```yaml
-type: script
-script:
-  runtime: node | python | bash
-  file: scripts/run.js
-  args: []
-```
-
-### `prompt` — Instruções de comportamento
-Adiciona instruções ao contexto do agent (sem ferramentas externas).
-
-Exemplo: instruções de formatação, tom de voz, padrões de output.
-
-### `hybrid` — MCP + Script
-Combina servidor MCP com scripts auxiliares.
-
----
-
-## RESOLUÇÃO DE SKILLS (antes de executar pipeline)
-
-O pipeline-runner executa este protocolo antes de cada pipeline:
-
-### 1. Ler skills do squad.yaml
-```yaml
-# Em squad.yaml
-skills:
-  - brave-search
-  - playwright-browser
-```
-
-### 2. Para cada skill listada:
-- Verificar se `.synapos/skills/{skill}/SKILL.md` existe
-- Se symlink: validar que o destino está DENTRO de `.synapos/skills/` ou `docs/_memory/`
-  - Se fora: tratar como broken, log `⚠️ Skill '{skill}' symlink inválido — pulando`
-- Se não existe → apresentar opções:
-  ```
-  ⚠ Skill '{skill}' não está instalada.
-  [1] Instalar agora
-  [2] Pular (o agent funcionará sem esta skill)
-  [3] Cancelar execução
-  ```
-
-### 3. Para skills do tipo `mcp`:
-- Verificar se está configurada no IDE (settings.json / mcp.json)
-- Se não → mostrar instrução de configuração
-
-### 4. Para skills do tipo `script`:
-- Verificar se runtime está disponível (node, python, bash)
-- Verificar dependências (package.json, requirements.txt)
-
----
-
-## INJEÇÃO DE SKILLS NOS AGENTS
-
-Quando um step tem skills, o pipeline-runner injeta no contexto do agent:
-
-```
-[Agent Persona]
-[Contexto do Squad]
-[docs/ do projeto]
-[Session Files: context.md → architecture.md → plan.md]
-[ADRs existentes]
-[Memória da Feature: sessions/{feature-slug}/memories.md]
-[Aprendizados transversais: docs/_memory/project-learnings.md]
-[Outputs Anteriores]
-[Instrução do Step]
---- SKILLS ATIVAS ---
-[Instruções da Skill 1]
-[Instruções da Skill 2]
-```
-
-A ordem de injeção é: agent → contexto completo → step → skills (na ordem declarada).
-
----
-
-## INSTALAÇÃO DE NOVA SKILL
-
-### Passo 1 — Criar estrutura
-
-Duas formas válidas de instalar uma skill:
-
-**Diretório local:**
-```
-.synapos/skills/{skill-name}/
-├── SKILL.md          ← definição
-└── scripts/          ← scripts (se type: script ou hybrid)
-    └── run.js
-```
-
-**Symlink** (para skills compartilhadas entre projetos):
-```bash
-ln -s /caminho/para/skill-global/{skill-name} .synapos/skills/{skill-name}
-```
-O resolver trata symlinks exatamente como diretórios reais — nenhuma diferença de comportamento.
-
-### Passo 2 — Para skills MCP
-Adicionar ao arquivo de configuração do IDE:
-- **Claude Code**: `.claude/settings.local.json`
-- **Cursor**: `.cursor/mcp.json`
-- **Antigravity**: configuração MCP do IDE
-
-Formato (Claude Code):
-```json
-{
-  "mcpServers": {
-    "skill-name": {
-      "command": "npx",
-      "args": ["-y", "@package/mcp-server"],
-      "env": {
-        "API_KEY": "${API_KEY}"
-      }
-    }
-  }
-}
-```
-
-### Passo 3 — Variáveis de ambiente
-Adicione ao `.env` do projeto (nunca no código):
-```
-SKILL_API_KEY=sua_chave_aqui
-```
-
----
-
-## SKILLS SUGERIDAS POR DOMÍNIO
-
-| Domínio | Skill | Uso |
-|---------|-------|-----|
-| Produto | brave-search | Pesquisa de mercado e benchmarks |
-| Produto | fetch-url | Análise de concorrentes |
-| Frontend | playwright | Testes E2E, screenshots |
-| Backend | database-query | Query direta ao banco (dev) |
-| Todos | file-system | Leitura/escrita de arquivos |
-| Todos | github | Criação de issues, PRs |
-
----
-
-## REGRAS
-
-- Skills são **opcionais** — o agent funciona sem elas, com capacidade reduzida
-- **Quando uma skill está ativa, o agent DEVE usá-la** — nunca execute manualmente o que uma skill já oferece
-- Se uma skill cobre a tarefa em execução (busca, browser, arquivo, GitHub etc.), ela é o caminho obrigatório — não o opcional
-- Nunca adicione uma API key diretamente em SKILL.md — use variáveis de ambiente
-- Skills de `mcp` requerem restart do IDE após configuração
-- Documente em SKILL.md o que muda no comportamento do agent com e sem a skill
+- `mcp`: adicione o servidor à config da IDE (`.claude/settings.local.json`, `.cursor/mcp.json`…); requer restart da IDE. Chaves de API só em variáveis de ambiente — nunca no SKILL.md.
+- `script`: declare runtime e arquivo (`scripts/run.js`); verifique runtime antes de usar.
+- Documente no SKILL.md o comportamento do agent com e sem a skill.
+- Skills de projeto (`skills/*.md`) não precisam de instalação: basta existir com `description`/`whenToUse`.

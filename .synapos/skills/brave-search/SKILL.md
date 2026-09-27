@@ -4,6 +4,7 @@ displayName: "Brave Search"
 version: "1.0.0"
 type: mcp
 description: "Pesquisa web via Brave Search API — resultados reais sem rastreamento"
+whenToUse: "Quando o step precisa de informação externa atual (mercado, documentação pública, benchmarks) que não está no projeto"
 categories: [search, research, web]
 domains: [produto, ia-dados, backend, fullstack]
 ---

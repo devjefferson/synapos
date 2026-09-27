@@ -8,40 +8,21 @@ description: Cria um novo role (squad) — modo, domínio, configuração e arqu
 
 > Invocado pelo orchestrator quando não há squad ativo ou o usuário escolhe "✨ Novo role".
 > Recebe contexto já carregado pelo orchestrator (não relê company.md, stack.md, preferences.md).
-> Ao concluir, retorna ao orchestrator para PASSO 8 (ativação).
+> Ao concluir, retorna ao orchestrator para PASSO 5 (ativação).
 
 ---
 
-## PASSO 1 — INFERIR MODO
+## PASSO 1 — TRACK
 
-Tente inferir da mensagem inicial do usuário:
+Use `[TRACK]` da triagem do orchestrator (PASSO 2.5). Se ausente, aplique a triagem agora sobre a descrição do usuário — não pergunte "rápido ou completo".
 
-| Sinal | Modo |
-|---|---|
-| "fix", "bug", "typo", "quick", "ajuste" | `quick` |
-| "feature", "arquitetura", "refactor", "sistema", "integração" | `complete` |
-| Nenhum sinal claro | perguntar |
-
-Se não for possível inferir:
-
-```
-AskUserQuestion({
-  question: "Como você quer executar?",
-  options: [
-    { label: "⚡ Rápido", description: "Executa direto, sem ler documentação do projeto" },
-    { label: "🔵 Completo", description: "Lê docs/, injeta ADRs e contexto completo" }
-  ]
-})
-```
-
-Armazene como `[EXECUTION_MODE]` (`quick` / `complete`).
-
-| Modo | O que injeta | Gates ativos |
+| Track | Profundidade | Gates |
 |---|---|---|
-| `quick` | company.md + session files | GATE-0, GATE-3, GATE-5 |
-| `complete` | Tudo — docs/, ADRs, session files | GATE-0, GATE-3, GATE-5 |
+| `quick` | fast lane / quick-fix | ver gate-system.md |
+| `standard` | pré-execução (investigação → padrões → arquitetura) + pipeline do domínio | ver gate-system.md |
+| `complex` | produto primeiro (se não há spec) + pré-execução completa (com plano) | ver gate-system.md |
 
-Log único ao definir: `⚡ Modo Rápido` ou `🔵 Modo Completo`.
+Log único: `🧭 Track {track}`.
 
 ---
 
@@ -49,7 +30,7 @@ Log único ao definir: `⚡ Modo Rápido` ou `🔵 Modo Completo`.
 
 **Antes de qualquer inferência**, liste os subdiretórios de `.synapos/squad-templates/` e carregue o `template.yaml` de cada um (extraindo `icon`, `displayName`, `description`, e quaisquer palavras-chave de sinal que o yaml exponha). Esses são os **únicos templates disponíveis** — ignore qualquer domínio que não esteja instalado.
 
-Com os templates carregados, tente inferir da mensagem inicial usando os sinais de cada `template.yaml`. Se o template inferido não existir em `.synapos/squad-templates/`, trate como "nenhum sinal claro".
+Com os templates carregados, infira o domínio pela tarefa (`[TASK]`): área/arquivos que ela toca e o `description` de cada template. Track `complex` sem `spec.md`/`handoff.md` na session → domínio `produto`. Se o template inferido não existir em `.synapos/squad-templates/`, trate como "nenhum sinal claro".
 
 Se não for possível inferir, apresente como **lista numerada em markdown** — `AskUserQuestion` suporta no máximo 4 opções e seria truncado. Peça ao usuário que responda digitando o número:
 
@@ -68,7 +49,7 @@ Aguarde o usuário digitar um número e use-o para identificar o template seleci
 
 **Roteamento:**
 - Template existente → PASSO 3
-- "✨ Customizado" → leia `.synapos/core/role-custom.md` e siga. Ao concluir, retorne ao orchestrator para PASSO 8.
+- "✨ Customizado" → leia `.synapos/core/role-custom.md` e siga. Ao concluir, retorne ao orchestrator para PASSO 5.
 
 ---
 
@@ -78,13 +59,13 @@ Leia o template: `.synapos/squad-templates/{domínio}/template.yaml`.
 
 ### Comportamento por modo
 
-| | Rápido (`quick`) | Completo (`complete`) |
+| | `quick` | `standard` / `complex` |
 |---|---|---|
 | Agents opcionais | não apresenta | apresenta |
 | Modo de performance | fixado em `solo` | apresenta opções |
-| `execution_mode` no squad.yaml | `quick` | `complete` |
+| `execution_mode` no squad.yaml | `quick` | `standard` / `complex` |
 
-### Modo Rápido: defaults automáticas
+### Track quick: defaults automáticas
 
 - Agents: apenas base do template
 - Modo: `solo`
@@ -92,7 +73,7 @@ Leia o template: `.synapos/squad-templates/{domínio}/template.yaml`.
 
 Log: `⚡ Role criado com defaults (solo, agents base)`
 
-### Modo Completo: pergunte (máximo 1 AskUserQuestion)
+### Tracks standard/complex: pergunte (máximo 1 AskUserQuestion)
 
 ```
 AskUserQuestion({
@@ -105,6 +86,9 @@ AskUserQuestion({
 ```
 
 > Agents base são sempre incluídos.
+> **Agents exigidos pelo pipeline:** inclua automaticamente todo agent referenciado por um step do pipeline escolhido que não tenha `skip_condition` sobre a ausência dele (ex: review que usa um agent opcional).
+
+**Pipeline:** `pipeline.default` do squad = o escolhido pela triagem — `complex` + produto → `discovery-spec-handoff`; bug → `bug-fix`; `quick` numa session → `quick-fix`; demais → `default` do template.
 > Auto-nome: `{domínio}-{NNN}` → backend-001, frontend-002.
 
 ---
@@ -140,7 +124,7 @@ displayName: "{displayName do template}"
 description: "{contexto do squad nesta feature}"
 status: active
 mode: {alta | economico | solo}
-execution_mode: {quick | complete}
+execution_mode: {quick | standard | complex}   # legado: complete = standard
 created_at: {YYYY-MM-DD}
 feature: ""        # preenchido em 4.4
 session: ""        # preenchido em 4.4
@@ -151,8 +135,11 @@ agents:
   - {id do agent 1}
   - {id do agent 2}
 pipeline:
-  default: {id do pipeline padrão}
+  default: {id do pipeline escolhido pelo track}
   file: pipeline/pipeline.yaml
+pre_pipeline:                # copiado do template.yaml — sem esta chave a pré-execução não roda
+  available: {template.pre_pipeline.available}
+  agent: {template.pre_pipeline.agent}
 project_context:
   company: docs/_memory/company.md
   docs_business: docs/business/
@@ -161,18 +148,10 @@ project_context:
   session: ""      # preenchido em 4.4
 ```
 
-### 4.3 — Inicializar project-learnings.md (se não existir)
+### 4.3 — Memória global
 
-Verifique se `docs/_memory/project-learnings.md` existe. Se não, crie:
-
-```markdown
-# Aprendizados do Projeto
-
-> Aprendizados transversais compartilhados por todos os squads deste projeto.
-> Atualizado automaticamente ao final de cada pipeline.
-
-(preenchido durante execuções)
-```
+Não crie arquivos de memória vazios. `docs/_memory/project-memory.md`, `adr-index.md`, `skills-index.md` e `roles/{domain}.md` são criados quando há conteúdo real (context-engine.md §6).
+`project-learnings.md` existente (legado) continua sendo lido.
 
 ### 4.4 — Feature session
 
@@ -180,7 +159,7 @@ Liste as pastas em `docs/.squads/sessions/`.
 
 | Sessions existentes | Ação |
 |---|---|
-| 0 | Criar nova automaticamente (slug inferido da descrição do squad) |
+| 0 | Criar nova automaticamente (slug inferido de `[TASK]`) |
 | 1 | Usar a existente automaticamente |
 | 2+ | Perguntar qual usar |
 
@@ -205,6 +184,6 @@ Após resolver, atualize `feature` e `session` no `squad.yaml`.
 
 ## CONCLUSÃO
 
-Ao finalizar os 4 passos, retorne ao **orchestrator — PASSO 8** passando:
+Ao finalizar os 4 passos, retorne ao **orchestrator — PASSO 5** passando:
 - Squad recém-criado (slug, modo, agents, pipeline)
-- `[EXECUTION_MODE]`
+- `[TRACK]`

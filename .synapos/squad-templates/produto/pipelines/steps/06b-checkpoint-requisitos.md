@@ -6,11 +6,11 @@ execution: checkpoint
 
 # Checkpoint — Aprovação dos Requisitos
 
-Os requisitos foram gerados. Antes de avançar para decisões de arquitetura, o usuário deve validar prioridades e completude.
+Os requisitos foram gerados. Antes da spec, o usuário valida prioridades, regras de negócio e critérios de aceite.
 
 ## Apresentar resumo dos requisitos
 
-Leia `docs/requirements.md` e apresente:
+Leia `requirements.md` da session e apresente:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -21,12 +21,11 @@ Funcionais:
   P1 (importantes): {N requisitos}
   P2 (desejáveis): {N requisitos}
 
-Não-Funcionais:
-  Performance: {requisito principal}
-  Segurança: {requisito principal}
-  Escalabilidade: {requisito principal}
-
-Conflitos identificados: {N — lista breve}
+Regras de negócio: {N — lista breve}
+Restrições: {N}
+Critérios de aceite: {N} (P0 cobertos: {sim|não})
+Lacunas [A DEFINIR]: {lista}
+Conflitos: {N — lista breve}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -35,19 +34,13 @@ Conflitos identificados: {N — lista breve}
 ```
 As prioridades e requisitos estão corretos?
 
-[1] Aprovado — prosseguir para arquitetura
+[1] Aprovado — gerar a spec
 [2] Ajustar prioridades — mover P0/P1/P2
 [3] Adicionar requisito — algo está faltando
 [4] Remover requisito — algo está além do escopo
 ```
 
-**Se [2], [3] ou [4]:** Registre o ajuste em `docs/.squads/sessions/{feature-slug}/memories.md`, retorne ao step 06-requisitos com o feedback.
+**Se [2], [3] ou [4]:** retorne ao step 06-requisitos com o feedback.
+Ajustes que são decisões com motivo (ex: "importação por planilha fica fora da v1 porque…") → candidatos `DECISION` para a memória da session.
 
-**Se [1]:** Registre em `docs/.squads/sessions/{feature-slug}/memories.md`:
-```markdown
-## Requisitos aprovados — {YYYY-MM-DD}
-P0 confirmados: {lista breve}
-Ajustes feitos: {se houver}
-```
-
-Prossiga para o step 07-arquitetura.
+**Se [1]:** prossiga para a spec.

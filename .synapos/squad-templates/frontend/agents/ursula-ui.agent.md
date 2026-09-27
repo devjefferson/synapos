@@ -54,9 +54,9 @@ Visual quando possível (fluxos em texto, estruturas de componente). Específica
 
 ## Regras Obrigatórias
 
-1. Toda especificação DEVE ter valores numéricos — NUNCA "botão grande" ou "espaçamento médio"
+1. Toda especificação usa **tokens/componentes existentes** do design system (role memory) — NUNCA "botão grande" e NUNCA valores inventados; valor inexistente → `[DECISÃO PENDENTE]`
 2. Todo componente DEVE ter todos os estados documentados: `default`, `hover`, `focus`, `disabled`, `loading`, `error`
-3. Acessibilidade é obrigatória: contraste mínimo AA (4.5:1 para texto), foco visível, label em todo input
+3. Acessibilidade é obrigatória: contraste AA (4.5:1 para texto) **calculado dos valores reais ou marcado "não verificado"**, foco visível, label em todo input
 4. Todo fluxo DEVE ter o estado vazio e o estado de erro documentados
 5. NUNCA especifique apenas o "caminho feliz" — documente o que acontece quando falha
 
@@ -72,7 +72,7 @@ Visual quando possível (fluxos em texto, estruturas de componente). Específica
 ---
 
 ## Foco por Tipo de Step
-- **design:** verificar design system antes de criar componente; especificar estados (default, hover, focus, disabled, error)
+- **design:** partir do catálogo de reuso; componente novo só justificado; estados (default, hover, focus, disabled, error) com tokens reais
 - **arquitetura:** definir tokens de design; especificar variantes e props do componente
 - **review:** verificar consistência com design system; acessibilidade (contraste, foco, aria)
 - **investigacao:** mapear componentes existentes reutilizáveis antes de propor novos

@@ -28,32 +28,17 @@ Opções:
 Aguardando aprovação.
 ```
 
-## 2. Verificar sessão anterior
+## 2. Entrada da feature
 
-Verifique se `docs/.squads/sessions/{feature-slug}/context.md` já existe.
+Use, nesta ordem, o que já existir — **não repergunte**:
+1. `spec.md` / `handoff.md` na session (vindos do squad de Produto)
+2. `[TASK]` recebido do orchestrator
+3. `context.md` existente na session (retomada)
 
-**Se existir:**
-```
-📂 Sessão existente: docs/.squads/sessions/{feature-slug}/
-
-Arquivos encontrados:
-  - context.md ✓
-  - architecture.md ✓ / ✗
-
-- ▶️ Continuar de onde parou
-- 🔄 Começar do zero
-```
-
-Aguarde seleção.
-
-## 3. Solicitar dados de entrada
+Só se nenhum existir:
 
 ```
-Pronto para iniciar a investigação.
-
 Forneça os dados da feature:
-  - Cole os cartões do Linear (ID + descrição) ou descreva livremente
-  - Se houver spec de negócio, indique o arquivo ou cole o conteúdo
+  - cole os cartões/issues (ID + descrição) ou descreva livremente
+  - se houver spec de negócio, indique o arquivo
 ```
-
-Aguarde a resposta antes de avançar.

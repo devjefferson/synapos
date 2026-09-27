@@ -1,6 +1,6 @@
 name: "Spec Rápida"
 description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff. Ideal quando pesquisa de mercado já foi feita."
-version: "1.0.0"
+version: "2.0.0"
 estimated_docs: 5
 
 steps:
@@ -44,17 +44,16 @@ steps:
       - requirements.md
     veto_conditions:
       - "RF sem critério de aceite"
-      - "RNF sem valor numérico"
+      - "Valor numérico que não veio do usuário, da spec ou do projeto"
     on_reject: qs-04-requisitos
 
   - id: qs-05-handoff
-    name: "Handoff Essencial"
+    name: "Handoff"
     agent: tania-tecnica
     execution: subagent
     model_tier: powerful
-    file: pipeline/steps/qs-05-handoff.md
+    file: pipeline/steps/08-handoff.md
     depends_on: [qs-04-requisitos]
-    gate: GATE-2
+    gate: GATE-HANDOFF
     output_files:
-      - decisions-log.md
-      - handoff-checklist.md
+      - handoff.md

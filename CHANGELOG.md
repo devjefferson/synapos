@@ -11,6 +11,61 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [4.0.0] — 2026-09-27
+
+Deep architecture upgrade. Framework `.synapos/VERSION` 3.0.0. Racional completo: `docs/architecture/v4-architecture-review.md`.
+
+### Adicionado
+
+- **Triagem adaptativa** (`orchestrator.md` PASSO 2.5) — tracks `quick` / `standard` / `complex` por escopo, clareza e decisão; funcionalidade vaga vai para Produto antes de código
+- **Fast lane** — track quick sem squad, session ou checkpoints: contexto → role (`quick_role` do template) → skills → executar → revisar
+- **`core/context-engine.md`** — memória em 4 camadas (global, role, session, task), separada do cache de conhecimento derivável; entradas tipadas (DECISION, RULE, CONSTRAINT, PREFERENCE, FEEDBACK, LEARNING, FACT, REFERENCE, TEMPORARY) com `why`/`how`, escopo, fonte, confiança e status; limites por arquivo com consolidação; regra de convivência com a memória nativa da IDE (princípios da auto memory do Claude Code — ver `docs/architecture/memory.md`); recuperação por relevância; Context Brief por step; política de escrita; invalidação (`[STALE]`/`[CONFLICT]`); política de scan
+- **`core/shared-steps/pattern-discovery.md`** — descoberta de padrões persistida em `docs/_memory/roles/{domain}.md` e âncora de padrão por tarefa; UI discovery de 14 itens para frontend
+- **Índices** `docs/_memory/adr-index.md` e `docs/_memory/skills-index.md` (1 linha por item, com `sources`/`scanned_at`)
+- **Sinais de controle** unificados: `[DECISÃO PENDENTE]`/`[?]`, `[CONTEXT_REQUIRED]`, `[ADR-CONFLICT]`, `[SKILL-CONFLICT]`, `[STALE]`, `[CONFLICT]`
+- **GATE-ADR** e **GATE-HANDOFF** definidos; GATE-3 veta criação sem justificativa de reuso e afirmação sem evidência
+- **Campos de pipeline:** `tracks`, `skip_condition` (agora definido no runner), `needs_spec`, `scope_guard`; `quick_role` nos templates
+- **Produto:** `pd-02-brainstorm` (problema → usuário → alternativas → escopo v1); requisitos tipados RF/RN/RC/CA/RNF; handoff contratual único consumido pela investigação do squad de dev
+- **Frontend:** arquitetura como variação da página de referência (Reuso x Novo), implementação imitando a referência, validação visual/estrutural, review com Camada 0 de consistência
+- **`tests/validate-framework.js`** (`npm test`) e fixture `tests/fixtures/ui-app/` para cenários comportamentais
+
+### Alterado
+
+- **`pipeline-runner.md` v3.0.0** — 1592 → ~430 linhas; montagem de contexto idêntica em inline e subagent; skills descobertas em todo step; ADR consultada em todo track; caminhos literais; tabela de handoff entre roles; uma única confirmação de memória ao final
+- **`compliance-protocol.md` v2.0.0** — ordem de autoridade (ADR > regra do projeto > session > padrão existente > skill > role > conhecimento geral), escada de reuso, ADR CHECK
+- **`skills-engine.md` v2.0.0** — 5 fontes (inclui `skills/*.md`, `.claude/skills/`, best-practices), match por step, conflito explícito
+- **`adr-standard.md` v2.0.0** — localização única, normalização de status, conflito bloqueante, atualização documental obrigatória
+- **`execution_mode`** aceita `quick | standard | complex` (`complete` = `standard`)
+- **SCOPE GUARD** passa a atuar nos steps que escrevem código (antes: só steps com `output_files`)
+- **`mode: solo`** não pula checkpoints de aprovação no track complex
+- **GATE-0 dos squads** não bloqueia por falta de docs e não repergunta a tarefa já conhecida; task/issue vão para `state.json`, não para `memories.md`
+- **`/setup:discover`** gera os índices e a role memory; atualiza só o bloco `synapos` do `CLAUDE.md` existente
+- **`/setup:squad`** usa o track da triagem, inclui agents exigidos pelo pipeline e escolhe o pipeline pelo track
+- **Produto não roda a pré-execução de engenharia** (arquitetura vem depois dos requisitos)
+- **tier `lite`** injeta as linhas relevantes do adr-index (ADR continua regra)
+
+### Removido
+
+- `core/session-manifest.md`, `session.manifest.json`, `context.snapshot` (substituídos por `## Resumo` no topo do `context.md`)
+- Steps de produto `03-personas`, `04-checkpoint-research`, `04b-alinhamento-estrategico`, `05b-checkpoint-spec`, `07-arquitetura`, `qs-05-handoff`
+- Prescrições que induziam invenção: árvore de pastas genérica e "componente padrão" do FE, "React Query/Zustand" como regra, tokens/contrastes de exemplo, mínimo de concorrentes, citações de usuário, RNFs pré-preenchidos
+
+### Corrigido
+
+- Pré-execução nunca rodava em session nova (runner criava `context.md` antes de verificar)
+- Reescrita global de `docs/` quebrava leituras de ADRs, briefing e `docs/business/`
+- `../../../core/shared-steps/update-task.md` quebrado no frontend
+- `ursula-ui` inexistente no squad de produto
+- GATE-2/GATE-4/GATE-DESIGN/GATE-ADR referenciados sem definição; GATE-DECISION contraditório
+- Retorno ao "PASSO 8" inexistente do orchestrator
+
+### Migração
+
+- Squads existentes funcionam: `complete` é lido como `standard`; sessions antigas (`## O que é`) são lidas como Resumo/Motivação; `memories.md` legado é lido como LEARNING e convertido por `/session consolidate`; `project-learnings.md` continua lido.
+- Recomendado: rodar `/setup:discover` uma vez para gerar `adr-index.md`, `skills-index.md` e `roles/{domain}.md`.
+
+---
+
 ## [3.5.0] — 2026-05-13
 
 ### Adicionado

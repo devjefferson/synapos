@@ -1,7 +1,9 @@
-name: "Descoberta → Spec → Handoff"
-description: "Fluxo completo de produto: pesquisa de mercado, personas, spec, requisitos, arquitetura e handoff para dev. Gera 15+ documentos."
-version: "1.0.0"
-estimated_docs: 15
+name: "Descoberta → Requisitos → Spec → Handoff"
+description: "Para ideias pouco definidas: brainstorm do problema → (pesquisa opcional) → requisitos tipados → aprovação → spec → (visual opcional) → handoff contratual para dev."
+version: "2.0.0"
+
+# Artefatos na session: brainstorm.md → requirements.md → spec.md → [visual-spec.md] → handoff.md
+# O squad de desenvolvimento que abrir esta mesma feature lê handoff.md/spec.md na investigação.
 
 steps:
   - id: 01-gate-integridade
@@ -10,129 +12,91 @@ steps:
     gate: GATE-0
     file: pipeline/steps/01-gate-integridade.md
 
-  - id: 02-contexto-negocio
-    name: "Pesquisa de Mercado e Contexto"
-    agent: paulo-pesquisa
-    execution: subagent
+  - id: pd-02-brainstorm
+    name: "Brainstorm — do pedido ao problema"
+    agent: priscila-produto
+    execution: inline
     model_tier: powerful
-    file: pipeline/steps/02-contexto-negocio.md
+    file: pipeline/steps/pd-02-brainstorm.md
     depends_on: [01-gate-integridade]
     output_files:
-      - research/market-analysis.md
-      - research/benchmarks.md
-      - business-context.md
+      - brainstorm.md
+    output_schema:
+      required_sections: ["Problema", "Usuário", "Objetivo", "Escopo v1"]
     veto_conditions:
-      - "Análise sem fontes citadas"
-      - "Menos de 3 concorrentes analisados"
-      - "Sem benchmarks ou métricas de referência do mercado"
+      - "Primeira ideia do usuário aceita sem explorar problema, usuário e alternativas"
+      - "Dado de mercado, métrica ou persona sem fonte (usuário, doc ou pesquisa com link)"
+      - "Resumo da Descoberta não confirmado pelo usuário"
 
-  - id: 03-personas
-    name: "User Research e Personas"
+  - id: 02-contexto-negocio
+    name: "Pesquisa (opcional)"
     agent: paulo-pesquisa
     execution: subagent
     model_tier: powerful
-    file: pipeline/steps/03-personas.md
-    depends_on: [02-contexto-negocio]
+    tracks: [complex]
+    file: pipeline/steps/02-contexto-negocio.md
+    depends_on: [pd-02-brainstorm]
+    skip_condition: "Não há skill de busca web disponível, paulo-pesquisa não está no squad, ou o usuário não pediu pesquisa no brainstorm"
     output_files:
-      - personas/user-personas.md
-      - research/user-research.md
+      - research/market-analysis.md
     veto_conditions:
-      - "Personas sem Jobs-to-be-Done definidos"
-      - "Personas genéricas sem comportamento específico"
-      - "Sem citação ou comportamento observado de usuário real"
-
-  - id: 04-checkpoint-research
-    name: "Validação da Pesquisa"
-    execution: checkpoint
-    file: pipeline/steps/04-checkpoint-research.md
-    depends_on: [03-personas]
-
-  - id: 04b-alinhamento-estrategico
-    name: "Alinhamento Estratégico com o Usuário"
-    execution: checkpoint
-    file: pipeline/steps/04b-alinhamento-estrategico.md
-    depends_on: [04-checkpoint-research]
-
-  - id: 05-spec
-    name: "Product Vision e Spec"
-    agent: priscila-produto
-    execution: subagent
-    model_tier: powerful
-    file: pipeline/steps/05-spec.md
-    depends_on: [04b-alinhamento-estrategico]
-    output_files:
-      - product-vision.md
-      - spec.md
-    veto_conditions:
-      - "Spec sem critérios de aceite em qualquer feature"
-      - "Sem seção IN/OUT de escopo"
-      - "Product vision sem os 7 campos preenchidos"
-      - "Critério de aceite vago sem condição mensurável"
-    on_reject: 05-spec
-
-  - id: 05b-checkpoint-spec
-    name: "Aprovação da Spec"
-    execution: checkpoint
-    file: pipeline/steps/05b-checkpoint-spec.md
-    depends_on: [05-spec]
+      - "Afirmação de mercado sem link/fonte (sem fonte → marcar como hipótese)"
 
   - id: 06-requisitos
-    name: "Requisitos Funcionais e Não-Funcionais"
+    name: "Requisitos"
     agent: ana-analise
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/06-requisitos.md
-    depends_on: [05b-checkpoint-spec]
+    depends_on: [pd-02-brainstorm]
     output_files:
       - requirements.md
+    output_schema:
+      required_sections:
+        - "## Requisitos Funcionais"
+        - "## Regras de Negócio"
+        - "## Critérios de Aceite"
     veto_conditions:
-      - "RF sem critério de aceite"
-      - "RNF sem valor numérico (ex: 'deve ser rápido' sem tempo definido)"
-      - "Conflitos identificados sem proposta de resolução"
+      - "RF sem critério de aceite Dado/Quando/Então"
+      - "Valor numérico que não veio do usuário, da spec ou do projeto"
       - "Requisito sem prioridade P0/P1/P2"
     on_reject: 06-requisitos
 
-  - id: 06b-checkpoint-requisitos
+  - id: pd-07-checkpoint-requisitos
     name: "Aprovação dos Requisitos"
     execution: checkpoint
     file: pipeline/steps/06b-checkpoint-requisitos.md
     depends_on: [06-requisitos]
 
+  - id: 05-spec
+    name: "Spec"
+    agent: priscila-produto
+    execution: subagent
+    model_tier: powerful
+    file: pipeline/steps/05-spec.md
+    depends_on: [pd-07-checkpoint-requisitos]
+    output_files:
+      - spec.md
+    veto_conditions:
+      - "Spec sem seção IN/OUT de escopo"
+      - "Conteúdo novo que não rastreia para brainstorm.md, requirements.md ou decisão do usuário"
+    on_reject: 05-spec
+
   - id: 06c-visual-spec
-    name: "Especificação Visual e Design System"
-    agent: ursula-ui
+    name: "Especificação Visual"
+    agent: ursula-ux
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/06c-visual-spec.md
-    depends_on: [06b-checkpoint-requisitos]
+    depends_on: [05-spec]
+    gate: GATE-DESIGN
+    skip_condition: "A feature não tem UI ou ursula-ux não está nos agents do squad"
     output_files:
       - visual-spec.md
     veto_conditions:
       - "visual-spec.md sem seção de Verificação GATE-DESIGN"
-      - "Componente interativo sem estado focus ou error"
-      - "Contraste não declarado para nenhum componente com texto"
-      - "Estado vazio ausente em lista ou view de dados"
-    gate: GATE-DESIGN
-    skip_condition: "ursula-ui não está incluída nos agents do squad"
-
-  - id: 07-arquitetura
-    name: "Decisões de Arquitetura e ADRs"
-    agent: tania-tecnica
-    execution: subagent
-    model_tier: powerful
-    file: pipeline/steps/07-arquitetura.md
-    depends_on: [06c-visual-spec]
-    output_files:
-      - architecture.md
-      - roadmap.md
-      - success-metrics.md
-      - risks.md
-    veto_conditions:
-      - "Decisão arquitetural sem ADR correspondente"
-      - "ADR sem alternativas rejeitadas documentadas"
-      - "Roadmap sem métricas de validação por fase"
-      - "Sem análise de riscos"
-    on_reject: 07-arquitetura
+      - "Token, cor ou componente que não existe no design system do projeto"
+      - "Estado vazio ou de erro ausente em lista/formulário"
 
   - id: 08-handoff
     name: "Handoff para Desenvolvimento"
@@ -140,13 +104,7 @@ steps:
     execution: subagent
     model_tier: powerful
     file: pipeline/steps/08-handoff.md
-    depends_on: [07-arquitetura]
-    gate: GATE-4
+    depends_on: [05-spec]
+    gate: GATE-HANDOFF
     output_files:
-      - decisions-log.md
-      - open-questions.md
-      - handoff-checklist.md
-    veto_conditions:
-      - "Handoff checklist com item em branco"
-      - "Decisão sem data ou responsável"
-      - "Open question sem responsável definido"
+      - handoff.md

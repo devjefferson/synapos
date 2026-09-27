@@ -1,6 +1,6 @@
 name: "Feature Development"
 description: "Investigação → Arquitetura → Planejamento → Execução guiada por ADRs. Checkpoint consolidado antes de iniciar a execução."
-version: "2.0.0"
+version: "3.0.0"
 
 # Arquivos de sessão gerados neste pipeline.
 # Salvos em: docs/.squads/sessions/{feature-slug}/
@@ -33,29 +33,42 @@ steps:
     agent: leo-engenheiro
     execution: inline
     model_tier: powerful
+    needs_spec: true
     file: pipeline/steps/03-investigacao.md
     depends_on: [02-preparacao]
     output_files:
       - context.md
+    output_schema:
+      required_sections: ["## Resumo", "## Motivação", "## Meta", "## Escopo", "## ADRs Relevantes", "## Validação"]
     veto_conditions:
-      - "context.md sem seção de Motivação preenchida"
-      - "context.md sem Meta mensurável"
-      - "context.md sem seção de ADRs Relevantes"
+      - "Meta sem resultado verificável"
+      - "Pergunta já respondida por spec.md/handoff.md repetida ao usuário"
       - "Questões críticas não respondidas pelo humano antes de salvar"
+
+  - id: 04-padroes
+    name: "Descoberta de Padrões"
+    agent: leo-engenheiro
+    execution: inline
+    model_tier: powerful
+    file: ../../core/shared-steps/pattern-discovery.md
+    depends_on: [03-investigacao]
+    veto_conditions:
+      - "Âncora de padrão com resposta sem caminho de evidência e sem [CONTEXT_REQUIRED]"
 
   - id: 05-arquitetura
     name: "Estruturação Arquitetural"
     agent: leo-engenheiro
     execution: subagent
     model_tier: powerful
+    needs_full_context: true
     file: pipeline/steps/05-arquitetura.md
-    depends_on: [03-investigacao]
+    depends_on: [04-padroes]
     output_files:
       - architecture.md
+    output_schema:
+      required_sections: ["## Referência no Projeto", "## Principais Arquivos a Modificar/Criar", "## ADRs Aplicadas", "## Verificação de Consistência"]
     veto_conditions:
-      - "architecture.md sem seção de Verificação de Consistência"
-      - "architecture.md sem lista de ADRs Aplicadas"
-      - "architecture.md sem lista de arquivos a modificar/criar"
+      - "Arquivo, componente ou abstração nova sem justificativa de por que o existente não serve"
       - "Decisão técnica tomada sem apresentar como [DECISÃO PENDENTE] ao humano"
 
   - id: 07-planejamento
@@ -63,6 +76,7 @@ steps:
     agent: leo-engenheiro
     execution: subagent
     model_tier: powerful
+    tracks: [complex]
     file: pipeline/steps/07-planejamento.md
     depends_on: [05-arquitetura]
     output_files:
@@ -71,14 +85,13 @@ steps:
       - "plan.md sem agents/skills atribuídos por fase"
       - "Alguma fase excede estimativa de 2h sem justificativa"
       - "Dependências sequenciais/paralelas não documentadas"
-      - "plan.md sem referência a context.md e architecture.md"
 
   - id: 08-checkpoint-final
     name: "Aprovação Consolidada (Contexto + Arquitetura + Plano)"
     execution: checkpoint
     gate: GATE-ADR
     file: pipeline/steps/checkpoint-final.md
-    depends_on: [07-planejamento]
+    depends_on: [05-arquitetura]
 
   - id: 09-execucao
     name: "Execução por Fases"

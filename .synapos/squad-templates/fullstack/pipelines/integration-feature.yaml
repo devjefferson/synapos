@@ -35,6 +35,7 @@ steps:
     agent: rodrigo-react
     execution: subagent
     model_tier: powerful
+    needs_plan: true
     file: pipeline/steps/04-frontend.md
     depends_on: [03-checkpoint-contrato]
     veto_conditions:
@@ -48,6 +49,7 @@ steps:
     agent: alexandre-api
     execution: subagent
     model_tier: powerful
+    needs_plan: true
     file: pipeline/steps/05-backend.md
     depends_on: [03-checkpoint-contrato]
     veto_conditions:

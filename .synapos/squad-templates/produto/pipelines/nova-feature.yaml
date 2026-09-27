@@ -1,6 +1,6 @@
 name: "Nova Feature"
 description: "Especifica uma nova feature com base nos docs existentes: valida requisito → verifica restrições → gera spec versionada → handoff → cria tarefas (local, GitHub, Linear, Jira)."
-version: "1.1.0"
+version: "2.0.0"
 estimated_docs: 4
 
 steps:
@@ -62,7 +62,7 @@ steps:
     model_tier: powerful
     file: pipeline/steps/nf-07-handoff.md
     depends_on: [nf-06-versionar]
-    gate: GATE-2
+    gate: GATE-HANDOFF
     output_files:
       - handoff.md
     veto_conditions:

@@ -4,127 +4,64 @@ name: "Handoff para Desenvolvimento"
 agent: tania-tecnica
 execution: subagent
 model_tier: powerful
-gate: GATE-4
+needs_spec: true
+gate: GATE-HANDOFF
 output_files:
-  - decisions-log.md
-  - open-questions.md
-  - handoff-checklist.md
+  - handoff.md
 veto_conditions:
-  - "Handoff checklist com item em branco ou N/A sem justificativa"
-  - "Decisão sem data ou responsável"
-  - "Open question sem responsável definido"
+  - "Seção do contrato vazia (sem conteúdo nem [A DEFINIR])"
+  - "Critério de aceite P0 ausente"
+  - "Informação que não existe em spec.md/requirements.md/brainstorm.md"
 ---
 
 # Handoff para Desenvolvimento
 
-Você é **Tânia Técnica**.
+Você é **Tânia Técnica**. O desenvolvimento não recebe "crie essa feature" — recebe um contrato que a próxima role consegue executar **sem reconstruir o trabalho de produto**.
 
-## Contexto disponível
+## Entradas
 
-Leia todos os documentos gerados antes de escrever:
-- `docs/product-vision.md`
-- `docs/spec.md`
-- `docs/requirements.md`
-- `docs/architecture.md`
-- `docs/roadmap.md`
-- `docs/success-metrics.md`
-- `docs/risks.md`
+`spec.md` · `requirements.md` · `brainstorm.md` · `visual-spec.md` (se existir) · linhas relevantes do `adr-index.md`
 
-## Documentos a gerar
-
-### `docs/decisions-log.md`
-
-Registre TODAS as decisões tomadas ao longo do processo:
+## Documento — `handoff.md` (session)
 
 ```markdown
-# Decisions Log
+# Handoff: {feature}
 
-**Projeto:** {nome do squad}
-**Data de fechamento:** {YYYY-MM-DD}
+**Data:** {YYYY-MM-DD} · **Spec:** spec.md v{N} · **Status:** {pronto para dev | pendente: {o quê}}
+**Squad recomendado:** {frontend | backend | fullstack | mobile} · **Track recomendado:** {standard | complex}
 
-| Data | Decisão | Contexto | Alternativas | Responsável |
-|------|---------|---------|--------------|-------------|
-| {data} | {o que foi decidido} | {por que} | {o que foi rejeitado} | {nome} |
-
-## Decisões Pendentes de Validação
-{decisões que precisam de confirmação antes do início do desenvolvimento}
+## Problema
+## Objetivo
+## Escopo
+**IN:** … **OUT:** …
+## Requisitos Funcionais
+{RF-xx — 1 linha cada, com prioridade}
+## Regras de Negócio
+{RN-xx}
+## Critérios de Aceite
+### P0
+- [ ] CA-xx: Dado … quando … então …
+### P1
+- [ ] …
+## Decisões de UX
+{do spec/visual-spec}
+## Restrições Técnicas
+{RC-xx, RNF-xx, ADRs aplicáveis (id — regra)}
+## Contexto Relevante
+{features/telas/entidades existentes relacionadas — caminhos; decisões e alternativas descartadas}
+## Questões Abertas
+| # | Pergunta | Bloqueia? | Responsável |
 ```
 
-### `docs/open-questions.md`
+## Regras
 
-```markdown
-# Perguntas em Aberto
+- Seção sem informação → `[A DEFINIR: quem decide]`, nunca vazia, nunca inventada.
+- Não repita requirements.md por inteiro: IDs + 1 linha; o dev lê o detalhe no arquivo.
+- Decisões tomadas durante o processo → candidatos `DECISION` no HANDOFF do step (memória).
 
-**Data:** {YYYY-MM-DD}
+## Próximo passo (mostre ao usuário)
 
-| # | Pergunta | Impacto | Responsável | Prazo |
-|---|----------|---------|-------------|-------|
-| 1 | {pergunta específica} | {o que bloqueia se não for respondida} | {nome} | {data} |
-
-## Perguntas Respondidas Durante o Processo
-{log de perguntas que surgiram e foram resolvidas}
 ```
-
-### `docs/handoff-checklist.md`
-
-```markdown
-# Handoff Checklist
-
-**Squad:** {slug}
-**Data:** {YYYY-MM-DD}
-**Status:** {pronto para dev | pendente: {o que falta}}
-
----
-
-## Contexto de Produto
-- [ ] Product vision documentada com North Star Metric
-- [ ] Problema e personas claramente definidos
-- [ ] Escopo IN/OUT explícito na spec
-
-## Especificação
-- [ ] Todas as features têm critérios de aceite no formato Dado/Quando/Então
-- [ ] Casos de borda documentados para fluxos críticos
-- [ ] Dependências identificadas
-
-## Requisitos
-- [ ] Todos os RF com prioridade P0/P1/P2
-- [ ] RNF com métricas numéricas (tempo, %, quantidade)
-- [ ] Conflitos resolvidos ou documentados com responsável
-
-## Decisões Técnicas
-- [ ] ADRs para todas as decisões arquiteturais relevantes
-- [ ] Alternativas rejeitadas documentadas
-- [ ] Integrações externas identificadas
-
-## Planejamento
-- [ ] Roadmap com 3 horizontes
-- [ ] Métricas de sucesso com baseline e meta
-- [ ] Riscos principais com mitigação
-
-## Pendências
-- [ ] Perguntas em aberto têm responsável e prazo
-- [ ] Decisões pendentes estão no decisions-log
-
----
-
-## Nota de Entrega
-
-{Breve mensagem de Tânia Técnica para o time de desenvolvimento
-resumindo os pontos mais importantes e o que precisa de atenção especial}
+/init → squad {recomendado} nesta mesma feature ({feature-slug})
+A investigação lerá handoff.md e spec.md — não será preciso descrever a feature de novo.
 ```
-
-## Verificação GATE-4
-
-Antes de entregar, confirme que todos os arquivos existem:
-- [ ] `docs/product-vision.md` ✓
-- [ ] `docs/spec.md` ✓
-- [ ] `docs/requirements.md` ✓
-- [ ] `docs/architecture.md` ✓
-- [ ] `docs/roadmap.md` ✓
-- [ ] `docs/success-metrics.md` ✓
-- [ ] `docs/risks.md` ✓
-- [ ] `docs/decisions-log.md` ✓
-- [ ] `docs/open-questions.md` ✓
-- [ ] `docs/handoff-checklist.md` ✓
-
-Se qualquer arquivo estiver ausente → GATE-4 FALHA. Informe e não conclua o pipeline.

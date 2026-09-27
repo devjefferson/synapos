@@ -1,8 +1,11 @@
 name: produto
 displayName: "Squad de Produto"
 icon: "📋"
-version: "2.2.0"
-description: "Refina e versiona a documentação de produto. Requer docs/business/ criada pelo /setup:build-business. Nunca sobrescreve — apenas versiona."
+version: "3.0.0"
+description: "Transforma ideias em requisitos, spec e handoff para desenvolvimento — do brainstorm ao contrato. Versiona docs de produto sem sobrescrever."
+
+# Role usada pela fast lane (track quick) do orchestrator
+quick_role: priscila-produto
 
 agents:
   base:
@@ -43,8 +46,10 @@ agents:
       icon: "🎨"
       role: "UX Researcher"
 
+# Produto não usa a pré-execução de engenharia: o brainstorm/validação de requisito é a investigação,
+# e arquitetura só vem depois dos requisitos (no squad de desenvolvimento).
 pre_pipeline:
-  available: true
+  available: false
   file: ../../core/pipelines/pre-execution.yaml
   agent: priscila-produto
 
@@ -61,11 +66,11 @@ pipelines:
       file: pipelines/refinar-docs.yaml
     - id: discovery-spec-handoff
       name: "Discovery → Spec → Handoff"
-      description: "Fluxo completo de discovery: pesquisa de mercado, personas, spec completa e handoff para dev"
+      description: "Para ideias pouco definidas: brainstorm → requisitos (RF/RN/CA) → spec → handoff (pesquisa e visual opcionais)"
       file: pipelines/discovery-spec-handoff.yaml
     - id: quick-spec
       name: "Spec Rápida"
-      description: "Fluxo direto para features bem definidas: contexto → spec → requisitos → handoff"
+      description: "Para features bem definidas: contexto → spec → requisitos → handoff"
       file: pipelines/quick-spec.yaml
     - id: quick-fix
       name: "Quick Fix"

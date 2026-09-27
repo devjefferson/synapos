@@ -110,34 +110,19 @@ atualizado: {YYYY-MM-DD}
 
 ---
 
-## PASSO 2 — ESCOLHA DE MODO
+## PASSO 2 — TRIAGEM
 
-**Tente inferir o modo automaticamente pela mensagem do usuário.**
+Aplique a triagem de `.synapos/core/orchestrator.md` (PASSO 2.5) sobre a tarefa descrita e informe em 1 linha:
 
-| Sinal na mensagem | Modo inferido |
-|---|---|
-| "fix", "bug", "typo", "quick", "ajuste", "cor", "texto" | `quick` |
-| "feature", "arquitetura", "refactor", "sistema", "integração" | `complete` |
-| Nenhum sinal claro | perguntar |
-
-**Se não for possível inferir, pergunte:**
 ```
-Como você quer executar?
-
-1) ⚡ Rápido — executa direto, sem ler documentação do projeto
-2) 🔵 Completo — lê docs/, injeta ADRs e contexto completo
+🧭 [TRIAGE] {quick | standard | complex} — {motivo}
 ```
 
-Armazene como `[EXECUTION_MODE]` (`quick` / `complete`).
+- `quick` → FAST LANE do orchestrator (sem squad, sem session).
+- `standard` → squad do domínio, pipeline padrão.
+- `complex` → squad de Produto (`discovery-spec-handoff`) antes do domínio.
 
-**Informe o modo escolhido:**
-```
-⚡ Modo Rápido — executando sem documentação de projeto.
-```
-ou
-```
-🔵 Modo Completo — contexto completo disponível.
-```
+Armazene `[TRACK]` (use-o onde este arquivo cita `[EXECUTION_MODE]`: quick = quick; complete = standard/complex).
 
 ---
 
@@ -353,7 +338,7 @@ Modo:        {Rápido | Completo}
 
 ## DECISÕES NO OUTPUT
 
-Quando precisar tomar uma decisão fora do escopo do step, sinalize com `[?]` no output:
+Use os sinais de `.synapos/core/compliance-protocol.md` §3 — `[DECISÃO PENDENTE]`/`[?]`, `[CONTEXT_REQUIRED]`, `[ADR-CONFLICT]`, `[SKILL-CONFLICT]`, `[STALE]`/`[CONFLICT]`:
 
 ```
 [?] Decisão necessária: {descrição curta}
@@ -377,4 +362,4 @@ Para responder: o usuário digita a opção escolhida na conversa.
 | **Salve estado** | Atualize squad.yaml e state.json após mudanças |
 | **Fail loud** | Se faltar arquivo de template, informe e pare |
 | **Linguagem** | Siga a preferência em `docs/_memory/preferences.md` |
-| **Nunca escreva em .synapos/** | Outputs sempre em `docs/.squads/sessions/{feature-slug}/` |
+| **Nunca escreva em .synapos/** | Exceto `.synapos/squads/` (setup de roles). Outputs sempre em `docs/.squads/sessions/{feature-slug}/` |

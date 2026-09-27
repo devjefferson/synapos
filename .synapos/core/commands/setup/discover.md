@@ -44,6 +44,10 @@ Este comando é **não-destrutivo**:
 ## Estrutura Gerada
 
 ```
+docs/_memory/
+├── stack.md · adr-index.md · skills-index.md
+└── roles/{domain}.md                # padrões descobertos por domínio (UI map no frontend)
+
 docs/tech-context/
 ├── project-briefing.md              # Índice mestre + resumo
 └── briefing/
@@ -60,16 +64,9 @@ docs/tech-context/
 
 ### 1.1 Detectar ADRs
 
-```bash
-paths_to_check = [
-  "docs/tech-context/adr/",
-  "docs/adr/",
-  "docs/tech/adr/",
-  "adr/"
-]
-```
+Use a lista única de localização e a normalização de status de `.synapos/core/adr-standard.md` §1.
 
-- Se **NENHUMA** pasta existe: pular esta fase completamente
+- Se **nenhuma** ADR for encontrada: pular esta fase completamente
 - Se existe: prosseguir com análise
 
 ### 1.2 Processar ADRs (Silencioso)
@@ -460,7 +457,8 @@ Se NÃO há frontend Lovable: NÃO criar este arquivo.
 
 ### 6.8 Gerar `CLAUDE.md` (raiz)
 
-**Sempre execute.** Criar ou sobrescrever.
+- **Não existe** → crie com o conteúdo abaixo, envolvido por `<!-- synapos:start -->` e `<!-- synapos:end -->`.
+- **Existe** → nunca sobrescreva. Atualize só o bloco entre `<!-- synapos:start -->` e `<!-- synapos:end -->`; sem o bloco, acrescente-o ao final e avise o usuário.
 
 ```markdown
 # {nome-do-projeto}
@@ -508,6 +506,18 @@ Se NÃO há frontend Lovable: NÃO criar este arquivo.
 
 ---
 
+### 6.9 Gerar índices de memória
+
+Conhecimento persistido para não reanalisar o projeto a cada execução (`.synapos/core/context-engine.md` §6):
+
+1. **`docs/_memory/adr-index.md`** — uma linha por ADR encontrada na Fase 1 (formato: `adr-standard.md` §2).
+2. **`docs/_memory/skills-index.md`** — uma linha por skill encontrada nas fontes de `skills-engine.md` §2.1 (formato §2.2).
+3. **`docs/_memory/roles/{domain}.md`** — para cada domínio com código detectado (frontend nas Fases 2/4, backend na Fase 3): execute `.synapos/core/shared-steps/pattern-discovery.md` §2 e §4 (sem âncora de tarefa). `coverage:` = áreas efetivamente mapeadas.
+
+Todos com `scanned_at` e `sources` no frontmatter. Reexecução do discover atualiza incrementalmente — só o que mudou nos `sources`.
+
+---
+
 ## Fase 7: Validar Arquivos Gerados
 
 ```
@@ -528,8 +538,9 @@ AskUserQuestion({
 ✅ Project Discovery concluído!
 
 📁 Arquivos gerados:
-- docs/_memory/stack.md  ← NOVO — agents usam para adaptar ao projeto
-- CLAUDE.md (raiz)
+- docs/_memory/stack.md
+- docs/_memory/adr-index.md · skills-index.md · roles/{domain}.md  ← memória reutilizada por todas as roles
+- CLAUDE.md (raiz — bloco synapos)
 - docs/tech-context/project-briefing.md
 - docs/tech-context/briefing/critical-rules.md
 - docs/tech-context/briefing/adrs-summary.md

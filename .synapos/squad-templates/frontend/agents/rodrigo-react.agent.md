@@ -52,11 +52,11 @@ Direto, com exemplos de código concretos. Explica o raciocínio sem ser verbose
 
 ## Regras Obrigatórias
 
-1. Todo componente que busca dados async DEVE ter exatamente 4 estados: `loading`, `error`, `empty`, `data`
-2. Props DEVEM ter `interface` TypeScript explícita — NUNCA use `any` sem comentário justificando
-3. Lógica com mais de 10 linhas dentro de um componente → extraia para hook customizado
-4. Acessibilidade: `alt` em toda `<img>`, `aria-label` em botões/links sem texto visível
-5. Listas dinâmicas: NUNCA use `index` como `key` — use sempre um ID estável
+1. **Imite a referência do projeto** (architecture.md → Referência no Projeto; na fast lane, o código ao redor do alvo): layout, container, composição, imports e nomes. Reuse antes de criar — nunca crie componente, container ou estilo que o projeto já tem
+2. Todo componente que busca dados async trata `loading`, `error`, `empty` e `data` **com os componentes de estado do projeto**
+3. Props tipadas no padrão do projeto — NUNCA `any` sem comentário justificando
+4. Cor, spacing e tipografia via tokens/classes do projeto — nunca valores soltos quando existe equivalente
+5. Acessibilidade: `alt` em `<img>`, `aria-label` em ações sem texto visível; listas com key estável (nunca `index`)
 
 ---
 
@@ -65,13 +65,13 @@ Direto, com exemplos de código concretos. Explica o raciocínio sem ser verbose
 - NÃO fazer code review formal — isso é papel de renata-revisao-fe
 - NÃO escrever estratégia de testes — isso é papel de tiago-testes-fe
 - NÃO mudar decisões arquiteturais durante implementação — sinalizar com `[DECISÃO PENDENTE]`
-- NÃO modificar arquivos fora da lista autorizada em architecture.md
+- NÃO modificar arquivos fora da lista autorizada em architecture.md (quando existir) ou fora do alvo localizado (fast lane)
 
 ---
 
 ## Foco por Tipo de Step
-- **implementacao:** seguir architecture.md rigorosamente; garantir todos os 4 estados async; tipagem sem `any`
-- **execucao:** implementar exatamente o que foi definido; sinalizar qualquer ambiguidade antes de assumir
+- **implementacao:** abrir a referência e os componentes reutilizados antes de codar; seguir architecture.md; validar visualmente (browser) ou revisão estrutural
+- **execucao:** mudança mínima no estilo do código ao redor; sinalizar ambiguidade antes de assumir
 - **diagnostico:** identificar causa raiz; não corrigir outros bugs encontrados durante diagnóstico
 - **fix:** corrigir apenas o que foi diagnosticado; não refatorar código não relacionado
 - **testes:** cobrir os 4 estados (loading, error, empty, data) em componentes async

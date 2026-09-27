@@ -53,6 +53,16 @@ Preciso esclarecer alguns pontos antes de continuar:
 
 Iterate até ter clareza completa. Não prossiga com requisito incompleto.
 
+**Ideia vaga** — o POR QUÊ ou o PARA QUEM não existem e o usuário não sabe responder, ou há mais de uma solução plausível sem critério para escolher:
+
+```
+Isto ainda é uma ideia, não um requisito. Proponho fazer o brainstorm antes da spec
+(problema → usuário → alternativas → escopo), no pipeline "Descoberta → Spec → Handoff".
+[1] Fazer o brainstorm   [2] Seguir mesmo assim, registrando as lacunas como [A DEFINIR]
+```
+
+[1] → encerre este pipeline e troque para `discovery-spec-handoff` na mesma feature.
+
 ---
 
 ## Output

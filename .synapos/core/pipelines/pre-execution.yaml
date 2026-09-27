@@ -1,21 +1,16 @@
-name: "Pré-Execução: Investigação + Arquitetura + Planejamento"
-description: "Pipeline universal de preparação. Roda antes de qualquer pipeline principal de qualquer squad. Gera context.md, architecture.md e plan.md que são injetados automaticamente na execução principal."
-version: "2.0.0"
+name: "Pré-Execução: Investigação + Padrões + Arquitetura + Planejamento"
+description: "Preparação universal antes do pipeline principal (tracks standard e complex). Gera context.md, a âncora de padrão (role memory) e architecture.md; plan.md e visual-spec.md só no track complex."
+version: "3.0.0"
 
-# agent_override: quando definido em squad.yaml como pre_pipeline.agent,
-# sobrescreve {lead_agent} para usar o agente do squad em vez de leo-engenheiro.
-# Se não definido, o runner usa leo-engenheiro se disponível, senão usa o primeiro agent base do squad.
+# {lead_agent} = squad.yaml → pre_pipeline.agent
+# file: relativo a .synapos/core/pipelines/
 agent_override: "{lead_agent}"
 
-# Arquivos salvos em: docs/.squads/sessions/{feature-slug}/
 session_files:
   context: context.md
   architecture: architecture.md
   plan: plan.md
 
-# v2.0: Checkpoints intermediários (pós-contexto, pós-arquitetura, pós-plano)
-# foram consolidados em um único checkpoint final. A IA muda de papel sem
-# pedir aprovação a cada transição — humano revisa os 3 artefatos juntos.
 steps:
   - id: pre-01-gate
     name: "Verificação de Integridade"
@@ -36,72 +31,91 @@ steps:
     agent: "{lead_agent}"
     execution: inline
     model_tier: powerful
+    needs_spec: true
     file: ../../squad-templates/engineer/pipeline/steps/03-investigacao.md
     depends_on: [pre-02-preparacao]
     output_files:
       - context.md
     output_schema:
       required_sections:
+        - "## Resumo"
         - "## Motivação"
         - "## Meta"
+        - "## Escopo"
+        - "## ADRs Relevantes"
         - "## Validação"
     veto_conditions:
-      - "context.md sem seção de Motivação preenchida"
-      - "context.md sem Meta mensurável"
-      - "context.md sem seção de ADRs Relevantes"
+      - "Meta sem resultado verificável"
+      - "Pergunta já respondida por spec.md/handoff.md repetida ao usuário"
+      - "Afirmação sobre o projeto sem arquivo de evidência"
+
+  - id: pre-04-padroes
+    name: "Descoberta de Padrões"
+    agent: "{lead_agent}"
+    execution: inline
+    model_tier: powerful
+    file: ../shared-steps/pattern-discovery.md
+    depends_on: [pre-03-investigacao]
+    veto_conditions:
+      - "Âncora de padrão com resposta sem caminho de evidência e sem [CONTEXT_REQUIRED]"
+      - "Role memory registrando padrão não encontrado no código"
 
   - id: pre-05-arquitetura
     name: "Estruturação Arquitetural"
     agent: "{lead_agent}"
     execution: subagent
     model_tier: powerful
+    needs_full_context: true
     file: ../../squad-templates/engineer/pipeline/steps/05-arquitetura.md
-    depends_on: [pre-03-investigacao]
+    depends_on: [pre-04-padroes]
     output_files:
       - architecture.md
     output_schema:
       required_sections:
+        - "## Referência no Projeto"
+        - "## Reuso x Novo"
         - "## Principais Arquivos a Modificar/Criar"
         - "## ADRs Aplicadas"
-        - "## Verificação de Consistência"
         - "## Trade-offs e Alternativas"
+        - "## Verificação de Consistência"
     veto_conditions:
-      - "architecture.md sem seção de Verificação de Consistência"
-      - "architecture.md sem lista de ADRs Aplicadas"
-      - "architecture.md sem lista de arquivos a modificar/criar"
+      - "Arquivo, componente ou abstração nova sem justificativa de por que o existente não serve"
+      - "Estrutura proposta diverge da referência do projeto sem [DECISÃO PENDENTE]"
+      - "ADR relevante do índice ausente do ADR CHECK"
 
   - id: pre-05b-visual-spec
-    name: "Especificação Visual (condicional)"
+    name: "Especificação Visual"
     agent: "{lead_agent}"
     execution: inline
     model_tier: powerful
+    tracks: [complex]
     file: ../../squad-templates/engineer/pipeline/steps/visual-spec.md
     depends_on: [pre-05-arquitetura]
     output_files:
       - visual-spec.md
     veto_conditions:
       - "visual-spec.md sem seção de Verificação GATE-DESIGN"
+      - "Token, cor ou valor de spacing que não existe na role memory/design system do projeto"
       - "Componente interativo sem estado focus ou error"
-      - "Contraste não declarado para nenhum componente com texto"
-    skip_condition: "Nenhum agent do squad tem tasks de design-system, component-spec ou ux-review"
+    skip_condition: "A feature não tem UI, ou nenhum agent do squad tem tasks de design-system, component-spec ou ux-review"
 
   - id: pre-07-planejamento
     name: "Planejamento de Execução"
     agent: "{lead_agent}"
     execution: subagent
     model_tier: powerful
+    tracks: [complex]
     file: ../../squad-templates/engineer/pipeline/steps/07-planejamento.md
-    depends_on: [pre-05b-visual-spec]
+    depends_on: [pre-05-arquitetura]
     output_files:
       - plan.md
     veto_conditions:
       - "plan.md sem agents/skills atribuídos por fase"
-      - "Alguma fase excede estimativa de 2h sem justificativa"
-      - "plan.md sem referência a context.md e architecture.md"
+      - "Fase acima de ~2h sem justificativa"
 
   - id: pre-checkpoint-final
     name: "Aprovação Consolidada"
     execution: checkpoint
     gate: GATE-ADR
     file: ../../squad-templates/engineer/pipeline/steps/checkpoint-final.md
-    depends_on: [pre-07-planejamento]
+    depends_on: [pre-05-arquitetura, pre-05b-visual-spec, pre-07-planejamento]

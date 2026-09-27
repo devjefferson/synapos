@@ -1,76 +1,113 @@
 ---
 name: synapos-compliance-protocol
-description: Protocolos de compliance compartilhados por todos os agents — injetado pelo pipeline-runner
+version: 2.0.0
+description: Regras de decisão compartilhadas por todas as roles — injetado pelo pipeline-runner em todo step inline/subagent
 ---
 
 # Compliance Protocol
 
-> Injetado pelo pipeline-runner no contexto de cada agent.
-> Fonte única de verdade — não duplicar nos arquivos `.agent.md`.
+> Fonte única. Não duplicar nos `.agent.md` nem nos steps.
 
 ---
 
-### Stack Adaptation Rule
+## 1. Ordem de autoridade
 
-O pipeline-runner injeta `docs/_memory/stack.md` no contexto antes de qualquer output.
-Use as informações de stack para adaptar **todos** os exemplos de código, imports, estruturas de pastas e referências a ferramentas para a linguagem e framework do projeto.
+Quando duas fontes discordam, vence a de cima:
 
-- **Princípios e critérios de qualidade → imutáveis**
-- **Exemplos concretos, imports, paths, nomes de libs → sempre na stack do projeto**
+```
+1. ADR ativa                       (docs/_memory/adr-index.md → ADR completa)
+2. Regra explícita do projeto      (memória RULE/CONSTRAINT, critical-rules, decisão do usuário)
+3. Contexto da session/feature     (context.md, spec.md, architecture.md aprovados)
+4. Padrão existente no projeto     (role memory, código de referência)
+5. Skill relevante                 (skill específica > regra genérica da role)
+6. Regra genérica da role          (.agent.md)
+7. Conhecimento geral do modelo
+```
 
-Se stack.md não estiver no contexto: use exemplos genéricos sem emitir aviso.
-
----
-
-### ADRs — Verificação Proativa
-
-Antes de qualquer decisão técnica, verifique os arquivos de ADR em `docs/` e na session ativa (`docs/.squads/sessions/{feature-slug}/`).
-
-Liste cada ADR relevante no output:
-- `[RESPEITADA]` — solução alinhada com a ADR
-- `[NÃO APLICÁVEL]` — ADR não se aplica ao contexto atual
-
-Conflito com ADR existente → sinalize com `🚫 CONFLITO-ADR: {adr-id}`. Nunca contradiga uma ADR aprovada sem aprovação explícita do usuário.
+Nunca use um nível inferior para contornar um superior. Conhecimento geral nunca justifica desviar do projeto.
 
 ---
 
-### [DECISÃO PENDENTE] — Protocolo Obrigatório
+## 2. Observe antes de criar
 
-Quando identificar uma decisão fora do escopo do step atual (escolha de lib, padrão, abordagem não especificada), PARE e sinalize:
+Antes de criar qualquer arquivo, componente, módulo, endpoint ou abstração, siga a escada — pare no primeiro degrau que resolve:
+
+```
+padrão existente → componente/módulo existente → composição do existente
+→ adaptação do existente → novo componente → nova abstração
+```
+
+Criar algo novo exige citar no output o que foi procurado e por que não serve. Sem essa justificativa, o output é inválido.
+
+---
+
+## 3. Sinais de controle
+
+Use exatamente estes marcadores. O runner os detecta e para o fluxo quando indicado.
+
+| Sinal | Quando usar | Efeito |
+|---|---|---|
+| `[DECISÃO PENDENTE] {id}` (alias curto: `[?]`) | Escolha de lib, padrão, arquitetura ou escopo não definida por nenhuma fonte acima | Para. Apresenta opções A/B + recomendação. Aguarda o usuário |
+| `[CONTEXT_REQUIRED] {o que falta}` | Não consegue responder uma pergunta obrigatória do step com evidência do projeto | Busca o contexto (arquivo, memória, pergunta ao usuário) **antes** de produzir |
+| `[ADR-CONFLICT] {adr-id}` | A tarefa exige contrariar uma ADR ativa | Bloqueia a decisão. Explica o conflito, propõe alteração/nova ADR, aguarda aprovação |
+| `[SKILL-CONFLICT] {skill}` | Uma skill contradiz ADR, regra do projeto, requisito, decisão do usuário ou padrão existente | Não escolhe em silêncio. Mostra skill × regra, aguarda decisão. Skill que só **acrescenta** ao padrão (compõe com componentes existentes, ex: `action` no EmptyState) não é conflito — aplique |
+| `[STALE] {memória}` / `[CONFLICT] {memória}` | Uma memória carregada é contradita pelo estado atual do projeto | Não sobrescreve. Segue a evidência atual e reporta para atualização |
+
+Formato do `[DECISÃO PENDENTE]`:
 
 ```
 [DECISÃO PENDENTE] {id}
-Contexto: {por que esta decisão é necessária}
+Contexto: {por que a decisão é necessária}
 Opções:
-  A) {opção A} — {prós/contras}
-  B) {opção B} — {prós/contras}
-Recomendação: {opção recomendada}
-Aguardando aprovação.
+  A) {opção} — {prós/contras}
+  B) {opção} — {prós/contras}
+Recomendação: {opção} — {motivo ancorado no projeto}
 ```
 
-Nunca decida unilateralmente. Nunca assuma. Sempre sinalize e aguarde o humano.
+Nunca decida unilateralmente o que não está coberto pela ordem de autoridade.
 
 ---
 
-### HANDOFF — Protocolo Obrigatório
+## 4. ADR CHECK
 
-Ao final de **todo** step que produz output, inclua o bloco `## HANDOFF` antes de encerrar.
-O pipeline-runner extrai este bloco e injeta apenas ele no próximo agent (não o output completo).
+Em steps de arquitetura, implementação e review, inclua no output (curto — só ADRs que tocam a tarefa):
+
+```
+ADR CHECK
+- Relevantes: {adr-id: regra em 1 linha} | nenhuma aplicável
+- Conformidade: SIM | NÃO
+- Conflitos: {adr-id → motivo} | nenhum
+- ADR precisa ser atualizada/criada: SIM ({qual}) | NÃO
+```
+
+Selecione ADRs pelo `adr-index.md` (domínio + escopo). Leia a ADR completa apenas se ela for relevante. Protocolo completo: `.synapos/core/adr-standard.md`.
+
+---
+
+## 5. Stack e evidência
+
+- Exemplos, imports, paths e nomes seguem `stack.md` e o código real — nunca exemplos genéricos quando o projeto tem padrão.
+- Afirmação sobre o projeto (usa X, existe Y) precisa de evidência: caminho de arquivo que você leu. Sem evidência → `[CONTEXT_REQUIRED]` ou "não verificado".
+- Nunca invente métrica, citação, token de design, contraste, concorrente ou nome de arquivo.
+
+---
+
+## 6. HANDOFF
+
+Ao final de todo step que produz output, inclua:
 
 ```
 ## HANDOFF
 **Decisões que o próximo agente deve respeitar:**
-- {decisão 1 — com justificativa em 1 linha}
-- nenhuma (se não houver decisões relevantes)
-
+- {decisão — justificativa em 1 linha} | nenhuma
 **O que foi entregue:**
-- {arquivo ou artefato} — {o que contém em 1 frase}
-
+- {arquivo/artefato} — {conteúdo em 1 frase}
 **O que o próximo agente precisa saber:**
-- {contexto, restrição ou aviso para o step seguinte}
-
-**Bloqueios ou [DECISÃO PENDENTE]:**
-- nenhum (ou descrição)
+- {restrição, referência de padrão, aviso}
+**Bloqueios:**
+- {[DECISÃO PENDENTE]/[CONTEXT_REQUIRED]/[ADR-CONFLICT]} | nenhum
+**Candidatos a memória:**
+- [{TIPO}] {conteúdo} · why: {motivo} · how: {quando aplicar} · scope: {escopo} · source: {arquivo} | nenhum
 ```
 
-O bloco `## HANDOFF` é removido do artefato final pelo runner — não contamina o output salvo.
+O runner remove este bloco do artefato salvo. `Candidatos a memória` segue a política de `.synapos/core/context-engine.md` §4.

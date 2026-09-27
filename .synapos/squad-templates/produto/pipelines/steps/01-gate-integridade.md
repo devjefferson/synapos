@@ -21,10 +21,11 @@ Verifique cada item antes de prosseguir:
 - [ ] `.synapos/squads/{slug}/agents/` tem ao menos um `.agent.md`
 - [ ] `.synapos/squads/{slug}/pipeline/pipeline.yaml` existe
 
-**Base de produto (bloqueante):**
+**Base de produto:**
 - [ ] `docs/business/` existe e contém pelo menos um arquivo `.md`
 
-Se `docs/business/` ausente: 🚫 Execute `/setup:build-business` antes. O squad de produto refina e versiona docs existentes — não os cria do zero.
+- Pipeline `refinar-docs` sem `docs/business/` → 🚫 bloqueia: não há o que versionar. Execute `/setup:build-business`.
+- Demais pipelines sem `docs/business/` → ⚠️ só avisa: a descoberta constrói o contexto da feature na session.
 
 ## Contexto do squad
 
@@ -34,14 +35,15 @@ Leia `.synapos/squads/{slug}/squad.yaml` e apresente ao usuário:
 Squad: {name}
 Domínio: {domain}
 Objetivo: {description}
-Modo: {Alta Performance | Econômico}
+Modo: {alta | economico | solo} · Track: {track}
 Agents: {lista}
 ```
 
-Pergunte:
+Com `[TASK]` recebido do orchestrator: exiba-o como objetivo e prossiga, sem perguntar.
+Sem `[TASK]`, pergunte:
 ```
 Contexto confirmado. Podemos começar?
-[1] Sim, iniciar pesquisa
+[1] Sim, iniciar
 [2] Ajustar o objetivo do squad antes de prosseguir
 ```
 

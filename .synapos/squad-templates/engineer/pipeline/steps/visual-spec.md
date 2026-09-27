@@ -7,10 +7,12 @@ Produzir especificação visual dos componentes e fluxos identificados na spec/a
 
 Como {designer_agent} (ou {lead_agent} se nenhum agent de design disponível), execute:
 
-### 1. Leia os artefatos da session
-- `context.md` — objetivos e restrições do projeto
-- `architecture.md` — componentes e fluxos técnicos definidos
-- Se existir `spec.md` ou `requirements.md` — requisitos funcionais
+### 1. Leia os artefatos
+- `context.md`, `architecture.md` (com `## Referência no Projeto`), `spec.md`/`requirements.md` se existirem
+- `docs/_memory/roles/{domain}.md` — design system, tokens, componentes e estados **reais** do projeto
+- Skills de UX/acessibilidade/design-system que casarem (skills-engine §3)
+
+**Regra:** a spec visual descreve como compor o que o projeto já tem. Componente existente → referencie-o pelo caminho e só especifique o que muda. Nunca crie token, cor, escala de spacing ou variante que não exista no design system — se faltar, `[DECISÃO PENDENTE]`.
 
 ### 2. Para cada componente/fluxo identificado, especifique:
 
@@ -24,13 +26,9 @@ estados:
   disabled: {descrição visual}
   loading: {descrição visual}
   error: {descrição visual + mensagem de erro}
-tokens:
-  cor-primaria: {token do design system, ex: --color-primary-500}
-  cor-texto: {token}
-  espacamento: {token}
-contraste:
-  ratio: {valor numérico, ex: 4.8:1}
-  nivel: AA  # AA (4.5:1+) ou AAA (7:1+)
+base: {componente existente reutilizado — caminho} | novo (justificativa)
+tokens: {tokens/classes existentes na role memory — nunca inventados}
+contraste: {ratio calculado a partir dos valores reais dos tokens | "não verificado — validar no browser"}
 ```
 
 **Fluxos de navegação:**
@@ -51,10 +49,10 @@ Ao final do output, inclua:
 ## Verificação GATE-DESIGN
 
 - [✅/⚠️] Estados de componente — todos os 6 estados especificados para cada componente interativo
-- [✅/⚠️] Contraste AA — ratio declarado para cada componente com texto
+- [✅/⚠️] Contraste AA — calculado a partir de valores reais ou marcado "não verificado" (nunca estimado)
 - [✅/⚠️] Estado vazio — documentado para cada lista/view de dados
 - [✅/⚠️] Estado de erro — com mensagem e ação de recuperação
-- [✅/⚠️] Design system — componentes verificados (novos justificados)
+- [✅/⚠️] Design system — componentes existentes reutilizados; novos justificados
 - [✅/⚠️] Responsividade — breakpoints definidos
 - [✅/⚠️] Tokens — sem valores hardcoded
 
@@ -70,5 +68,5 @@ Salve como `visual-spec.md` na session folder (`docs/.squads/sessions/{feature-s
 O pipeline-runner deve rejeitar o output se:
 - `visual-spec.md` não tem seção `## Verificação GATE-DESIGN`
 - Algum componente interativo sem estados `focus` e `error` definidos
-- Contraste não declarado para nenhum componente com texto
+- Token, cor ou spacing que não existe no design system do projeto
 - Estado vazio ausente em qualquer lista ou view de dados

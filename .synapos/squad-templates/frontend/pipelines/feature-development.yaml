@@ -1,6 +1,10 @@
 name: "Desenvolvimento de Feature"
-description: "Fluxo completo de feature frontend: arquitetura → checkpoint → implementação → review → docs."
-version: "1.0.0"
+description: "Feature frontend ancorada nos padrões do projeto: (pré-execução: investigação → descoberta de padrões → arquitetura) → implementação → validação visual → review."
+version: "2.0.0"
+
+# A pré-execução (core/pipelines/pre-execution.yaml) roda antes deste pipeline nos tracks standard/complex
+# e já produz context.md, a âncora de padrão (roles/frontend.md) e architecture.md.
+# Os steps 02/03 abaixo só rodam quando a pré-execução não gerou architecture.md.
 
 steps:
   - id: 01-gate-integridade
@@ -9,44 +13,61 @@ steps:
     gate: GATE-0
     file: pipeline/steps/01-gate-integridade.md
 
+  - id: 01b-ui-discovery
+    name: "Descoberta de Padrões de UI"
+    agent: ana-arquitetura-fe
+    execution: inline
+    model_tier: powerful
+    file: ../../core/shared-steps/pattern-discovery.md
+    depends_on: [01-gate-integridade]
+    skip_condition: "A âncora de padrão desta tarefa já foi produzida na pré-execução deste run"
+
   - id: 02-arquitetura
     name: "Decisão de Arquitetura"
     agent: ana-arquitetura-fe
     execution: subagent
     model_tier: powerful
+    needs_full_context: true
     file: pipeline/steps/02-arquitetura.md
-    depends_on: [01-gate-integridade]
+    depends_on: [01b-ui-discovery]
+    skip_condition: "architecture.md já foi gerado e aprovado na pré-execução deste run"
     output_files:
       - architecture.md
     output_schema:
       required_sections:
-        - "## Estrutura de Componentes"
+        - "## Referência no Projeto"
+        - "## Reuso x Novo"
+        - "## Principais Arquivos a Modificar/Criar"
         - "## Decisões de Estado"
-        - "## Contratos dos Componentes Principais"
     veto_conditions:
-      - "Estrutura de componentes não documentada"
-      - "Decisão de estado sem justificativa (local vs server vs global)"
-      - "ADR ausente para decisão que afeta mais de 1 componente"
+      - "Estrutura de pastas ou de componentes diferente da referência do projeto sem [DECISÃO PENDENTE]"
+      - "Componente, container, layout ou escala de spacing novo quando a role memory lista um equivalente"
+      - "Lib de estado/fetch/form diferente da usada no projeto"
+      - "Referência no Projeto sem caminhos reais"
 
   - id: 03-checkpoint-design
     name: "Aprovação do Approach"
     execution: checkpoint
     file: pipeline/steps/03-checkpoint-design.md
     depends_on: [02-arquitetura]
+    skip_condition: "architecture.md já foi aprovado no checkpoint da pré-execução"
 
   - id: 04-implementacao
     name: "Implementação"
     agent: rodrigo-react
     execution: subagent
     model_tier: powerful
+    needs_architecture: true
+    needs_plan: true
     file: pipeline/steps/04-implementacao.md
     depends_on: [03-checkpoint-design]
     veto_conditions:
-      - "Componente async sem estado de loading tratado"
-      - "Componente async sem estado de error tratado"
-      - "Componente async sem estado empty tratado"
-      - "Prop 'any' sem justificativa no TypeScript"
-      - "Lista sem key estável (não usar index em listas dinâmicas)"
+      - "Componente ou padrão novo criado quando architecture.md/role memory indica um existente"
+      - "Página sem o container/layout da referência"
+      - "Estado async (loading/error/empty) sem usar os componentes de estado do projeto (ou sem tratamento, se o projeto não tem)"
+      - "Valor visual hardcoded (cor, spacing, tamanho) quando o projeto tem token/classe equivalente"
+      - "Tipo inseguro (any, object) sem justificativa"
+      - "Lista dinâmica sem key estável"
     on_reject: 04-implementacao
 
   - id: 05-review
@@ -54,12 +75,13 @@ steps:
     agent: renata-revisao-fe
     execution: inline
     model_tier: powerful
-    needs_history: true
+    needs_architecture: true
     file: pipeline/steps/05-review.md
     depends_on: [04-implementacao]
     output_files:
       - review-notes.md
     veto_conditions:
+      - "Review sem a Camada 0 (consistência com a referência do projeto)"
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
     on_reject: 04-implementacao
@@ -69,14 +91,14 @@ steps:
     agent: ana-arquitetura-fe
     execution: subagent
     model_tier: fast
+    tracks: [complex]
     file: pipeline/steps/06-docs.md
     depends_on: [05-review]
-    gate: GATE-5
     output_files:
       - feature-notes.md
 
   - id: update-task
     name: "Atualizar Tarefa"
     execution: checkpoint
-    file: ../../../core/shared-steps/update-task.md
+    file: ../../core/shared-steps/update-task.md
     depends_on: [06-docs]

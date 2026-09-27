@@ -9,7 +9,7 @@ output_files:
 veto_conditions:
   - "Spec sem todos os estados (default, hover, focus, disabled)"
   - "Sem especificação de acessibilidade"
-  - "Sem tokens de design"
+  - "Token, cor ou tamanho que não existe no design system do projeto"
 ---
 
 # Spec do Componente
@@ -18,7 +18,15 @@ Você é **Úrsula UI**.
 
 ## Contexto disponível
 
-- Componente a criar: `docs/.squads/sessions/{feature-slug}/memories.md` (última entrada de sessão)
+- Componente a criar: `[TASK]` / `state.json → task`
+- `docs/_memory/roles/frontend.md` — design system, catálogo de reuso, tokens reais
+- Âncora de padrão do step de descoberta (componentes irmãos a imitar)
+
+## Antes de especificar
+
+1. Existe componente equivalente no catálogo de reuso? → a spec vira **extensão/variante** dele, não um componente novo. Se ainda assim for novo, justifique.
+2. Use a API dos componentes irmãos (nomes de props, variantes, tamanhos) como molde.
+3. Todo valor visual vem de token/classe existente. Valor inexistente → `[DECISÃO PENDENTE]`. Contraste: calcule a partir dos valores reais ou marque "não verificado".
 
 ## Documento a gerar
 
@@ -64,15 +72,15 @@ Você é **Úrsula UI**.
 ## Tokens de Design
 | Propriedade | Token | Valor |
 |-------------|-------|-------|
-| cor fundo | color.{...} | #{hex} |
-| cor texto | color.{...} | #{hex} |
-| borda radius | radius.{...} | {X}px |
+| cor fundo | {token existente} | {valor lido do tema} |
+| cor texto | {token existente} | {valor lido do tema} |
+| borda radius | {token existente} | {valor lido do tema} |
 
 ## Acessibilidade
 - role: {button | link | input | ...}
 - aria-label: {quando sem texto visível}
 - keyboard: {Tab: foco, Enter/Space: ativar, Esc: fechar}
-- Contraste: {ratio} — {AA | AAA}
+- Contraste: {ratio calculado dos valores reais — AA/AAA | não verificado}
 - Focus visible: {obrigatório — nunca remover}
 
 ## Interface TypeScript

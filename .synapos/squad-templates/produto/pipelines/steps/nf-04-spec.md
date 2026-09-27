@@ -38,7 +38,7 @@ Iterate com o usuário até ter clareza total antes de gerar o documento final.
 
 ## Documento a gerar
 
-Salve em `docs/specs/{feature-slug}-v1.md`:
+Salve em `spec.md` (session) e a versão oficial em `docs/specs/{feature-slug}-v1.md`:
 
 ```markdown
 # Spec: {Nome da Feature}
@@ -64,7 +64,7 @@ Salve em `docs/specs/{feature-slug}-v1.md`:
 ### Métricas de Sucesso
 | Métrica | Baseline | Target | Prazo |
 |---|---|---|---|
-| {métrica} | {valor atual} | {valor esperado} | {quando} |
+| {métrica} | {valor informado ou [A DEFINIR]} | {valor informado ou [A DEFINIR]} | {quando} |
 
 ---
 
@@ -95,9 +95,7 @@ Salve em `docs/specs/{feature-slug}-v1.md`:
 
 | ID | Categoria | Requisito | Valor |
 |---|---|---|---|
-| RNF-01 | Performance | {ex: tempo de resposta do endpoint} | < 200ms p99 |
-| RNF-02 | Segurança | {ex: autenticação obrigatória} | JWT Bearer |
-| RNF-03 | Acessibilidade | {ex: WCAG} | 2.1 AA |
+| RNF-01 | {categoria} | {requisito} | {valor informado pelo usuário/projeto ou [A DEFINIR]} |
 
 ---
 

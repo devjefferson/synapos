@@ -14,12 +14,16 @@ Leia os arquivos abaixo antes de executar qualquer ação significativa. Eles de
 | `.synapos/core/orchestrator.md` | Orquestrador principal — fluxo de ativação, modos, squads e sessions |
 | `.synapos/core/pipeline-runner.md` | Executor de pipelines — fases, gates, steps e injeção de contexto |
 | `.synapos/core/gate-system.md` | Sistema de gates — validações obrigatórias entre steps |
-| `.synapos/core/skills-engine.md` | Engine de skills — MCP, scripts e instruções de comportamento |
+| `.synapos/core/skills-engine.md` | Descoberta, seleção e aplicação de skills |
+| `.synapos/core/context-engine.md` | Memória em camadas, recuperação de contexto e invalidação |
+| `.synapos/core/compliance-protocol.md` | Ordem de autoridade, sinais de controle, ADR CHECK |
 | `.synapos/core/model-adapter.md` | Adaptação de prompts para modelos de capacidade inferior |
 | `.synapos/core/copilot-adapter.md` | Adaptações para IDEs sem suporte nativo a subagentes |
 | `docs/_memory/company.md` | Perfil do projeto — nome, setor, linguagem de saída |
 | `docs/_memory/preferences.md` | Preferências — IDE, modelo, task tracker, capability |
-| `docs/_memory/project-learnings.md` | Aprendizados transversais compartilhados entre todos os squads |
+| `docs/_memory/project-memory.md` | Memória global tipada (regras, decisões, padrões, aprendizados) |
+| `docs/_memory/adr-index.md` · `skills-index.md` | Índices — 1 linha por ADR/skill |
+| `docs/_memory/roles/{domain}.md` | Padrões descobertos por domínio (ex: UI map do frontend) |
 
 ---
 
@@ -28,10 +32,11 @@ Leia os arquivos abaixo antes de executar qualquer ação significativa. Eles de
 Estas regras são ativas em **toda** interação, sem exceção:
 
 1. **Nunca execute sem contexto mínimo** — leia `docs/_memory/company.md` antes de qualquer ação significativa. Se não existir, inicie o onboarding via `.synapos/core/orchestrator.md`.
-2. **Nunca tome decisões autônomas** — escolhas de biblioteca, arquitetura, padrão ou framework que não estejam especificadas devem ser sinalizadas com `[?]` no output e aguardar aprovação do usuário antes de continuar.
-3. **Respeite ADRs existentes** — antes de implementar, verifique arquivos com `ADR`, `adr` ou `decisions` no nome em `docs/`. Conflito com ADR = bloqueio obrigatório.
-4. **Use os arquivos como memória** — estado e contexto vivem em `docs/.squads/sessions/{feature-slug}/`. Sempre leia antes de executar.
-5. **Nunca escreva dentro de `.synapos/`** — essa pasta é somente do framework.
+2. **Nunca tome decisões autônomas** — escolha de biblioteca, arquitetura, padrão ou escopo não definida pelo projeto → `[DECISÃO PENDENTE]` (ou `[?]`) com opções e recomendação; aguarde o usuário. Sinais de controle: `.synapos/core/compliance-protocol.md`.
+3. **ADR ativa é regra** — consulte `docs/_memory/adr-index.md` (ou as ADRs em `docs/adrs/`, `docs/adr/`, `docs/tech/adr/`) antes de decidir. Conflito → `[ADR-CONFLICT]`, bloqueio até aprovação. Vale em todos os tracks.
+4. **Observe antes de criar** — reutilize padrão, componente ou módulo existente antes de criar algo novo; novo exige justificativa. Use skills relevantes (`skills/`, `.synapos/skills/`, índice em `docs/_memory/skills-index.md`).
+5. **Memória por recuperação** — carregue só o que a decisão precisa (`.synapos/core/context-engine.md`). Estado da feature em `docs/.squads/sessions/{feature-slug}/`.
+6. **Nunca escreva dentro de `.synapos/`** — essa pasta é somente do framework (exceção: `.synapos/squads/`, criado por `/setup:squad`).
 
 ---
 
@@ -54,14 +59,15 @@ Ative via painel de workflows do Antigravity:
 
 ---
 
-## MODOS DE EXECUÇÃO
+## TRACKS DE EXECUÇÃO
 
-| Modo | Quando usar | Comportamento |
-|------|-------------|---------------|
-| `quick` | Bug fix, ajuste, quick change | Contexto mínimo — session files apenas |
-| `complete` | Feature nova, refactor, arquitetura | docs/, ADRs e session files completos |
+| Track | Quando | Fluxo |
+|-------|--------|-------|
+| `quick` | Mudança localizada, sem decisão nova | contexto → role → skills → executar → revisar (sem squad/session) |
+| `standard` | Feature/bug em território conhecido | investigação → padrões → arquitetura → implementação → review |
+| `complex` | Ideia vaga, capacidade nova, impacto em ADR | produto (brainstorm → requisitos → spec) → arquitetura → plano → dev → review |
 
-O modo é inferido automaticamente por palavras-chave da mensagem. Veja `.synapos/core/orchestrator.md` para a lógica completa.
+O track é definido pela triagem da tarefa (orchestrator PASSO 2.5). Veja `.synapos/core/orchestrator.md` para a lógica completa.
 
 ---
 
@@ -84,7 +90,9 @@ docs/
 ├── _memory/            ← Contexto persistente do projeto
 │   ├── company.md
 │   ├── preferences.md
-│   └── project-learnings.md
+│   ├── stack.md · project-memory.md
+│   ├── adr-index.md · skills-index.md
+│   └── roles/{domain}.md
 ├── .squads/sessions/   ← Sessions de features
 │   └── {feature-slug}/
 │       ├── context.md
