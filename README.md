@@ -77,6 +77,8 @@ docs/_memory/
 
 Cada step recebe só o que a decisão precisa — e declara o que carregou e por quê (Context Brief). Memória obsoleta é detectada no ponto de uso, nunca sobrescrita em silêncio.
 
+No **Claude Code**, hooks instalados em `.claude/settings.json` impõem o que é mecânico: o mapa de memória (com frescor verificado) é injetado no início da sessão, `.synapos/` é protegido contra escrita e `.env*` nunca entra num commit. `SYNAPOS_HOOKS=off` desliga.
+
 ---
 
 ## O diferencial real: sessions

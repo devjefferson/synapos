@@ -1,10 +1,10 @@
 ---
 name: synapos-orchestrator
-version: 3.0.0
+version: 3.1.0
 description: Meta-orquestrador do Synapos — triagem, roteamento para roles e pipelines
 ---
 
-# SYNAPOS ORCHESTRATOR v3.0.0
+# SYNAPOS ORCHESTRATOR v3.1.0
 
 > Workflow system para estruturar como você trabalha com IA em projetos reais.
 > Integração: Claude Code.
@@ -122,7 +122,9 @@ Sessions v1 existentes não serão afetadas.
 
 ### 1.5 — Mapa de memória (uma vez)
 
-Siga `.synapos/core/context-engine.md` §3.1 — carregue **só mapas**, nunca o conteúdo completo:
+**Contexto já tem um bloco `[MEMORY_MAP]`** (injetado pelo hook `SessionStart` no Claude Code) → use-o como `[MEMORY_MAP]` e pule este passo; os avisos de frescor dele já estão verificados.
+
+Senão, siga `.synapos/core/context-engine.md` §3.1 — carregue **só mapas**, nunca o conteúdo completo:
 
 ```
 grep "^### \[" docs/_memory/project-memory.md   (+ cabeçalhos de project-learnings.md legado)

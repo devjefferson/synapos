@@ -1,6 +1,6 @@
 ---
 name: synapos-context-engine
-version: 1.1.0
+version: 1.2.0
 description: Memória em camadas, recuperação de contexto, escrita de memória, invalidação e política de scan do projeto
 ---
 
@@ -86,7 +86,7 @@ Entradas legadas (`## [{squad} · {agent}] — data`) são lidas como `LEARNING`
 
 ### 3.1 Boot — uma vez por conversa (orchestrator)
 
-Carregue somente mapas:
+No Claude Code, o hook `SessionStart` (`.synapos/hooks/claude/session-start.js`) monta este mapa de forma determinística — cabeçalhos, índices, role memories e frescor de cada arquivo de conhecimento — e o injeta como `[MEMORY_MAP]`. Presente no contexto → não refaça. Nas demais IDEs, carregue somente mapas:
 
 ```
 company.md · preferences.md · stack.md             (pequenos, identidade)

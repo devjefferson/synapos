@@ -364,7 +364,7 @@ Log: `📊 [REPORT] session-report.md — {N} steps · {N} arquivos · {N} gates
 `squad.yaml → auto_commit`: `ask` (padrão — pergunta) · `true` (commita) · `false` (pula).
 
 - Tipo pelo pipeline: `feature-*`/`component-*` → `feat` · `bug-fix`/`quick-fix`/`fix-*` → `fix` · `*migration*` → `chore(db)` · `ci-cd-*`/`infra-*` → `ci` · `refinar-docs`/`*spec*`/`discovery-*` → `docs` · outro → `chore`.
-- Stage: `[RUN].files_changed` + `{session}/session-report.md` + `{session}/state.json`. Nunca `.synapos/`, `.env*`, arquivos fora do projeto.
+- Stage: `[RUN].files_changed` + `{session}/session-report.md` + `{session}/state.json`. Nunca `.synapos/`, `.env*`, arquivos fora do projeto. No Claude Code, o hook `guard-commit` bloqueia isso de forma determinística.
 - Mensagem: `{tipo}({feature}): {pipeline} — {squad}` + steps + arquivos + `Session: {session}/session-report.md`.
 - Falha de git → `⚠️ [GIT] commit não realizado: {motivo}` e siga. Nunca bloqueia.
 

@@ -114,7 +114,7 @@ function writeFile(filePath, content) {
 
 // Copia o core do framework (sem squad-templates)
 function installCore(src, dest) {
-  const coreDirs  = ['core', 'skills'];
+  const coreDirs  = ['core', 'skills', 'hooks'];
   const coreFiles = ['.manifest.json', 'VERSION', 'CHANGELOG.md'];
 
   for (const dir of coreDirs) {
@@ -123,6 +123,39 @@ function installCore(src, dest) {
   for (const file of coreFiles) {
     copyFile(path.join(src, file), path.join(dest, file));
   }
+}
+
+// Claude Code hooks (scripts em .synapos/hooks/claude/) — mesclados em .claude/settings.json
+const HOOK_MARK = '.synapos/hooks/claude/';
+const hookCmd = (script) => ({ type: 'command', command: `node "\${CLAUDE_PROJECT_DIR}/.synapos/hooks/claude/${script}"`, timeout: 15 });
+const CLAUDE_HOOKS = {
+  SessionStart: [{ hooks: [hookCmd('session-start.js')] }],
+  PreToolUse: [
+    { matcher: 'Edit|Write|MultiEdit|NotebookEdit', hooks: [hookCmd('guard-framework.js')] },
+    { matcher: 'Bash', hooks: [hookCmd('guard-commit.js')] },
+  ],
+};
+
+// Mescla sem sobrescrever: remove só entradas antigas do Synapos e acrescenta as atuais.
+function mergeClaudeHooks(targetDir) {
+  const file = path.join(targetDir, '.claude', 'settings.json');
+  let settings = {};
+  if (fs.existsSync(file)) {
+    try {
+      settings = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      return false; // settings.json inválido — não tocar
+    }
+  }
+  settings.hooks = settings.hooks || {};
+  for (const [event, entries] of Object.entries(CLAUDE_HOOKS)) {
+    const kept = (settings.hooks[event] || [])
+      .map((e) => ({ ...e, hooks: (e.hooks || []).filter((h) => !String(h.command || '').includes(HOOK_MARK)) }))
+      .filter((e) => e.hooks.length);
+    settings.hooks[event] = [...kept, ...entries];
+  }
+  writeFile(file, JSON.stringify(settings, null, 2) + '\n');
+  return true;
 }
 
 // Resolve aliases de CLI para valores canônicos de squad
@@ -317,6 +350,13 @@ ${bold('EXEMPLOS')}
           writeFile(path.join(targetDir, ide.commandsDir, cmd.file), cmd.content);
         }
         ok(`${ide.title} configurado ${gray(`(${ide.commandsDir}/, ${COMMANDS.length} comandos)`)}`);
+        if (ideId === 'claude') {
+          if (mergeClaudeHooks(targetDir)) {
+            ok(`Hooks do Claude Code ${gray('(.claude/settings.json — memória no início da sessão, proteção de .synapos/ e de commits)')}`);
+          } else {
+            warn('.claude/settings.json inválido — hooks do Synapos não instalados');
+          }
+        }
       }
     } catch (e) {
       err(`Erro ao configurar ${ide.title}: ${e.message}`);
@@ -343,8 +383,8 @@ ${bold('EXEMPLOS')}
     console.log(cyan('  →') + dim(`  ${ide.title.padEnd(12)} →  ${ide.hint}`));
   }
   nl();
-  console.log(dim('  Dica: /init detecta automaticamente o contexto do projeto'));
-  console.log(dim('        e escolhe o modo certo (Bootstrap / Standard / Strict)'));
+  console.log(dim('  Dica: /init faz a triagem da tarefa e escolhe o track'));
+  console.log(dim('        (quick / standard / complex)'));
   nl();
 }
 

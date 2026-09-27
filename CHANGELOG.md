@@ -11,6 +11,26 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [4.1.0] — 2026-09-27
+
+Hooks do Claude Code — regras mecânicas passam a ser impostas, não só instruídas. Framework `.synapos/VERSION` 3.1.0. Detalhes: `docs/architecture/hooks.md`.
+
+### Adicionado
+
+- **`.synapos/hooks/claude/session-start.js`** (`SessionStart`) — monta o `[MEMORY_MAP]` de forma determinística (cabeçalhos de memória, adr-index, skills-index, role memories) e verifica o frescor de cada arquivo de conhecimento (`git log -- {sources}` × `scanned_at`, ADRs/skills fora do índice); injeta como `additionalContext`
+- **`guard-framework.js`** (`PreToolUse` · Edit/Write/MultiEdit/NotebookEdit) — bloqueia escrita em `.synapos/` exceto `.synapos/squads/`; liberado no repo do próprio framework ou com `SYNAPOS_ALLOW_FRAMEWORK_EDIT=1`
+- **`guard-commit.js`** (`PreToolUse` · Bash) — bloqueia `git add`/`git commit` que colocariam `.env*` (exceto `.example`/`.sample`/`.template`) ou `.synapos/` fora de `squads/` no stage
+- **Instalador** — para Claude Code, mescla os hooks em `.claude/settings.json` sem sobrescrever configuração existente (idempotente; não toca arquivo inválido)
+- **`tests/hooks.test.js`** — 28 verificações; `npm test` roda validador + hooks
+- `SYNAPOS_HOOKS=off` desliga todos os hooks
+
+### Alterado
+
+- Orchestrator PASSO 1.5 e context-engine §3.1: `[MEMORY_MAP]` já injetado pelo hook → o boot não refaz
+- Dica final do instalador cita os tracks (quick/standard/complex) em vez dos modos antigos
+
+---
+
 ## [4.0.0] — 2026-09-27
 
 Deep architecture upgrade. Framework `.synapos/VERSION` 3.0.0. Racional completo: `docs/architecture/v4-architecture-review.md`.

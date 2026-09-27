@@ -1,7 +1,7 @@
 {
   "framework": {
     "name": "synapos",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "released_at": "2026-09-27"
   },
   "best_practices": {
@@ -24,7 +24,7 @@
     }
   },
   "core": {
-    "orchestrator": "3.0.0",
+    "orchestrator": "3.1.0",
     "pipeline_runner": "3.0.0",
     "gate_system": "3.0.0",
     "change_guard": "1.1.0",
@@ -42,7 +42,7 @@
       "set-model": "1.0.0",
       "session": "2.0.0"
     },
-    "context_engine": "1.0.0",
+    "context_engine": "1.2.0",
     "compliance_protocol": "2.0.0",
     "adr_standard": "2.0.0",
     "shared_steps": {
@@ -165,6 +165,13 @@
     "filesystem": "1.1.0"
   },
   "changelog": {
+    "3.1.0": {
+      "date": "2026-09-27",
+      "changes": [
+        "Hooks do Claude Code: SessionStart injeta [MEMORY_MAP]; guard-framework protege .synapos/; guard-commit bloqueia .env* e .synapos/ no stage",
+        "Instalador mescla hooks em .claude/settings.json sem sobrescrever"
+      ]
+    },
     "3.0.0": {
       "date": "2026-09-27",
       "changes": [
@@ -202,6 +209,13 @@
         "success_criteria adicionado aos steps 03-investigacao, 05-arquitetura, 02-arquitetura FE, 04-implementacao FE",
         "output_schema adicionado ao pre-execution.yaml e frontend/feature-development.yaml"
       ]
+    }
+  },
+  "hooks": {
+    "claude": {
+      "session-start": "1.0.0",
+      "guard-framework": "1.0.0",
+      "guard-commit": "1.0.0"
     }
   }
 }

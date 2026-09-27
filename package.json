@@ -1,6 +1,6 @@
 {
   "name": "synapos",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Synapos Framework — AI agent orchestration for multi-IDE development",
   "keywords": [
     "ai",
@@ -21,7 +21,7 @@
     "synapos": "./bin/synapos.js"
   },
   "scripts": {
-    "test": "node tests/validate-framework.js"
+    "test": "node tests/validate-framework.js && node tests/hooks.test.js"
   },
   "files": [
     "bin/",
