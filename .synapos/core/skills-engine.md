@@ -72,6 +72,10 @@ TAREFA → domínio da role + tipo do step + entidades da tarefa
 ```
 
 - Skill declarada em `squad.yaml → skills:` é sempre candidata, mas também precisa casar com o step.
+
+### 3.1 Skill declarada no step (`skills:` do pipeline.yaml)
+
+O step já diz que precisa dela — **não há match a fazer**: carregue (§4) e use. Disponível → use e registre `Skills: {id} — usada`. Indisponível (MCP não configurado, runtime ausente) → registre `Skills: {id} — indisponível: {motivo}`, use a ferramenta nativa equivalente se existir, senão o fallback do step. Nunca bloqueia, nunca finge uso. O `veto_conditions` do step cobra o registro.
 - Casamento é semântico: "tela de onboarding" casa com `ux` (telas/fluxos) e `accessibility` (UI), não com `api-design`.
 - Selecione no máximo ~3 skills `knowledge` por step. Se mais casam, prefira as de projeto e as mais específicas.
 
@@ -121,7 +125,7 @@ Nunca escolha em silêncio.
 ## 6. EXECUÇÃO
 
 - Aplique a skill explicitamente. No output, cite o critério usado quando ele determinou uma escolha: `(skill ux: validação inline em formulários)`.
-- Tool skill disponível que oferece uma capacidade que a IA não tem nativamente (browser, busca web, API externa) é o caminho obrigatório para essa ação. Ferramentas nativas da IDE (ler, editar, buscar arquivos, terminal) prevalecem sobre skills equivalentes (ex: `filesystem`).
+- Tool skill disponível que oferece uma capacidade que a IA não tem nativamente (browser, busca web, API externa) é o caminho obrigatório para essa ação. Ferramentas nativas da IDE (ler, editar, buscar arquivos, terminal) prevalecem sobre skills equivalentes.
 - Steps de review verificam conformidade com as skills listadas no Brief do step revisado.
 
 ---
@@ -148,3 +152,20 @@ domains: [frontend, backend, ...]
 - `script`: declare runtime e arquivo (`scripts/run.js`); verifique runtime antes de usar.
 - Documente no SKILL.md o comportamento do agent com e sem a skill.
 - Skills de projeto (`skills/*.md`) não precisam de instalação: basta existir com `description`/`whenToUse`.
+
+---
+
+## 8. SKILLS PADRÃO DE DESIGN E DIAGRAMA
+
+Referências de qualidade — **não** carregue por padrão. Entram no MATCH (§3) só quando o step faz o que a coluna "quando" descreve. Verifique se estão instaladas (`.claude/skills/{nome}/`, `~/.claude/skills/{nome}/` ou nativas da sessão); ausente → registre `⚠️ Skill {x} indisponível` e siga (§4). Nunca bloqueia.
+
+| Skill | Quando | Não use em |
+|---|---|---|
+| `emil-design-eng`, `animate`, `review-animations` | animações, transições, microinterações, feedback visual | API sem interface |
+| `impeccable` | criar/revisar UX, hierarquia, tipografia, acessibilidade, polimento | backend |
+| `design-taste-frontend` | interface nova, direção de arte, identidade visual (junto com `impeccable`) | ajuste pontual de estilo |
+| `archify` | diagrama de arquitetura/fluxo/sequência/ciclo de vida **fundamentado em código ou docs reais** | explicação que cabe em 3 linhas |
+
+Instalação: `npx synapos` oferece instalar as quatro **por projeto** (`.claude/skills/`, opt-in; `--design-skills` / `--no-design-skills`). Manual (comandos oficiais verificados em 2026-11-06, reconfira antes de usar; sem `-g` = projeto): `npx skills@latest add emilkowalski/skills -a claude-code -s '*' -y` · `npx impeccable install  --project --providers=claude-code -y` · `npx skills add https://github.com/Leonxlnx/taste-skill -a claude-code -s '*' -y` · `npx -y skills@latest add https://archify.si --skill archify --agent claude-code  --copy --yes`.
+
+Conflito com ADR/regra do projeto → `[SKILL-CONFLICT]` (§5). O Synapos não depende delas: sem as skills, o fluxo segue com a regra genérica da role.

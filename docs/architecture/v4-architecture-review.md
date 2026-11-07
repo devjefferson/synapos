@@ -26,7 +26,7 @@ B3–B5 agora são detectados por `npm test` (`tests/validate-framework.js`), qu
 
 | Conflito | Onde |
 |---|---|
-| GATE-DECISION existe (runner §2.5: reexecuta) × "não existe mais" (gate-system) | runner × gate-system × REFACTOR-PLAN |
+| GATE-DECISION existe (runner §2.5: reexecuta) × "não existe mais" (gate-system) | runner × gate-system × archive/REFACTOR-PLAN |
 | `[?]` × `[DECISÃO PENDENTE]` como sinal de decisão | AGENTS.md/gate-system × compliance/agents |
 | GATE-0 "bloqueante" sem docs (5 squads) × "Modo Rápido prossegue sem docs" | steps `01-gate-integridade` × gate-system |
 | 3 esquemas de `context.md` | runner (O que é/Por que existe) × investigação (Motivação/Meta…) × gate FE (escreve O que é) |

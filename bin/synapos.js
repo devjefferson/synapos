@@ -4,6 +4,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { spawnSync } = require('child_process');
 const prompts = require('prompts');
 
 // ─── Colors (ANSI) ───────────────────────────────────────────────────────────
@@ -125,6 +126,7 @@ function installCore(src, dest) {
   }
 }
 
+
 // Claude Code hooks (scripts em .synapos/hooks/claude/) — mesclados em .claude/settings.json
 const HOOK_MARK = '.synapos/hooks/claude/';
 const hookCmd = (script) => ({ type: 'command', command: `node "\${CLAUDE_PROJECT_DIR}/.synapos/hooks/claude/${script}"`, timeout: 15 });
@@ -177,6 +179,45 @@ function resolveSquadArgs(args) {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+// Skills de design (opt-in, por projeto) — comandos oficiais, rodando com cwd = projeto
+const DESIGN_SKILLS = [
+  { name: 'Emil Kowalski', args: ['skills@latest', 'add', 'emilkowalski/skills', '-a', 'claude-code', '-s', '*', '-y'] },
+  { name: 'Impeccable',    args: ['impeccable', 'install', '--project', '--providers=claude-code', '-y'] },
+  { name: 'Taste',         args: ['skills@latest', 'add', 'https://github.com/Leonxlnx/taste-skill', '-a', 'claude-code', '-s', '*', '-y'] },
+  { name: 'Archify',       args: ['-y', 'skills@latest', 'add', 'https://archify.si', '--skill', 'archify', '--agent', 'claude-code', '--copy', '--yes'] },
+];
+
+function installDesignSkills(targetDir) {
+  const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+  for (const sk of DESIGN_SKILLS) {
+    info(`Instalando ${sk.name}…`);
+    const r = spawnSync(npx, sk.args[0] === '-y' ? sk.args : ['-y', ...sk.args], {
+      cwd: targetDir, encoding: 'utf8', timeout: 240000,
+    });
+    if (r.status === 0) ok(`${sk.name} instalado ${gray('(.claude/skills/)')}`);
+    else warn(`${sk.name} não instalado (${(r.stderr || r.error?.message || 'erro').toString().trim().split('\n').pop()}) — veja .synapos/core/skills-engine.md §8`);
+  }
+}
+
+// MCP das skills do Synapos → .mcp.json do projeto (Claude Code, escopo project). Só adiciona o que falta; sem segredos (env por referência).
+const MCP_SERVERS = {
+  'playwright': { type: 'stdio', command: 'npx', args: ['@playwright/mcp@latest'], env: {} },
+  'brave-search': { type: 'stdio', command: 'npx', args: ['-y', '@modelcontextprotocol/server-brave-search'], env: { BRAVE_API_KEY: '${BRAVE_API_KEY}' } },
+};
+
+function installMcpServers(targetDir) {
+  const file = path.join(targetDir, '.mcp.json');
+  let cfg = {};
+  if (fs.existsSync(file)) {
+    try { cfg = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; } // inválido — não tocar
+  }
+  cfg.mcpServers = cfg.mcpServers || {};
+  const added = Object.keys(MCP_SERVERS).filter(k => !cfg.mcpServers[k]);
+  for (const k of added) cfg.mcpServers[k] = MCP_SERVERS[k];
+  if (added.length) fs.writeFileSync(file, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  return added;
+}
+
 async function run() {
   const argv  = process.argv.slice(2);
   const flags = argv.filter(a => a.startsWith('-'));
@@ -200,6 +241,10 @@ ${SQUADS.map(s => `  ${s.value.padEnd(12)} ${gray(s.aliases.join(', ').padEnd(18
 ${bold('OPÇÕES')}
   -v, --version      Exibe a versão
   -h, --help         Exibe esta ajuda
+  --design-skills    Instala skills de design no projeto sem perguntar
+  --no-design-skills Não instala (nem pergunta)
+  --mcp              Configura .mcp.json (playwright, brave-search) sem perguntar
+  --no-mcp           Não configura (nem pergunta)
 
 ${bold('EXEMPLOS')}
   npx synapos                     Instala todos os squads + seleciona IDE
@@ -360,6 +405,40 @@ ${bold('EXEMPLOS')}
       }
     } catch (e) {
       err(`Erro ao configurar ${ide.title}: ${e.message}`);
+    }
+  }
+
+  // ── 6b. Skills de design (opt-in, por projeto, só Claude Code) ──────────────
+  if (selectedIdes.includes('claude') && !flags.includes('--no-design-skills')) {
+    let wanted = flags.includes('--design-skills');
+    if (!wanted && process.stdin.isTTY) {
+      nl();
+      ({ wanted } = await prompts({
+        type: 'confirm', name: 'wanted', initial: true,
+        message: 'Instalar skills de design no projeto? (Emil Kowalski, Impeccable, Taste, Archify — requer internet; Taste usa Chrome)',
+      }, { onCancel: () => ({ wanted: false }) }));
+    }
+    if (wanted) { nl(); installDesignSkills(targetDir); }
+  }
+
+  // ── 6c. MCP das skills playwright-browser e brave-search (opt-in, só Claude Code) ──
+  if (selectedIdes.includes('claude') && !flags.includes('--no-mcp')) {
+    let wantedMcp = flags.includes('--mcp');
+    if (!wantedMcp && process.stdin.isTTY) {
+      nl();
+      ({ wantedMcp } = await prompts({
+        type: 'confirm', name: 'wantedMcp', initial: true,
+        message: 'Configurar MCP das skills em .mcp.json? (playwright-browser, brave-search — a chave BRAVE_API_KEY fica no seu ambiente)',
+      }, { onCancel: () => ({ wantedMcp: false }) }));
+    }
+    if (wantedMcp) {
+      const added = installMcpServers(targetDir);
+      if (added === null) warn('.mcp.json inválido — MCP das skills não configurado');
+      else {
+        ok(`MCP das skills ${gray(added.length ? `(.mcp.json: ${added.join(', ')})` : '(.mcp.json já tinha ambos)')}`);
+        info('Playwright: rode uma vez  npx playwright install chromium');
+        info('Brave Search: exporte BRAVE_API_KEY (https://brave.com/search/api/) e reinicie o Claude Code');
+      }
     }
   }
 

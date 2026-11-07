@@ -469,8 +469,6 @@ Integrações via MCP que expandem o que os agents podem fazer.
 |-------|-----------|
 | `brave-search` | Pesquisa web — benchmarks, concorrentes, documentação |
 | `github` | Issues, PRs, repositórios, code, actions |
-| `fetch-url` | Leitura de URLs e extração de conteúdo |
-| `filesystem` | Acesso avançado ao sistema de arquivos |
 | `playwright-browser` | Browser automation — screenshots, testes E2E |
 
 ```bash

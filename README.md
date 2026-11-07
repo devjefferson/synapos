@@ -142,7 +142,7 @@ docs/
 
 ## Arquitetura
 
-`docs/architecture/` — review da v4, memória, skills, fluxo de produto, guia de roles e cenários de validação. `npm test` valida a integridade do framework.
+`docs/INDEX.md` — mapa de toda a documentação. `docs/architecture/` — review da v4, memória, skills, fluxo de produto, guia de roles e cenários de validação. `npm test` valida a integridade do framework.
 
 ## Compatibilidade
 

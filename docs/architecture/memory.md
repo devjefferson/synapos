@@ -99,3 +99,21 @@ Projeto (decisões, regras, feedback, referências — do time, versionado) → 
 ## Compatibilidade
 
 `project-learnings.md` continua lido (como LEARNING). Entradas `## [squad · agent]` antigas são lidas como LEARNING; `[PATTERN]`/`[FACT]` deriváveis antigas são tratadas como cache sem sources e migradas na consolidação. `session.manifest.json` e `context.snapshot` são ignorados.
+
+## Ferramentas externas de memória e observação
+
+Avaliadas em 2026-11-06 contra os READMEs oficiais. **Nenhuma está instalada nem é dependência do Synapos.**
+
+| Ferramenta | Decisão | Motivo (verificado) |
+|---|---|---|
+| Claude-Mem (`thedotmack/claude-mem`, v15.11.0) | Só experimentação, isolada | Instala hooks + worker e captura todo uso de ferramentas; sobrepõe `docs/_memory/` e disputa o `SessionStart` com `.synapos/hooks/claude/session-start.js`. Só adotar após medir tokens extras num projeto descartável. |
+| Task Observer (`SquidyInk/task-observer`, CC BY 4.0) | Experimentação em projeto único | Skill (`SKILL.md` + `references/`) que registra correções em log de observações; o próprio README diz que setups pequenos são bem cobertos pela memória nativa. Projeto jovem (7 estrelas). |
+
+Fronteiras, valem se qualquer uma for adotada:
+
+- **Fonte de verdade:** ADR vigente > regras do projeto > docs oficiais > `docs/_memory/` > qualquer observação externa. Claude-Mem não é fonte de verdade.
+- **Task Observer só recomenda.** Não altera ADR, skill ou `docs/_memory/` sem aprovação explícita; observação pontual não vira regra — só padrão recorrente (≥3 ocorrências independentes) é candidato a promoção.
+- **Promoção:** observação → LEARNING em `docs/_memory/` (padrão confirmado) → skill (comportamento repetível) → ADR (decisão arquitetural, sempre via fluxo de ADR).
+- **Não armazenar:** segredos, dados pessoais, o que já está em ADR/docs/código.
+- **Sem duplicidade:** o que já existe em `docs/_memory/` não é reinjetado por ferramenta externa.
+

@@ -84,6 +84,7 @@ function checkPipeline(file, { baseDir, templateDir, agents, label }) {
     for (const d of [].concat(s.depends_on || [])) if (!ids.has(d)) err(`${where}: depends_on inexistente: ${d}`);
     for (const k of ['on_reject', 'needs_full_output_of']) if (s[k] && !ids.has(s[k])) err(`${where}: ${k} inexistente: ${s[k]}`);
     for (const t of [].concat(s.tracks || [])) if (!VALID_TRACKS.has(t)) err(`${where}: track inválido: ${t}`);
+    for (const k of [].concat(s.skills || [])) if (!fs.existsSync(path.join(SYN, 'skills', k, 'SKILL.md'))) err(`${where}: skill declarada inexistente: ${k}`);
     if (s.execution && !['inline', 'subagent', 'checkpoint'].includes(s.execution)) err(`${where}: execution inválido: ${s.execution}`);
     if (s.execution !== 'checkpoint' && !s.agent) warnings.push(`${where}: step ${s.execution || '?'} sem agent`);
   }

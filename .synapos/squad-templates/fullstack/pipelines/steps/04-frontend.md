@@ -27,6 +27,10 @@ Leia `.synapos/squads/{slug}/agents/rodrigo-react.agent.md` e execute como Rodri
 3. Trate todos os estados: loading, error, empty, success
 4. Siga a arquitetura definida em `docs/.squads/sessions/{feature-slug}/architecture.md`
 
+## Validação visual
+
+Skill declarada no step: `playwright-browser` (ou browser nativo equivalente). Rode a aplicação, abra a tela nova e compare com uma página existente (layout, estados loading/error/empty, mobile e desktop). Sem browser: revisão estrutural lado a lado. Registre: `Skills: playwright-browser — usada | indisponível: {motivo}`.
+
 ## Critérios de Qualidade
 
 - [ ] Todo componente async com loading + error + empty + success

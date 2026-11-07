@@ -402,6 +402,7 @@ steps:
     veto_conditions: ["condição que invalida o output"]
     needs_full_output_of: step-id
     needs_*: true                   # ver 2.3
+    skills: [skill-id]              # opcional — obrigatórias neste step (ver skills-engine §3.1)
     gate: GATE-N
     on_reject: step-id
     change_guard: false             # opcional
