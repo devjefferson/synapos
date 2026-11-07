@@ -61,7 +61,9 @@ steps:
     needs_plan: true
     file: pipeline/steps/04-implementacao.md
     depends_on: [03-checkpoint-design]
+    skills: [playwright-browser]
     veto_conditions:
+      - "Tela entregue sem validação visual (browser ou revisão estrutural) ou sem o registro `Skills: playwright-browser — usada | indisponível: {motivo}`"
       - "Componente ou padrão novo criado quando architecture.md/role memory indica um existente"
       - "Página sem o container/layout da referência"
       - "Estado async (loading/error/empty) sem usar os componentes de estado do projeto (ou sem tratamento, se o projeto não tem)"

@@ -38,7 +38,9 @@ steps:
     needs_plan: true
     file: pipeline/steps/04-frontend.md
     depends_on: [03-checkpoint-contrato]
+    skills: [playwright-browser]
     veto_conditions:
+      - "Tela entregue sem validação visual (browser ou revisão estrutural) ou sem o registro `Skills: playwright-browser — usada | indisponível: {motivo}`"
       - "Componente async sem estado de loading/error/empty"
       - "Prop 'any' sem justificativa"
       - "Integração com API sem mock enquanto backend não está pronto"

@@ -39,7 +39,9 @@ steps:
     model_tier: powerful
     file: pipeline/steps/04-implementacao.md
     depends_on: [cd-02-spec]
+    skills: [playwright-browser]
     veto_conditions:
+      - "Tela entregue sem validação visual (browser ou revisão estrutural) ou sem o registro `Skills: playwright-browser — usada | indisponível: {motivo}`"
       - "Componente sem todos os estados visuais implementados"
       - "Props sem tipagem no padrão do projeto"
       - "API/estrutura do componente diverge dos componentes irmãos do design system"

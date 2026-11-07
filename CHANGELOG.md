@@ -11,6 +11,24 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [4.2.0] — 2026-11-06
+
+### Adicionado
+- Instalador configura o MCP de `playwright-browser` e `brave-search` em `.mcp.json` (opt-in, só Claude Code, `--mcp`/`--no-mcp`): só adiciona o que falta, não toca JSON inválido, sem segredos (`BRAVE_API_KEY` por referência). Docs das duas skills corrigidas (`.mcp.json`, não `settings.local.json`).
+- `docs/INDEX.md` — mapa MAP→READ→FULL, classes de documento e checklist de Documentation Review.
+- `skills-engine.md` §8 — skills padrão de design/diagrama (Emil Kowalski, Impeccable, Taste, Archify), carregadas só por match; o instalador oferece instalá-las por projeto (opt-in, `--design-skills`/`--no-design-skills`, só Claude Code).
+- `architecture/memory.md` — decisão e fronteiras para Claude-Mem e Task Observer (não adotados).
+
+### Alterado
+- Campo `skills:` por step no `pipeline.yaml`: skill declarada é obrigatória no step (skills-engine §3.1), com registro `Skills: {id} — usada | indisponível` cobrado por veto. `playwright-browser` em frontend (`04-implementacao`, `cd-03`) e fullstack (`04-frontend`); `brave-search` no step de pesquisa do produto (`02-contexto-negocio`), que deixa de ser pulado quando o usuário não pediu pesquisa e passa a depender de hipóteses externas no brainstorm. O validador checa que a skill declarada existe.
+- `docs/REFACTOR-PLAN.md`, `docs/pre-prd/`, `docs/user-testing/` → `docs/archive/` (históricos, fora do contexto operacional).
+
+### Removido
+- Skills `fetch-url` e `filesystem` — duplicavam ferramentas nativas das IDEs (o engine já dá precedência às nativas) e nunca eram acionadas.
+- `.claude/rules/product-agent.mdc` e `.synapos/core/rules/product-agent.mdc` — persona de PM de outro projeto (Linear/"AI Frontiers"), sem referências, e contradizia a regra "nunca tome decisões autônomas".
+
+---
+
 ## [4.1.0] — 2026-09-27
 
 Hooks do Claude Code — regras mecânicas passam a ser impostas, não só instruídas. Framework `.synapos/VERSION` 3.1.0. Detalhes: `docs/architecture/hooks.md`.

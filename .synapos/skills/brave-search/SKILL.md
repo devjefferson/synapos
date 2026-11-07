@@ -40,7 +40,7 @@ BRAVE_API_KEY=sua_chave_aqui
 
 ### 3. Configurar MCP no IDE
 
-**Claude Code** — adicione em `.claude/settings.local.json`:
+**Claude Code** — `npx synapos --mcp` configura; ou adicione em `.mcp.json` (raiz do projeto):
 ```json
 {
   "mcpServers": {

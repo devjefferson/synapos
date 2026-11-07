@@ -160,9 +160,7 @@
   "skills": {
     "brave-search": "1.1.0",
     "playwright-browser": "1.1.0",
-    "github": "1.1.0",
-    "fetch-url": "1.1.0",
-    "filesystem": "1.1.0"
+    "github": "1.1.0"
   },
   "changelog": {
     "3.1.0": {

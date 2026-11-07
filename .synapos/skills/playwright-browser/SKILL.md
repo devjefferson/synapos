@@ -35,11 +35,12 @@ npx playwright install chromium
 
 ### 2. Configurar MCP no IDE
 
-**Claude Code** — adicione em `.claude/settings.local.json`:
+**Claude Code** — `npx synapos --mcp` configura; ou adicione em `.mcp.json` (raiz do projeto):
 ```json
 {
   "mcpServers": {
     "playwright": {
+      "type": "stdio",
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
     }
