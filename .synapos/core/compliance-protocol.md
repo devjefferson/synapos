@@ -87,8 +87,9 @@ Selecione ADRs pelo `adr-index.md` (domínio + escopo). Leia a ADR completa apen
 ## 5. Stack e evidência
 
 - Exemplos, imports, paths e nomes seguem `stack.md` e o código real — nunca exemplos genéricos quando o projeto tem padrão.
-- Afirmação sobre o projeto (usa X, existe Y) precisa de evidência: caminho de arquivo que você leu. Sem evidência → `[CONTEXT_REQUIRED]` ou "não verificado".
+- Afirmação sobre o projeto (usa X, existe Y) precisa de evidência: citação `path:linha` do que você leu. Sem evidência → `[CONTEXT_REQUIRED]` ou "não verificado". Em doc de arquitetura/diagrama: `evidence-standard.md` (classes de afirmação, citação, quando desenhar).
 - Nunca invente métrica, citação, token de design, contraste, concorrente ou nome de arquivo.
+- **Frontend:** tarefa que altera UI, página, componente, estilo ou metadado → `.synapos/core/best-practices/dev/frontend-quality.md` é **obrigatória** em qualquer track e squad (SEO, acessibilidade, performance/Core Web Vitals, palavras-chave, schema, conteúdo compartilhável) **e integridade visual** (texto quebrando layout ou escapando de container/botão, scroll desnecessário, container quebrado, desalinhamento — verifique em vários viewports, com texto de pior caso, usando as skills disponíveis) e a entrega leva o Relatório de Qualidade Frontend (§8). Sem medição → `não medido`, nunca número estimado.
 
 ---
 

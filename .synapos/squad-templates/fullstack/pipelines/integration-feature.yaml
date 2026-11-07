@@ -44,6 +44,8 @@ steps:
       - "Componente async sem estado de loading/error/empty"
       - "Prop 'any' sem justificativa"
       - "Integração com API sem mock enquanto backend não está pronto"
+      - "Alteração de frontend sem o Relatório de Qualidade Frontend (SEO, acessibilidade, performance, keywords, schema, social) ou com número de métrica sem medição"
+      - "Alteração de frontend sem verificar integridade visual (texto quebrando layout, scroll desnecessário, container quebrado, texto escapando de container/botão, desalinhamento) em vários viewports e com texto de pior caso"
     on_reject: 04-frontend
 
   - id: 05-backend
@@ -88,6 +90,7 @@ steps:
     veto_conditions:
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
+      - "Review sem verificar SEO, acessibilidade e performance do frontend"
     on_reject: 04-frontend
 
   - id: update-task

@@ -31,6 +31,10 @@ Leia `.synapos/squads/{slug}/agents/rodrigo-react.agent.md` e execute como Rodri
 
 Skill declarada no step: `playwright-browser` (ou browser nativo equivalente). Rode a aplicação, abra a tela nova e compare com uma página existente (layout, estados loading/error/empty, mobile e desktop). Sem browser: revisão estrutural lado a lado. Registre: `Skills: playwright-browser — usada | indisponível: {motivo}`.
 
+## Qualidade obrigatória — SEO, acessibilidade e performance
+
+Toda alteração de frontend segue `.synapos/core/best-practices/dev/frontend-quality.md`: Core Web Vitals (LCP/INP/CLS), WCAG 2.2 AA, SEO técnico, palavras-chave por intenção, schema.org (JSON-LD) e metadados de compartilhamento (Open Graph/Twitter). Página privada → `noindex` e SEO `n/a`; acessibilidade e performance sempre. Meça (Lighthouse/axe/validadores) ou declare `não medido`. **Antes de entregar, verifique a integridade visual** (§7): texto quebrando layout, scroll desnecessário, container quebrado, texto escapando de container/botão, desalinhamento — em 320/390/768/1280/1920 px e com texto de pior caso; use `playwright-browser`, `break-ui` e `impeccable` quando disponíveis. Entregue o **Relatório de Qualidade Frontend** (§8).
+
 ## Critérios de Qualidade
 
 - [ ] Todo componente async com loading + error + empty + success

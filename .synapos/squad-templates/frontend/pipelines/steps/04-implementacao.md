@@ -54,6 +54,10 @@ REVISÃO ESTRUTURAL — {tela} × {referência}
 - Responsivo: {mesmos breakpoints/padrões?}
 ```
 
+## Qualidade obrigatória — SEO, acessibilidade e performance
+
+Toda alteração de frontend segue `.synapos/core/best-practices/dev/frontend-quality.md`: Core Web Vitals (LCP/INP/CLS), WCAG 2.2 AA, SEO técnico, palavras-chave por intenção, schema.org (JSON-LD) e metadados de compartilhamento (Open Graph/Twitter). Página privada → `noindex` e SEO `n/a`; acessibilidade e performance sempre. Meça (Lighthouse/axe/validadores) ou declare `não medido`. **Antes de entregar, verifique a integridade visual** (§7): texto quebrando layout, scroll desnecessário, container quebrado, texto escapando de container/botão, desalinhamento — em 320/390/768/1280/1920 px e com texto de pior caso; use `playwright-browser`, `break-ui` e `impeccable` quando disponíveis. Entregue o **Relatório de Qualidade Frontend** (§8).
+
 ## Entrega
 
 Para cada arquivo: **caminho** + **o que faz** (1 linha).

@@ -70,6 +70,8 @@ steps:
       - "Valor visual hardcoded (cor, spacing, tamanho) quando o projeto tem token/classe equivalente"
       - "Tipo inseguro (any, object) sem justificativa"
       - "Lista dinâmica sem key estável"
+      - "Alteração de frontend sem o Relatório de Qualidade Frontend (SEO, acessibilidade, performance, keywords, schema, social) ou com número de métrica sem medição"
+      - "Alteração de frontend sem verificar integridade visual (texto quebrando layout, scroll desnecessário, container quebrado, texto escapando de container/botão, desalinhamento) em vários viewports e com texto de pior caso"
     on_reject: 04-implementacao
 
   - id: 05-review
@@ -84,6 +86,7 @@ steps:
       - review-notes.md
     veto_conditions:
       - "Review sem a Camada 0 (consistência com a referência do projeto)"
+      - "Review sem verificar SEO, acessibilidade, performance e integridade visual (Camada 3) ou sem exigir o Relatório de Qualidade Frontend"
       - "Review sem categorização BLOCKER/SUGGESTION/QUESTION/PRAISE"
       - "BLOCKER sem fix sugerido"
     on_reject: 04-implementacao

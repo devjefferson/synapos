@@ -4,11 +4,15 @@
 
 ## MAP → READ → FULL
 
+Modelo de progressive disclosure inspirado no [Archify](https://github.com/tt-a1i/archify) — referência, não dependência. Diagrama só quando aumenta a compreensão (architecture, workflow, sequence, data flow, lifecycle), sempre baseado em fatos do repositório; em Markdown, use Mermaid.
+
 | Preciso de… | READ (1 arquivo) | FULL (sob demanda) |
 |---|---|---|
 | Rodar o framework / protocolo do orquestrador | `.synapos/core/orchestrator.md` | `pipeline-runner.md`, `gate-system.md` |
 | Regras de contexto e memória | `.synapos/core/context-engine.md` | `architecture/memory.md` (o porquê) |
 | Regras de conformidade e ADR | `.synapos/core/compliance-protocol.md` | `adr-standard.md` |
+| Provar uma afirmação / documentar arquitetura / desenhar diagrama | `.synapos/core/evidence-standard.md` | `npx synapos doctor` (valida citações) |
+| Mexer em frontend (SEO, acessibilidade, performance, schema) | `.synapos/core/best-practices/dev/frontend-quality.md` | `compliance-protocol` §5 |
 | Escolher/usar skills | `.synapos/core/skills-engine.md` | `architecture/skills.md` |
 | Fluxo de produto | `architecture/product-workflow.md` | `.synapos/squad-templates/produto/` |
 | Hooks do Claude Code | `architecture/hooks.md` | `.synapos/hooks/claude/` |

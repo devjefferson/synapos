@@ -253,7 +253,7 @@ Armazene `[TRACK]` e `[TASK]` (a tarefa em 1–3 frases).
    - skills: do `skills-index.md`; sem índice → `ls skills/ docs/skills/` e leia só a que casar;
    - role memory: só se existir.
 4. **Executar:** a menor mudança que atende, no estilo do código ao redor. Aplique `compliance-protocol.md` (observe antes de criar; sinais de controle).
-5. **Revisar:** o diff faz exatamente o pedido e nada além? ADR CHECK se alguma ADR casou.
+5. **Revisar:** o diff faz exatamente o pedido e nada além? ADR CHECK se alguma ADR casou. Alvo é frontend → Relatório de Qualidade Frontend compacto, incluindo integridade visual (compliance §5).
 6. **Reportar:** `✏️ {arquivo} · L{linhas} — {o que mudou}` por arquivo alterado · problemas vistos fora do escopo (não corrigidos) · candidatos a memória, se houver algo durável (context-engine §4.1). Normativo → 1 pergunta de confirmação; LEARNING/FACT/REFERENCE com evidência, FEEDBACK e correções de `[STALE]` → grave direto; padrão observado no código não é memória.
 
 Se durante a execução surgir decisão nova, mais de uma área ou incerteza sobre o padrão → pare e reclassifique para `standard`.

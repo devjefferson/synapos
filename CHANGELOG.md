@@ -11,12 +11,24 @@ Versionamento segue [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [4.3.0] — 2026-11-06
+
+### Removido
+- Skill `brave-search` por completo (pasta, manifest, README/GUIDE, declaração no step de pesquisa do produto, mapa do `doctor`). O step `02-contexto-negocio` passa a usar a busca web nativa da IDE; sem ela, é pulado.
+
+### Adicionado
+- **Qualidade de frontend obrigatória** — `best-practices/dev/frontend-quality.md` (catálogo 1.2.0): Core Web Vitals (LCP ≤ 2,5 s · INP ≤ 200 ms · CLS ≤ 0,1, p75), WCAG 2.2 AA, SEO técnico, palavras-chave por intenção (dado de Search Console/ferramenta ou hipótese), schema.org JSON-LD validado, Open Graph/Twitter para compartilhamento, **integridade visual obrigatória** (texto quebrando layout/escapando de container ou botão, scroll desnecessário, container quebrado, desalinhamento — viewports 320–1920 px, texto de pior caso, testes de `scrollWidth`; skills `playwright-browser`, `break-ui`, `impeccable` quando disponíveis) e **Relatório de Qualidade Frontend** na entrega (métrica sem medição = `não medido`). Regra em `compliance-protocol` §5 (vale em qualquer track, inclusive fast lane) e vetos nos steps de implementação, review, quick-fix e bug-fix dos squads frontend e fullstack.
+- `core/evidence-standard.md` — norma sob demanda extraída do Archify, em Markdown: classes de afirmação (fato/decisão/hipótese/proposta/desconhecido), citação `path:linha`, investigação por fatia conectada (configurado ≠ chamado, posse de I/O), quando desenhar + roteador pergunta→tipo de diagrama (com Mermaid), e relato honesto do nível de verificação. `compliance-protocol` §5 aponta para ela.
+- `npx synapos doctor [--check-update]` — verifica instalação (core, VERSION × manifest, hooks), skills declaradas e MCP, e valida citações `path:linha` dos docs (arquivo existe, linhas dentro do arquivo). Testes em `tests/doctor.test.js`.
+
+---
+
 ## [4.2.0] — 2026-11-06
 
 ### Adicionado
 - Instalador configura o MCP de `playwright-browser` e `brave-search` em `.mcp.json` (opt-in, só Claude Code, `--mcp`/`--no-mcp`): só adiciona o que falta, não toca JSON inválido, sem segredos (`BRAVE_API_KEY` por referência). Docs das duas skills corrigidas (`.mcp.json`, não `settings.local.json`).
 - `docs/INDEX.md` — mapa MAP→READ→FULL, classes de documento e checklist de Documentation Review.
-- `skills-engine.md` §8 — skills padrão de design/diagrama (Emil Kowalski, Impeccable, Taste, Archify), carregadas só por match; o instalador oferece instalá-las por projeto (opt-in, `--design-skills`/`--no-design-skills`, só Claude Code).
+- `skills-engine.md` §8 — skills padrão de design (Emil Kowalski, Impeccable, Taste); Archify só como referência de arquitetura, não instalado, carregadas só por match; o instalador oferece instalá-las por projeto (opt-in, `--design-skills`/`--no-design-skills`, só Claude Code).
 - `architecture/memory.md` — decisão e fronteiras para Claude-Mem e Task Observer (não adotados).
 
 ### Alterado

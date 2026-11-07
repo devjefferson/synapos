@@ -22,6 +22,7 @@ Você é **Carlos Coordenador**, coordenador fullstack. Implemente a mudança de
 - Se a mudança tocar o contrato de API, documente o impacto em FE e BE
 - Se identificar um problema maior, **registre em `docs/quick-fix-output.md` mas não corrija agora**
 - Prefira a solução mais simples que resolve o problema
+- Mudança que toca frontend → `.synapos/core/best-practices/dev/frontend-quality.md` obrigatória nos elementos tocados (Relatório compacto, incluindo integridade visual — §7)
 
 ## Output obrigatório
 

@@ -16,7 +16,7 @@ description: Descoberta, seleção, carga e aplicação de skills — de conheci
 | Tipo | O que é | Exemplo |
 |---|---|---|
 | `knowledge` | Instruções/critérios de um domínio | `skills/ux.md`, design-system, accessibility, best-practices do Synapos |
-| `tool` | Ferramenta externa (MCP, script) | playwright-browser, brave-search, github |
+| `tool` | Ferramenta externa (MCP, script) | playwright-browser, github |
 
 `SKILL.md` instalado em `.synapos/skills/{nome}/` declara `type: mcp | script | hybrid | prompt` — `prompt` = knowledge; os demais = tool.
 
@@ -155,17 +155,19 @@ domains: [frontend, backend, ...]
 
 ---
 
-## 8. SKILLS PADRÃO DE DESIGN E DIAGRAMA
+## 8. SKILLS PADRÃO DE DESIGN
 
 Referências de qualidade — **não** carregue por padrão. Entram no MATCH (§3) só quando o step faz o que a coluna "quando" descreve. Verifique se estão instaladas (`.claude/skills/{nome}/`, `~/.claude/skills/{nome}/` ou nativas da sessão); ausente → registre `⚠️ Skill {x} indisponível` e siga (§4). Nunca bloqueia.
 
 | Skill | Quando | Não use em |
 |---|---|---|
 | `emil-design-eng`, `animate`, `review-animations` | animações, transições, microinterações, feedback visual | API sem interface |
+| `break-ui` | stress de layout com dados de pior caso (texto longo, vazio, muitos itens) | backend |
 | `impeccable` | criar/revisar UX, hierarquia, tipografia, acessibilidade, polimento | backend |
 | `design-taste-frontend` | interface nova, direção de arte, identidade visual (junto com `impeccable`) | ajuste pontual de estilo |
-| `archify` | diagrama de arquitetura/fluxo/sequência/ciclo de vida **fundamentado em código ou docs reais** | explicação que cabe em 3 linhas |
 
-Instalação: `npx synapos` oferece instalar as quatro **por projeto** (`.claude/skills/`, opt-in; `--design-skills` / `--no-design-skills`). Manual (comandos oficiais verificados em 2026-11-06, reconfira antes de usar; sem `-g` = projeto): `npx skills@latest add emilkowalski/skills -a claude-code -s '*' -y` · `npx impeccable install  --project --providers=claude-code -y` · `npx skills add https://github.com/Leonxlnx/taste-skill -a claude-code -s '*' -y` · `npx -y skills@latest add https://archify.si --skill archify --agent claude-code  --copy --yes`.
+Instalação: `npx synapos` oferece instalar as três **por projeto** (`.claude/skills/`, opt-in; `--design-skills` / `--no-design-skills`). Manual (comandos oficiais verificados em 2026-11-06, reconfira antes de usar; sem `-g` = projeto): `npx skills@latest add emilkowalski/skills -a claude-code -s '*' -y` · `npx impeccable install --project --providers=claude-code -y` · `npx skills add https://github.com/Leonxlnx/taste-skill -a claude-code -s '*' -y`.
 
 Conflito com ADR/regra do projeto → `[SKILL-CONFLICT]` (§5). O Synapos não depende delas: sem as skills, o fluxo segue com a regra genérica da role.
+
+**Archify não é skill do Synapos:** é só referência arquitetural (progressive disclosure MAP → READ → FULL; tipos de diagrama architecture/workflow/sequence/data flow/lifecycle). O Synapos aplica o modelo em Markdown (`docs/INDEX.md`); não instala nem exige a ferramenta.

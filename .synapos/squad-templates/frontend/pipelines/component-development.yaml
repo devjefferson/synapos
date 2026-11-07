@@ -46,6 +46,8 @@ steps:
       - "Props sem tipagem no padrão do projeto"
       - "API/estrutura do componente diverge dos componentes irmãos do design system"
       - "Sem acessibilidade (aria, keyboard)"
+      - "Alteração de frontend sem o Relatório de Qualidade Frontend (SEO, acessibilidade, performance, keywords, schema, social) ou com número de métrica sem medição"
+      - "Alteração de frontend sem verificar integridade visual (texto quebrando layout, scroll desnecessário, container quebrado, texto escapando de container/botão, desalinhamento) em vários viewports e com texto de pior caso"
     on_reject: cd-03-implementacao
 
   - id: cd-04-review
@@ -59,3 +61,5 @@ steps:
     output_files:
       - review-notes.md
     gate: GATE-5
+    veto_conditions:
+      - "Review sem verificar SEO, acessibilidade, performance e integridade visual (Camada 3) ou sem exigir o Relatório de Qualidade Frontend"

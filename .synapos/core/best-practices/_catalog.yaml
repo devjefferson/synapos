@@ -1,4 +1,4 @@
-version: "1.1.0"
+version: "1.2.0"
 description: "Catálogo de boas práticas do Synapos — carregue apenas o relevante"
 
 catalog:
@@ -12,6 +12,11 @@ catalog:
     file: dev/testing-strategy.md
     whenToUse: "Quando o squad escreve ou define estratégia de testes"
     domains: [frontend, backend, fullstack, mobile]
+
+  - id: frontend-quality
+    file: dev/frontend-quality.md
+    whenToUse: "OBRIGATÓRIA em toda mudança de frontend: SEO, acessibilidade, performance (Core Web Vitals), integridade visual (texto/container/scroll/alinhamento), palavras-chave, schema e conteúdo compartilhável"
+    domains: [frontend, fullstack]
 
   - id: api-design
     file: dev/api-design.md

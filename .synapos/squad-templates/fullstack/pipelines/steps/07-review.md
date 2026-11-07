@@ -23,7 +23,7 @@ Execute como Renata Revisão. Faça review completo da implementação fullstack
 - Qualidade dos componentes e hooks
 - Tratamento de estados (loading/error/empty/success)
 - Tipagem TypeScript
-- Acessibilidade básica
+- Acessibilidade WCAG 2.2 AA, SEO, performance (CWV), schema e metadados sociais conforme `.synapos/core/best-practices/dev/frontend-quality.md` — integridade visual (texto escapando, scroll desnecessário, container quebrado, desalinhamento) e Relatório de Qualidade Frontend ausente = BLOCKER
 
 ### Backend
 - Aderência ao contrato de API

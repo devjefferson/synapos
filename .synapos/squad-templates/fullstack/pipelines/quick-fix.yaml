@@ -28,6 +28,8 @@ steps:
     veto_conditions:
       - "Mudança vai além do escopo descrito no contexto"
       - "Output vazio ou sem implementação concreta"
+      - "Mudança em frontend sem o Relatório de Qualidade Frontend compacto"
+      - "Mudança em frontend sem verificar integridade visual (texto escapando, scroll desnecessário, container quebrado, desalinhamento)"
 
   - id: qf-04-registrar
     name: "Registrar Decisão"

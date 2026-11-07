@@ -55,7 +55,7 @@ Faça no máximo 3–4 perguntas por rodada, começando pelas que mais mudam a s
 Regras da conversa:
 - Não aceite a primeira solução sem explorar o problema. Mas não trave: se o usuário já tem clareza num tema, registre e siga.
 - Não invente dados de mercado, métricas, personas ou citações. O que o usuário não sabe vira **hipótese** ou **questão aberta**.
-- Hipótese que depende de informação externa (mercado, concorrente, norma) → proponha a pesquisa do step 02 (`brave-search`) e registre a decisão do usuário em "Questões abertas". Nunca preencha com conhecimento de memória.
+- Hipótese que depende de informação externa (mercado, concorrente, norma) → proponha a pesquisa do step 02 (busca web nativa da IDE) e registre a decisão do usuário em "Questões abertas". Nunca preencha com conhecimento de memória.
 
 ## 3. Convergir
 

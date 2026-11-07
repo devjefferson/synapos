@@ -114,7 +114,6 @@ Decisões fora do escopo são sinalizadas com `[DECISÃO PENDENTE]` (ou `[?]`) �
 ## Skills (integrações)
 
 ```bash
-npx synapos add skill brave-search
 npx synapos add skill playwright
 npx synapos add skill github
 ```

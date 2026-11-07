@@ -52,11 +52,19 @@ Compare com os **padrões do projeto**, nunca com preferência pessoal.
 - [ ] Props drilling máximo 2 níveis?
 - [ ] Keys estáveis em listas?
 
-### Camada 3 — Acessibilidade (blockers)
+### Camada 3 — Acessibilidade, SEO e Performance (blockers)
 - [ ] `alt` descritivo em imagens?
 - [ ] Labels em inputs?
 - [ ] Elementos interativos alcançáveis por teclado?
 - [ ] Focus visible preservado?
+- [ ] Contraste, hierarquia de headings, `lang`, labels/erros de formulário e alvos de toque (WCAG 2.2 AA)?
+- [ ] Core Web Vitals: LCP/INP/CLS medidos ou `não medido`? Imagem LCP sem lazy-load, mídia com dimensões, JS/terceiros sob controle?
+- [ ] SEO: title/description/h1/canonical únicos e coerentes; conteúdo indexável no HTML inicial; `noindex` se privada?
+- [ ] Palavras-chave: termo principal + intenção declarados; dado de Search Console/ferramenta ou marcado como hipótese?
+- [ ] Schema JSON-LD do tipo correto, só com conteúdo visível, validado?
+- [ ] Open Graph/Twitter card com imagem 1200×630?
+- [ ] Integridade visual (§7): texto escapando de container/botão, scroll desnecessário, container quebrado, desalinhamento — verificado em vários viewports e com pior caso (ou "não verificado em browser" declarado)?
+- [ ] Relatório de Qualidade Frontend presente na implementação? **Ausente = BLOCKER.**
 
 ### Camada 4 — Manutenibilidade
 - [ ] Nomes descritivos?

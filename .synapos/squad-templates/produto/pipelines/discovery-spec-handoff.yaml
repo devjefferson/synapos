@@ -36,8 +36,7 @@ steps:
     tracks: [complex]
     file: pipeline/steps/02-contexto-negocio.md
     depends_on: [pd-02-brainstorm]
-    skills: [brave-search]
-    skip_condition: "paulo-pesquisa não está no squad, brainstorm.md não tem hipótese que dependa de informação externa, ou o usuário recusou a pesquisa proposta no brainstorm"
+    skip_condition: "Não há ferramenta de busca web disponível (nativa da IDE), paulo-pesquisa não está no squad, brainstorm.md não tem hipótese que dependa de informação externa, ou o usuário recusou a pesquisa proposta no brainstorm"
     output_files:
       - research/market-analysis.md
     veto_conditions:

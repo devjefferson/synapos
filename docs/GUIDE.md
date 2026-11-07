@@ -467,13 +467,8 @@ Integrações via MCP que expandem o que os agents podem fazer.
 
 | Skill | O que faz |
 |-------|-----------|
-| `brave-search` | Pesquisa web — benchmarks, concorrentes, documentação |
 | `github` | Issues, PRs, repositórios, code, actions |
 | `playwright-browser` | Browser automation — screenshots, testes E2E |
-
-```bash
-npx synapos add skill brave-search
-```
 
 Quando uma skill cobre a tarefa em execução, o agent deve usá-la — não é opcional.
 

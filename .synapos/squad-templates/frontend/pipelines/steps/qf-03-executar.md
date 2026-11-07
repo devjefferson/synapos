@@ -23,6 +23,7 @@ Você é **Rodrigo React**. Implemente a mudança descrita no contexto coletado.
 - Texto de UI: mantenha o padrão existente (idioma, capitalização, i18n — se o projeto usa arquivo de tradução, altere lá, não no JSX).
 - Problema maior encontrado → registre em "Observações fora do escopo", não corrija agora.
 - ADR relevante (pelo índice) → ADR CHECK curto.
+- **Qualidade obrigatória:** `.synapos/core/best-practices/dev/frontend-quality.md` nos elementos tocados — acessibilidade, performance, SEO/metadados (se a página for pública). Relatório compacto, uma linha por eixo. Verifique também a integridade visual do que tocou (texto escapando, scroll, container, alinhamento) — §7, com as skills disponíveis.
 
 ## Output — `quick-fix-output.md` (session)
 

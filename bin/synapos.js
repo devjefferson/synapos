@@ -184,7 +184,6 @@ const DESIGN_SKILLS = [
   { name: 'Emil Kowalski', args: ['skills@latest', 'add', 'emilkowalski/skills', '-a', 'claude-code', '-s', '*', '-y'] },
   { name: 'Impeccable',    args: ['impeccable', 'install', '--project', '--providers=claude-code', '-y'] },
   { name: 'Taste',         args: ['skills@latest', 'add', 'https://github.com/Leonxlnx/taste-skill', '-a', 'claude-code', '-s', '*', '-y'] },
-  { name: 'Archify',       args: ['-y', 'skills@latest', 'add', 'https://archify.si', '--skill', 'archify', '--agent', 'claude-code', '--copy', '--yes'] },
 ];
 
 function installDesignSkills(targetDir) {
@@ -202,7 +201,6 @@ function installDesignSkills(targetDir) {
 // MCP das skills do Synapos → .mcp.json do projeto (Claude Code, escopo project). Só adiciona o que falta; sem segredos (env por referência).
 const MCP_SERVERS = {
   'playwright': { type: 'stdio', command: 'npx', args: ['@playwright/mcp@latest'], env: {} },
-  'brave-search': { type: 'stdio', command: 'npx', args: ['-y', '@modelcontextprotocol/server-brave-search'], env: { BRAVE_API_KEY: '${BRAVE_API_KEY}' } },
 };
 
 function installMcpServers(targetDir) {
@@ -223,6 +221,8 @@ async function run() {
   const flags = argv.filter(a => a.startsWith('-'));
   const args  = argv.filter(a => !a.startsWith('-'));
 
+  if (args[0] === 'doctor') process.exit(require('./doctor').run(argv));
+
   if (flags.includes('--version') || flags.includes('-v')) {
     console.log(VERSION);
     process.exit(0);
@@ -234,6 +234,7 @@ ${bold('SYNAPOS')} — AI Agent Orchestration Framework v${VERSION}
 
 ${bold('USO')}
   npx synapos [squads...] [options]
+  npx synapos doctor [--check-update]   Verifica instalação, skills/MCP e citações de evidência (path:linha)
 
 ${bold('SQUADS')} (aliases aceitos)
 ${SQUADS.map(s => `  ${s.value.padEnd(12)} ${gray(s.aliases.join(', ').padEnd(18))}  ${s.description}`).join('\n')}
@@ -243,7 +244,7 @@ ${bold('OPÇÕES')}
   -h, --help         Exibe esta ajuda
   --design-skills    Instala skills de design no projeto sem perguntar
   --no-design-skills Não instala (nem pergunta)
-  --mcp              Configura .mcp.json (playwright, brave-search) sem perguntar
+  --mcp              Configura .mcp.json (playwright) sem perguntar
   --no-mcp           Não configura (nem pergunta)
 
 ${bold('EXEMPLOS')}
@@ -415,20 +416,20 @@ ${bold('EXEMPLOS')}
       nl();
       ({ wanted } = await prompts({
         type: 'confirm', name: 'wanted', initial: true,
-        message: 'Instalar skills de design no projeto? (Emil Kowalski, Impeccable, Taste, Archify — requer internet; Taste usa Chrome)',
+        message: 'Instalar skills de design no projeto? (Emil Kowalski, Impeccable, Taste — requer internet; Taste usa Chrome)',
       }, { onCancel: () => ({ wanted: false }) }));
     }
     if (wanted) { nl(); installDesignSkills(targetDir); }
   }
 
-  // ── 6c. MCP das skills playwright-browser e brave-search (opt-in, só Claude Code) ──
+  // ── 6c. MCP da skill playwright-browser (opt-in, só Claude Code) ──
   if (selectedIdes.includes('claude') && !flags.includes('--no-mcp')) {
     let wantedMcp = flags.includes('--mcp');
     if (!wantedMcp && process.stdin.isTTY) {
       nl();
       ({ wantedMcp } = await prompts({
         type: 'confirm', name: 'wantedMcp', initial: true,
-        message: 'Configurar MCP das skills em .mcp.json? (playwright-browser, brave-search — a chave BRAVE_API_KEY fica no seu ambiente)',
+        message: 'Configurar MCP das skills em .mcp.json? (playwright-browser)',
       }, { onCancel: () => ({ wantedMcp: false }) }));
     }
     if (wantedMcp) {
@@ -437,7 +438,6 @@ ${bold('EXEMPLOS')}
       else {
         ok(`MCP das skills ${gray(added.length ? `(.mcp.json: ${added.join(', ')})` : '(.mcp.json já tinha ambos)')}`);
         info('Playwright: rode uma vez  npx playwright install chromium');
-        info('Brave Search: exporte BRAVE_API_KEY (https://brave.com/search/api/) e reinicie o Claude Code');
       }
     }
   }

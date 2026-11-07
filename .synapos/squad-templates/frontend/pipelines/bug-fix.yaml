@@ -28,6 +28,8 @@ steps:
       - "Fix sem teste que reproduz o bug, quando o projeto tem testes para a área"
       - "Fix que quebra outro comportamento existente"
       - "Fix que introduz padrão/componente novo em vez de corrigir no padrão existente"
+      - "Fix que regride acessibilidade, performance ou SEO, ou sem o Relatório de Qualidade Frontend compacto"
+      - "Fix de frontend que introduz texto escapando de container/botão, scroll desnecessário, container quebrado ou desalinhamento"
 
   - id: bf-04-review
     name: "Review do Fix"
